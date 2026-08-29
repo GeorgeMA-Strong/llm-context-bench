@@ -7,9 +7,9 @@ warm-up, and validation rules so repeated runs compare the same workload.
 Two profiles are included:
 
 - **regular** — document extraction, calculation, policy application, summarization,
-  and long-context retrieval from synthetic operational records.
+  and long-context retrieval over public-domain documents.
 - **coding** — implementation, debugging, SQL, code analysis, and long-context
-  retrieval from synthetic source bundles.
+  retrieval over real open-source code.
 
 Both profiles provide selectable **16K, 32K, 64K, and 128K input tiers**. The
 performance lane always requests exactly **1,024 output tokens**.
@@ -27,9 +27,10 @@ far faster than normal generation. This runner therefore:
 - recomputes llama.cpp PP and TG rates from token and timing counters;
 - excludes invalid trials from reported performance medians.
 
-The bundled input fixtures are deterministic and synthetic. Their gzip ratios
-are checked to prevent highly repetitive filler, and their SHA-256 hashes are
-locked in the suite manifests.
+The bundled input fixtures are deterministic assemblies of public-domain
+documents and permissively-licensed open-source code; each fixture names its
+sources. Their gzip ratios are checked to prevent highly repetitive filler, and
+their SHA-256 hashes are locked in the suite manifests.
 
 ## Install
 
@@ -150,14 +151,22 @@ only trials that satisfy every performance validity rule.
 ## Rebuild and verify fixtures
 
 ```bash
-python3 tools/generate_fixtures.py
+python3 -m pip install tokenizers
+python3 tools/generate_fixtures.py           # verify committed fixtures
+python3 tools/generate_fixtures.py --write   # rebuild + refresh hashes
 python3 -m unittest discover -s tests -v
 ```
 
-Fixture generation is deterministic (seed `3407`) and automatically refreshes
-the suite hashes and [FIXTURES.json](FIXTURES.json). All generated fixture text,
-identifiers, people, services, and events are fictional.
+Fixture assembly is deterministic from pinned public sources: Project Gutenberg
+document URLs, a fixed `microsoft/vscode` commit, and the pinned Qwen3-8B
+tokenizer listed in [FIXTURES.json](FIXTURES.json). The coding source list lives
+in [tools/corpus/vscode-files.json](tools/corpus/vscode-files.json); downloads are
+cached under `tools/.corpus_cache/` (git-ignored). A `--write` rebuild refreshes
+the suite hashes and [FIXTURES.json](FIXTURES.json).
 
 ## License
 
-Code and generated fixtures are licensed under the [MIT License](LICENSE).
+Code and fixture assembly are licensed under the [MIT License](LICENSE).
+Fixtures also bundle third-party content: public-domain texts from Project
+Gutenberg (no license restrictions) and `microsoft/vscode` source (dual-licensed
+MIT/Apache-2.0) with its per-file copyright headers preserved.

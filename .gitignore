@@ -8,3 +8,4 @@ build/
 dist/
 results/
 *.tmp
+tools/.corpus_cache/
