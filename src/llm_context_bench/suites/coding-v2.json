@@ -1,0 +1,355 @@
+{
+  "schema_version": 2,
+  "suite_id": "standard-coding-v2",
+  "description": "Locked coding quality and non-degenerate performance benchmark over deterministic synthetic source context.",
+  "system_prompt": "You are completing a reproducible coding benchmark. Follow the requested output format exactly. Do not add commentary. When asked for code or SQL, return only the requested artifact without Markdown fences.",
+  "performance_system_prompt": "Follow the final PERFORMANCE TASK in the user message. Produce varied, coherent technical writing and realistic code examples. Do not use repetitive filler, repeated punctuation, or artificial token patterns. Use the server's normal reasoning behavior.",
+  "performance_instruction": "Write around 4k words of realistic, non-repetitive source code and technical explanation based on the code bundle. Implement a substantial coherent example, explain its design and failure handling, and continue naturally without repeated filler until the response limit is reached.",
+  "sampling": {
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "seed": 3407
+  },
+  "performance_sampling": {
+    "temperature": 1.0,
+    "top_p": 0.95,
+    "top_k": 20,
+    "min_p": 0.0,
+    "seed": 3407
+  },
+  "repetitions": 1,
+  "cases": [
+    {
+      "id": "coding-01-implement",
+      "max_tokens": 768,
+      "prompt": "Implement this Python function. Return only the complete function definition. Do not import anything.\n\ndef merge_windows(windows):\n    \"\"\"Return sorted, merged [start, end] integer windows.\n\n    Input windows may be unsorted. Merge windows that overlap or touch, so\n    [1, 3] and [4, 6] become [1, 6]. Do not mutate the input. An empty input\n    returns an empty list.\n    \"\"\"",
+      "checker": {
+        "type": "python_tests",
+        "function": "merge_windows",
+        "tests": [
+          {
+            "args": [
+              []
+            ],
+            "expected": []
+          },
+          {
+            "args": [
+              [
+                [
+                  5,
+                  7
+                ],
+                [
+                  1,
+                  3
+                ],
+                [
+                  4,
+                  4
+                ],
+                [
+                  10,
+                  12
+                ]
+              ]
+            ],
+            "expected": [
+              [
+                1,
+                7
+              ],
+              [
+                10,
+                12
+              ]
+            ]
+          },
+          {
+            "args": [
+              [
+                [
+                  1,
+                  2
+                ],
+                [
+                  8,
+                  10
+                ],
+                [
+                  3,
+                  7
+                ],
+                [
+                  20,
+                  20
+                ],
+                [
+                  19,
+                  19
+                ]
+              ]
+            ],
+            "expected": [
+              [
+                1,
+                10
+              ],
+              [
+                19,
+                20
+              ]
+            ]
+          },
+          {
+            "args": [
+              [
+                [
+                  -4,
+                  -2
+                ],
+                [
+                  -1,
+                  1
+                ],
+                [
+                  3,
+                  5
+                ],
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            "expected": [
+              [
+                -4,
+                1
+              ],
+              [
+                3,
+                5
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "coding-02-debug",
+      "max_tokens": 768,
+      "prompt": "Fix the Python function below. It should return one retry delay per attempt, starting at base_seconds and doubling each time, while capping every value at max_seconds. attempts <= 0 must return []. Inputs are integers and must not be mutated. Return only the corrected complete function. Do not import anything.\n\ndef retry_delays(base_seconds, max_seconds, attempts):\n    delays = []\n    current = base_seconds\n    for _ in range(attempts + 1):\n        delays.append(current)\n        current = current * 2\n    return delays",
+      "checker": {
+        "type": "python_tests",
+        "function": "retry_delays",
+        "tests": [
+          {
+            "args": [
+              2,
+              30,
+              0
+            ],
+            "expected": []
+          },
+          {
+            "args": [
+              2,
+              30,
+              5
+            ],
+            "expected": [
+              2,
+              4,
+              8,
+              16,
+              30
+            ]
+          },
+          {
+            "args": [
+              10,
+              10,
+              4
+            ],
+            "expected": [
+              10,
+              10,
+              10,
+              10
+            ]
+          },
+          {
+            "args": [
+              7,
+              20,
+              6
+            ],
+            "expected": [
+              7,
+              14,
+              20,
+              20,
+              20,
+              20
+            ]
+          },
+          {
+            "args": [
+              3,
+              100,
+              -2
+            ],
+            "expected": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "coding-03-sql",
+      "max_tokens": 384,
+      "prompt": "Write one SQLite SELECT query. Return SQL only. Tables: customers(id INTEGER PRIMARY KEY, name TEXT); orders(id INTEGER PRIMARY KEY, customer_id INTEGER, total_cents INTEGER, status TEXT, created_at TEXT). Return each customer who has at least two paid orders during July 2026. Columns must be customer_name, paid_orders, total_cents. Sort by total_cents descending, then customer_name ascending. July means created_at >= '2026-07-01' and created_at < '2026-08-01'. Customers with no matching orders must not appear.",
+      "checker": {
+        "type": "sqlite_query",
+        "setup": [
+          "CREATE TABLE customers(id INTEGER PRIMARY KEY, name TEXT)",
+          "CREATE TABLE orders(id INTEGER PRIMARY KEY, customer_id INTEGER, total_cents INTEGER, status TEXT, created_at TEXT)",
+          "INSERT INTO customers VALUES (1, 'Aster'), (2, 'Birch'), (3, 'Cedar'), (4, 'Dahlia')",
+          "INSERT INTO orders VALUES (1,1,1200,'paid','2026-07-01'), (2,1,2300,'paid','2026-07-31'), (3,1,9999,'refunded','2026-07-20'), (4,2,5000,'paid','2026-07-02'), (5,2,200,'paid','2026-07-03'), (6,2,900,'paid','2026-08-01'), (7,3,8000,'paid','2026-07-15'), (8,4,2500,'paid','2026-06-30'), (9,4,2500,'paid','2026-07-01'), (10,4,2500,'paid','2026-07-02')"
+        ],
+        "expected_columns": [
+          "customer_name",
+          "paid_orders",
+          "total_cents"
+        ],
+        "expected_rows": [
+          [
+            "Birch",
+            2,
+            5200
+          ],
+          [
+            "Dahlia",
+            2,
+            5000
+          ],
+          [
+            "Aster",
+            2,
+            3500
+          ]
+        ]
+      }
+    },
+    {
+      "id": "coding-04-analyze",
+      "max_tokens": 256,
+      "prompt": "Analyze this JavaScript without running it. Return only JSON with exactly these keys in order: result, calls, explanation. result must be the returned number, calls must be the sequence of arguments received by memo, and explanation must be one short sentence.\n\nconst memo = (() => {\n  const cache = new Map();\n  return (n) => {\n    calls.push(n);\n    if (!cache.has(n)) cache.set(n, n * n);\n    return cache.get(n);\n  };\n})();\nconst calls = [];\nfunction score(values) {\n  return values.reduce((sum, value) => sum + memo(value), 0);\n}\nconst result = score([3, 2, 3]);",
+      "checker": {
+        "type": "json_fields",
+        "expected_fields": {
+          "result": 22,
+          "calls": [
+            3,
+            2,
+            3
+          ]
+        },
+        "required_text": {
+          "explanation": [
+            "cache"
+          ]
+        },
+        "exact_keys": [
+          "result",
+          "calls",
+          "explanation"
+        ]
+      }
+    },
+    {
+      "id": "coding-05-context-16k",
+      "max_tokens": 192,
+      "performance_max_tokens": 1024,
+      "nominal_input_tokens": 16384,
+      "prompt_file": "prompts/coding-16k.txt",
+      "prompt_sha256": "5c45f157d6176a046a53621eb4c753df68528ce7064ba4530ac97270c476cbdf",
+      "checker": {
+        "type": "exact_json",
+        "expected": {
+          "billing_units": 61,
+          "retry_window": [
+            3,
+            6,
+            10,
+            10
+          ],
+          "shard_name": "eu-007"
+        }
+      }
+    },
+    {
+      "id": "coding-06-context-32k",
+      "max_tokens": 192,
+      "performance_max_tokens": 1024,
+      "nominal_input_tokens": 32768,
+      "prompt_file": "prompts/coding-32k.txt",
+      "prompt_sha256": "6a6968bf32875763aec9322508e14d36ffcdbea370204235905d3a45daba5df4",
+      "checker": {
+        "type": "exact_json",
+        "expected": {
+          "billing_units": 61,
+          "retry_window": [
+            3,
+            6,
+            10,
+            10
+          ],
+          "shard_name": "eu-007"
+        }
+      }
+    },
+    {
+      "id": "coding-07-context-64k",
+      "max_tokens": 192,
+      "performance_max_tokens": 1024,
+      "nominal_input_tokens": 65536,
+      "prompt_file": "prompts/coding-64k.txt",
+      "prompt_sha256": "18a0f97abe65d46ec344286d917d9a7d5424148b640469a7dfa1b86a29bd6c4f",
+      "checker": {
+        "type": "exact_json",
+        "expected": {
+          "billing_units": 61,
+          "retry_window": [
+            3,
+            6,
+            10,
+            10
+          ],
+          "shard_name": "eu-007"
+        }
+      }
+    },
+    {
+      "id": "coding-08-context-128k",
+      "max_tokens": 192,
+      "performance_max_tokens": 1024,
+      "nominal_input_tokens": 131072,
+      "prompt_file": "prompts/coding-128k.txt",
+      "prompt_sha256": "08d2a8c5dc7aa66cead8bfef9b80138b4f53b4c07ab52b728a40bfd194c1b31e",
+      "checker": {
+        "type": "exact_json",
+        "expected": {
+          "billing_units": 61,
+          "retry_window": [
+            3,
+            6,
+            10,
+            10
+          ],
+          "shard_name": "eu-007"
+        }
+      }
+    }
+  ]
+}

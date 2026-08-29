@@ -1,0 +1,267 @@
+{
+  "schema_version": 2,
+  "suite_id": "standard-regular-v2",
+  "description": "Locked everyday-assistant quality and non-degenerate performance benchmark over deterministic synthetic context.",
+  "system_prompt": "You are completing a reproducible benchmark. Follow the requested output format exactly. Do not add commentary, Markdown fences, or explanations unless the task explicitly requests them.",
+  "performance_system_prompt": "",
+  "performance_instruction": "Write approximately 4,000 words of coherent, non-repetitive prose grounded in the synthetic document bundle. Choose a practical technical topic from the bundle and continue naturally until the response limit is reached. Do not expose hidden reasoning.",
+  "sampling": {
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "seed": 3407
+  },
+  "performance_sampling": {
+    "temperature": 1.0,
+    "top_p": 0.95,
+    "top_k": 20,
+    "min_p": 0.0,
+    "seed": 3407
+  },
+  "repetitions": 1,
+  "cases": [
+    {
+      "id": "regular-01-extract",
+      "max_tokens": 256,
+      "prompt": "Extract the incident details below. Return only one JSON object with exactly these keys in this order: incident_id, service, severity, started_utc, affected_regions, owner, customer_update_due_utc. Preserve strings exactly and keep affected_regions in source order.\n\nIncident INC-4821 began at 2026-07-14 09:35 UTC. Checkout API is returning elevated 503s in eu-west and ap-south. Severity is SEV-2. Marta Nowak owns the response. The next customer update is due at 10:20 UTC on the same date.",
+      "checker": {
+        "type": "exact_json",
+        "expected": {
+          "incident_id": "INC-4821",
+          "service": "Checkout API",
+          "severity": "SEV-2",
+          "started_utc": "2026-07-14 09:35 UTC",
+          "affected_regions": [
+            "eu-west",
+            "ap-south"
+          ],
+          "owner": "Marta Nowak",
+          "customer_update_due_utc": "2026-07-14 10:20 UTC"
+        }
+      }
+    },
+    {
+      "id": "regular-02-calculate",
+      "max_tokens": 256,
+      "prompt": "Calculate this quote. There are 18 seats at EUR 47.50 each per month. Apply a 12% discount to the seat subtotal, then add a fixed EUR 35.00 support fee. VAT is 23% and is applied after the discount and support fee. Return only JSON with exactly these keys in this order: seat_subtotal, discount, pre_vat_total, vat, final_total. Values must be JSON numbers rounded to two decimal places mathematically (trailing zeroes are not required).",
+      "checker": {
+        "type": "exact_json",
+        "expected": {
+          "seat_subtotal": 855.0,
+          "discount": 102.6,
+          "pre_vat_total": 787.4,
+          "vat": 181.1,
+          "final_total": 968.5
+        }
+      }
+    },
+    {
+      "id": "regular-03-policy",
+      "max_tokens": 320,
+      "prompt": "Use only the policy and orders below. Policy: a physical item is refundable when requested within 30 calendar days of delivery and it is not marked final_sale. A digital item is refundable only within 7 calendar days of purchase and only when downloads equals 0. Evaluate requests as of 2026-08-20. Return only a JSON array in order A, B, C, D. Each element must contain exactly order, eligible, reason. The reason must be one of: within_physical_window, outside_physical_window, final_sale, within_digital_window_unused, digital_downloaded, outside_digital_window.\n\nA: physical; delivered 2026-07-25; final_sale=false.\nB: physical; delivered 2026-08-18; final_sale=true.\nC: digital; purchased 2026-08-16; downloads=1.\nD: digital; purchased 2026-08-14; downloads=0.",
+      "checker": {
+        "type": "exact_json",
+        "expected": [
+          {
+            "order": "A",
+            "eligible": true,
+            "reason": "within_physical_window"
+          },
+          {
+            "order": "B",
+            "eligible": false,
+            "reason": "final_sale"
+          },
+          {
+            "order": "C",
+            "eligible": false,
+            "reason": "digital_downloaded"
+          },
+          {
+            "order": "D",
+            "eligible": true,
+            "reason": "within_digital_window_unused"
+          }
+        ]
+      }
+    },
+    {
+      "id": "regular-04-summarize",
+      "max_tokens": 384,
+      "prompt": "Turn the meeting note into a compact handoff. Return only JSON with exactly these keys in this order: decision, owner, deadline, blockers, next_steps. blockers and next_steps must be arrays. Use short factual strings and do not infer missing facts.\n\nMeeting note: The team chose the blue deployment for the billing migration; the green deployment remains untouched as rollback. Priya owns the migration. Work is scheduled for 22:00 UTC on 3 September 2026. The cutover cannot begin until Finance signs off on the tax export and Operations confirms that the snapshot completed. Luis will request Finance approval. Hana will verify the snapshot and post its checksum. Priya will start the cutover only after both confirmations arrive.",
+      "checker": {
+        "type": "json_rules",
+        "exact_keys": [
+          "decision",
+          "owner",
+          "deadline",
+          "blockers",
+          "next_steps"
+        ],
+        "scalar_exact": {
+          "owner": "Priya",
+          "deadline": "2026-09-03 22:00 UTC"
+        },
+        "string_terms": {
+          "decision": [
+            "blue",
+            "billing",
+            "green",
+            "rollback"
+          ]
+        },
+        "array_item_terms": {
+          "blockers": [
+            [
+              "Finance",
+              "tax export"
+            ],
+            [
+              "Operations",
+              "snapshot"
+            ]
+          ],
+          "next_steps": [
+            [
+              "Luis",
+              "Finance"
+            ],
+            [
+              "Hana",
+              "snapshot",
+              "checksum"
+            ],
+            [
+              "Priya",
+              "cutover",
+              "confirmations"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "regular-05-context-16k",
+      "max_tokens": 192,
+      "performance_max_tokens": 1024,
+      "nominal_input_tokens": 16384,
+      "prompt_file": "prompts/regular-16k.txt",
+      "prompt_sha256": "5db0db377809603709dd2ae8d2c2c8481ba8d569c3e2fd690d12c7bd4afddc53",
+      "checker": {
+        "type": "exact_json",
+        "expected": {
+          "AC-771": {
+            "owner": "Inez",
+            "tier": "gold",
+            "renewal": "2026-11-02",
+            "state": "active"
+          },
+          "AC-204": {
+            "owner": "Omar",
+            "tier": "silver",
+            "renewal": "2027-01-19",
+            "state": "paused"
+          },
+          "AC-990": {
+            "owner": "Keiko",
+            "tier": "platinum",
+            "renewal": "2026-09-30",
+            "state": "active"
+          }
+        }
+      }
+    },
+    {
+      "id": "regular-06-context-32k",
+      "max_tokens": 192,
+      "performance_max_tokens": 1024,
+      "nominal_input_tokens": 32768,
+      "prompt_file": "prompts/regular-32k.txt",
+      "prompt_sha256": "076aded0dccf107b57046071ad1aaa7876454ad6dd21a0c598e58d253aba69c1",
+      "checker": {
+        "type": "exact_json",
+        "expected": {
+          "AC-771": {
+            "owner": "Inez",
+            "tier": "gold",
+            "renewal": "2026-11-02",
+            "state": "active"
+          },
+          "AC-204": {
+            "owner": "Omar",
+            "tier": "silver",
+            "renewal": "2027-01-19",
+            "state": "paused"
+          },
+          "AC-990": {
+            "owner": "Keiko",
+            "tier": "platinum",
+            "renewal": "2026-09-30",
+            "state": "active"
+          }
+        }
+      }
+    },
+    {
+      "id": "regular-07-context-64k",
+      "max_tokens": 192,
+      "performance_max_tokens": 1024,
+      "nominal_input_tokens": 65536,
+      "prompt_file": "prompts/regular-64k.txt",
+      "prompt_sha256": "e1227b4d82ad4ff03eaa43e2b0bf751eed455c0acc0ea74412eaa056b2702bcb",
+      "checker": {
+        "type": "exact_json",
+        "expected": {
+          "AC-771": {
+            "owner": "Inez",
+            "tier": "gold",
+            "renewal": "2026-11-02",
+            "state": "active"
+          },
+          "AC-204": {
+            "owner": "Omar",
+            "tier": "silver",
+            "renewal": "2027-01-19",
+            "state": "paused"
+          },
+          "AC-990": {
+            "owner": "Keiko",
+            "tier": "platinum",
+            "renewal": "2026-09-30",
+            "state": "active"
+          }
+        }
+      }
+    },
+    {
+      "id": "regular-08-context-128k",
+      "max_tokens": 192,
+      "performance_max_tokens": 1024,
+      "nominal_input_tokens": 131072,
+      "prompt_file": "prompts/regular-128k.txt",
+      "prompt_sha256": "fcec30ae98e7c9b077aa655e43b2b02df9a0944c8b9f83ad189b5c78289a6261",
+      "checker": {
+        "type": "exact_json",
+        "expected": {
+          "AC-771": {
+            "owner": "Inez",
+            "tier": "gold",
+            "renewal": "2026-11-02",
+            "state": "active"
+          },
+          "AC-204": {
+            "owner": "Omar",
+            "tier": "silver",
+            "renewal": "2027-01-19",
+            "state": "paused"
+          },
+          "AC-990": {
+            "owner": "Keiko",
+            "tier": "platinum",
+            "renewal": "2026-09-30",
+            "state": "active"
+          }
+        }
+      }
+    }
+  ]
+}

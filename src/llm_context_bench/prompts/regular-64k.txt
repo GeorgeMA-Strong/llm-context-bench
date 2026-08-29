@@ -1,0 +1,1347 @@
+BENCHMARK PROFILE: SYNTHETIC REGULAR DOCUMENT ANALYSIS
+All people, systems, identifiers, and events in this fixture are fictional.
+
+===== SYNTHETIC DOCUMENT 00000 =====
+
+## Incident review SYN-83465
+
+The synthetic harbor service in the east region reported a 711 ms p95 latency
+during observation window 00000. Hugo restored the request timeline and
+confirmed that 517,689 events crossed the gateway. The first alarm came from the
+policy monitor; trace `a1b45fb3c01c9802c3cdf6ec` connected it to a delayed replica rather than
+packet loss. The response team preserved the original logs, reduced concurrency by
+7 percent, and compared three recovery options before changing state.
+
+Decision: keep the canary at 90% confidence until two consecutive checks pass.
+Rollback: restore snapshot `snap-22309859cc` if error growth exceeds
+6 percent. The owner must record the exact start time, affected shard,
+and verification query so the next operator can reproduce the conclusion.
+
+Evidence samples (synthetic):
+- 2026-01-02T19:13:07.584Z actor=imani service=prairie region=east state=queued count=3399657 latency_us=253529 sample=a200c74e5e86f5b15fccf99bcd1f
+- 2026-12-24T00:23:17.816Z actor=wale service=keystone region=central state=committed count=4154083 latency_us=617623 sample=c02a5cf902626824a103c8b0a783
+- 2026-06-02T10:11:25.709Z actor=tomas service=orbit region=west state=accepted count=2216749 latency_us=397523 sample=8d0af495fb18a9205235fd713b5a
+- 2026-11-05T21:28:40.202Z actor=yara service=relay region=river state=observed count=7588199 latency_us=828871 sample=abbc28328590a35374648e77649c
+- 2026-10-07T20:41:01.576Z actor=rina service=nova region=north state=replayed count=1240352 latency_us=453931 sample=0f5fa5aea8b391165f08fbb28645
+- 2026-03-13T12:54:40.464Z actor=daria service=willow region=river state=observed count=2695214 latency_us=376072 sample=85365a816383c2e066add2e1b091
+- 2026-03-09T03:06:12.557Z actor=sofia service=prairie region=north state=draining count=1453792 latency_us=898770 sample=f8f404aa842773a4c34cb4ea7a7b
+- 2026-09-28T14:04:48.905Z actor=jonas service=uplink region=south state=queued count=8151914 latency_us=538874 sample=cec57f6b974d62b53c51c7e87b59
+- 2026-02-04T23:11:28.624Z actor=hugo service=juniper region=alpine state=accepted count=187776 latency_us=518294 sample=1ba4f6a1d779687e60dae15c6f8a
+- 2026-01-27T11:06:17.329Z actor=hugo service=orbit region=central state=rejected count=6415265 latency_us=899680 sample=ab273310146b7f44882083e7f9c1
+- 2026-08-19T22:28:30.910Z actor=farah service=tundra region=alpine state=observed count=5055100 latency_us=36498 sample=d83adf996d7b6a2393e155c3597f
+- 2026-06-20T11:02:37.460Z actor=kavya service=quartz region=alpine state=replayed count=3738565 latency_us=761014 sample=987893adbf4338a43be69470f6f8
+- 2026-08-28T18:01:21.557Z actor=hugo service=atlas region=alpine state=deferred count=8730066 latency_us=48272 sample=5886165a4b6d6c90dceac497a648
+- 2026-09-26T18:10:27.601Z actor=mei service=harbor region=east state=rejected count=7631947 latency_us=208979 sample=3fbcfe59d9d89a496b2d5c2ac35c
+- 2026-02-05T14:21:30.834Z actor=kavya service=atlas region=coastal state=running count=5616058 latency_us=549904 sample=bb334f09afbc0b46caae42000c4b
+- 2026-03-21T01:41:34.910Z actor=tomas service=juniper region=south state=accepted count=2630813 latency_us=8552 sample=a686d301c0c05ecd9d6e57789eb4
+- 2026-06-19T13:31:02.071Z actor=rina service=nova region=south state=observed count=380198 latency_us=621048 sample=f58e1c64a6d89aacb75d3eb97a1e
+- 2026-06-04T01:57:29.611Z actor=chiyo service=beacon region=river state=running count=596520 latency_us=876678 sample=8867723d23e8c94ac2277f58e8ad
+
+===== SYNTHETIC DOCUMENT 00001 =====
+
+## Operations procedure SYN-16744
+
+Purpose: rotate the lattice worker pool without losing queued work. Scope is limited to
+the synthetic coastal environment. Before starting, Daria checks the manifest checksum
+`677268132267177f495a49e1`, available capacity of 372,637 units, and alert threshold 82.
+
+1. Freeze new assignments and capture queue depth plus oldest-item age.
+2. Drain one worker group, compare counters, then inspect the gateway record.
+3. Resume at 25 percent traffic and observe for 18 minutes.
+4. Abort if latency exceeds 314 ms or reconciliation differs by more than
+   3 records.
+
+Evidence belongs in case SYN-16744; screenshots alone are insufficient because values must
+remain searchable and machine-readable. A second reviewer signs the final checkpoint.
+
+Evidence samples (synthetic):
+- 2026-05-28T11:16:23.546Z actor=mei service=tundra region=north state=deferred count=610190 latency_us=829912 sample=4aba5f5a164669d424c4c34c593d
+- 2026-05-16T13:07:40.305Z actor=jonas service=grove region=river state=restored count=3457629 latency_us=474184 sample=293cbb8163e8db573a1363a48019
+- 2026-06-25T02:02:43.028Z actor=daria service=willow region=central state=restored count=7733593 latency_us=382712 sample=a7dca3125700054eb25dd367104e
+- 2026-01-18T19:03:24.930Z actor=yara service=keystone region=alpine state=queued count=6868074 latency_us=528303 sample=b000c2c25f432a5a9e6206f1a91e
+- 2026-05-15T17:54:06.208Z actor=yara service=lattice region=west state=replayed count=3956017 latency_us=63413 sample=588c6e668df2042bfa150f7ff644
+- 2026-05-15T02:15:09.013Z actor=imani service=keystone region=east state=replayed count=1559582 latency_us=835099 sample=2f0b7b0f10e3bdf73748326070c3
+- 2026-07-27T13:13:29.438Z actor=daria service=delta region=south state=queued count=3244830 latency_us=533971 sample=802ee4018cbd566472cad6def788
+- 2026-09-05T05:17:06.467Z actor=wale service=prairie region=alpine state=accepted count=7339729 latency_us=865025 sample=620b42c58617f5a38c94e23c1815
+- 2026-03-25T17:40:50.660Z actor=luka service=vector region=south state=archived count=5734041 latency_us=62292 sample=9dc770e2eb0ab156b46db31ecc72
+- 2026-04-01T12:46:48.544Z actor=elias service=tundra region=west state=running count=1335537 latency_us=39174 sample=ad91fae0ce7dc1226783ff6be213
+- 2026-04-21T17:02:46.717Z actor=uma service=cascade region=alpine state=queued count=7633470 latency_us=324367 sample=a45d131238f93236666bbf479cfe
+- 2026-09-14T23:26:02.939Z actor=uma service=vector region=alpine state=queued count=2809414 latency_us=214014 sample=d7754c32f16d2d9578e3a70e28c5
+- 2026-11-03T03:51:24.878Z actor=jonas service=keystone region=alpine state=draining count=4138347 latency_us=256682 sample=c909491f9486236539d88c060d15
+- 2026-11-21T13:47:50.531Z actor=uma service=quartz region=coastal state=replayed count=3591016 latency_us=164944 sample=c54bb8f2e5a6137791e775021942
+- 2026-12-28T14:10:29.126Z actor=chiyo service=summit region=central state=archived count=3897456 latency_us=263986 sample=5ac42c3560e1d89f03bc8bf23f60
+- 2026-05-16T18:11:12.276Z actor=farah service=lattice region=south state=observed count=4980419 latency_us=637588 sample=57ac5f5c30974059b670e6caea31
+- 2026-07-15T21:54:47.066Z actor=chiyo service=willow region=south state=deferred count=7486252 latency_us=175908 sample=e0b1dc9f84422b3fd3b4a1de71c9
+- 2026-03-13T04:38:35.169Z actor=xenia service=harbor region=west state=accepted count=7986375 latency_us=656866 sample=51b9cafd4971cd39eb2d0af1e98d
+
+===== SYNTHETIC DOCUMENT 00002 =====
+
+## Meeting handoff SYN-58548
+
+Participants reviewed the tundra migration for the south region. Bruno owns the
+next action. The group chose a staged transition because the archive contains 375,259
+records and the current p95 is 502 ms. Finance needs a reconciled ledger, Operations
+needs a fresh snapshot, and Support needs a customer-safe status paragraph.
+
+The decision is reversible until checkpoint `2b6948d53533c2d31260cde9` is approved. Open questions include
+whether the ledger retains ordering during retries and whether the new worker
+honors the 87% saturation guard. The next review occurs on synthetic day
+23 at 16:00 UTC.
+
+Evidence samples (synthetic):
+- 2026-02-25T19:27:10.658Z actor=amina service=ion region=south state=restored count=2955185 latency_us=413811 sample=1c365683da4cd60369b9726384e4
+- 2026-04-24T08:20:47.403Z actor=hugo service=lattice region=alpine state=running count=2701293 latency_us=252253 sample=703969de67798967748a6f341984
+- 2026-11-26T21:07:24.193Z actor=bruno service=relay region=central state=committed count=4009144 latency_us=613156 sample=aa1c31b54c01ab36fc9ab8ad7229
+- 2026-01-28T18:41:07.499Z actor=xenia service=grove region=north state=rejected count=4687978 latency_us=100685 sample=981e870a28421861d61fd8259e8f
+- 2026-03-14T02:40:55.282Z actor=yara service=tundra region=south state=rejected count=4984623 latency_us=482801 sample=0843c30ac56b29c84737f1515c4b
+- 2026-02-15T10:55:44.202Z actor=chiyo service=meridian region=east state=queued count=2055171 latency_us=141516 sample=185be9d1956778d1c0eaebeb331b
+- 2026-10-13T01:09:06.210Z actor=xenia service=keystone region=north state=accepted count=230867 latency_us=76479 sample=49935bb49f98a698e230453a75f3
+- 2026-11-21T00:48:32.852Z actor=uma service=fjord region=coastal state=committed count=7208037 latency_us=885842 sample=65aee3eb37d10284491a48ab4e53
+- 2026-12-14T18:59:06.323Z actor=sofia service=prairie region=coastal state=queued count=1418701 latency_us=884559 sample=abab0f85fcb2627a2bb5ee783dbc
+- 2026-11-24T05:02:24.107Z actor=hugo service=ion region=coastal state=running count=8771905 latency_us=490084 sample=e32d33007d130d6a4348f2fdd483
+- 2026-10-09T20:03:09.684Z actor=bruno service=willow region=west state=rejected count=6313946 latency_us=463246 sample=5274f861182af7fe3d87b1107475
+- 2026-08-05T00:57:26.326Z actor=rina service=beacon region=central state=deferred count=1426035 latency_us=247042 sample=0da08dbae737e2ddd21234e8e3af
+- 2026-02-23T05:29:02.591Z actor=yara service=juniper region=coastal state=accepted count=7937764 latency_us=748068 sample=ea1795cfaa593d079c2a05f9629b
+- 2026-09-14T08:36:37.098Z actor=vera service=ember region=river state=archived count=6532157 latency_us=689587 sample=0b5c28cd1f61992c3b599f54bf8e
+- 2026-07-10T03:31:17.064Z actor=nadia service=ion region=west state=replayed count=3132863 latency_us=14117 sample=2e84490176fcf3a210476349b84e
+- 2026-10-07T08:43:47.317Z actor=chiyo service=atlas region=south state=archived count=6359883 latency_us=757035 sample=6b9b4d45641cf6c96fdcbc2449ed
+- 2026-09-10T05:21:43.160Z actor=pavel service=lattice region=north state=draining count=418519 latency_us=529396 sample=fec7d34f75cc35b5050cd896f4b4
+- 2026-10-22T08:18:16.777Z actor=rina service=meridian region=alpine state=deferred count=4587103 latency_us=340739 sample=93c1a220b1e466451ae4b11f884c
+
+===== SYNTHETIC DOCUMENT 00003 =====
+
+## API contract note SYN-25558
+
+Endpoint `/v2/meridian/river/items` accepts an idempotency key, a sequence number, and
+a payload digest. Example digest: `9b0b76973c7fb03683222f1d`. A successful response returns status 202,
+the normalized owner `rina`, and a checkpoint cursor. Clients retry 408, 429,
+and 503 responses with bounded jitter; they do not retry validation failures.
+
+The server rejects batches above 832 items or payloads above
+23 MiB. At 97% capacity it advertises a retry window of
+18 seconds. Consumers must compare the returned cursor with their local
+ledger before acknowledging delivery. This contract is synthetic and uses
+reserved names only.
+
+Evidence samples (synthetic):
+- 2026-05-15T00:02:48.793Z actor=gita service=vector region=south state=accepted count=7459886 latency_us=537070 sample=d87615e392362287c4c34523bf18
+- 2026-10-15T02:02:33.584Z actor=daria service=xylem region=west state=replayed count=1043633 latency_us=306542 sample=6fc042d8faff4fa1e3cd80209be5
+- 2026-08-01T21:43:56.504Z actor=luka service=summit region=east state=rejected count=1854383 latency_us=467776 sample=3947a747151e6551f23de4befc36
+- 2026-10-27T17:25:20.828Z actor=xenia service=ion region=north state=rejected count=552873 latency_us=596349 sample=e20135787425ae91366ef298b0fd
+- 2026-07-19T15:04:36.213Z actor=farah service=keystone region=west state=verified count=5308251 latency_us=560218 sample=be60a49ce76e237f3900b2e5f0da
+- 2026-02-06T22:32:44.459Z actor=sofia service=beacon region=central state=observed count=6002621 latency_us=444977 sample=7ba2d206a89abb1c529edd436fd9
+- 2026-01-21T06:36:26.864Z actor=bruno service=willow region=alpine state=running count=4491665 latency_us=439043 sample=821deee680f668cf7eef8d09c67d
+- 2026-08-18T13:29:22.925Z actor=kavya service=willow region=river state=running count=5764316 latency_us=322667 sample=800b5f49ebe28bc5eb880de377b3
+- 2026-01-24T05:43:02.041Z actor=mei service=relay region=alpine state=replayed count=2401501 latency_us=122692 sample=131aff97266af983b4f924c1de9e
+- 2026-01-20T22:38:17.627Z actor=zane service=xylem region=south state=draining count=6944152 latency_us=255317 sample=17f5d6bb37d1b1ef10342c5021dd
+- 2026-08-14T07:30:05.364Z actor=hugo service=vector region=south state=archived count=5274520 latency_us=636838 sample=a62bf9105b9ae3ea87baf90c2598
+- 2026-03-15T03:33:48.246Z actor=xenia service=prairie region=south state=deferred count=8094408 latency_us=508759 sample=c1074d9d1bbea81b8527433498dc
+- 2026-07-1
+===== AUTHORITATIVE SYNTHETIC RECORD A =====
+account=AC-771; owner=Inez; tier=gold; renewal=2026-11-02; state=active.
+
+===== SYNTHETIC DOCUMENT 00004 =====
+
+## Capacity experiment SYN-67152
+
+Experiment 3522cc268e3574e2380431cd exercised willow with 352,812 synthetic messages in the west
+region. Sample observations were [9240, 9570, 5592, 3344, 2292, 9527, 6728, 1373, 8700, 1105, 5105, 1564, 1590, 6993, 7381, 3938]. Median latency was 590 ms, the acceptance
+gate was 70%, and Mei independently checked the arithmetic. The experiment
+changed only batch size; cache policy, model revision, power mode, and background load
+remained fixed.
+
+Interpretation distinguishes throughput from complete-request latency. A faster processing
+phase does not imply a faster user-visible response when queueing or generation dominates.
+Raw counters remain authoritative; summaries must exclude failed, cached, or truncated runs.
+
+Evidence samples (synthetic):
+- 2026-03-08T10:36:07.687Z actor=luka service=keystone region=alpine state=archived count=2329772 latency_us=602896 sample=2f5eea58d5d3138d810db8668ddf
+- 2026-01-11T19:28:27.135Z actor=wale service=ion region=west state=queued count=8907719 latency_us=85323 sample=5e4b20d17e938600772d0a04e89f
+- 2026-08-02T18:54:03.762Z actor=sofia service=prairie region=alpine state=queued count=5414983 latency_us=838439 sample=900f78d04306b11841ac70b85f47
+- 2026-11-26T09:23:33.695Z actor=sofia service=atlas region=north state=replayed count=8528929 latency_us=350120 sample=49aa4f42d583b8b213c879fde6e3
+- 2026-05-04T14:03:36.990Z actor=amina service=uplink region=east state=draining count=3876087 latency_us=459016 sample=255309f2c74bc13f5e315b58354f
+- 2026-11-03T05:21:19.558Z actor=xenia service=summit region=coastal state=deferred count=8057904 latency_us=414118 sample=372b8c21b4aef7cbd8db85c2e0f8
+- 2026-12-16T21:43:11.961Z actor=nadia service=ember region=river state=archived count=44298 latency_us=775113 sample=b858b6a4cff94abe3192e2f32349
+- 2026-08-15T05:47:31.429Z actor=oren service=orbit region=north state=draining count=925558 latency_us=349933 sample=1e29940929b2e364f8884dfd1992
+- 2026-02-28T11:48:09.118Z actor=daria service=grove region=coastal state=committed count=6367436 latency_us=680134 sample=586a11791d45b05cdc760fb2c8f3
+- 2026-01-22T09:47:20.263Z actor=daria service=grove region=south state=verified count=3729091 latency_us=44900 sample=9c87b2bd864f807ecbeaf286d162
+- 2026-01-25T23:30:02.841Z actor=bruno service=lattice region=west state=accepted count=815383 latency_us=420522 sample=66479a4a556eaaccfef22a6a13f8
+- 2026-02-03T12:31:03.713Z actor=kavya service=fjord region=alpine state=accepted count=4193363 latency_us=589514 sample=016e33dbce519a31cd02f58919e9
+- 2026-02-01T23:47:45.599Z actor=jonas service=cascade region=coastal state=accepted count=919768 latency_us=133677 sample=68bdd184c37861cccddb11089a89
+- 2026-03-10T22:25:08.389Z actor=farah service=prairie region=coastal state=committed count=5295147 latency_us=873316 sample=e6bf95c57bce10ed71d2e2217f40
+- 2026-08-12T22:46:05.672Z actor=amina service=cascade region=south state=running count=237693 latency_us=470107 sample=225b74294935eb03de5f8500a1e6
+- 2026-07-15T21:36:02.906Z actor=elias service=tundra region=east state=accepted count=5896411 latency_us=584279 sample=0097218f315732d374876d000722
+- 2026-03-01T17:00:27.529Z actor=daria service=prairie region=west state=committed count=4041156 latency_us=358289 sample=845747f5f099895bccd9f8c4405e
+- 2026-05-06T05:17:15.136Z actor=elias service=quartz region=west state=deferred count=2229952 latency_us=458621 sample=80c42fe407c55c16c0d6eb854675
+
+===== SYNTHETIC DOCUMENT 00005 =====
+
+## Policy memorandum SYN-21327
+
+Records for prairie are retained for 70 synthetic days. Wale may
+approve routine restoration in the east region, but deletion requires two reviewers and
+a matching manifest. The controlling checksum is `a7e23c438a7d333d4a8687a8` and the current inventory is
+100,935 objects. Exceptions expire after 9 days.
+
+Operators must state the observed fact, the applicable rule, and the resulting action.
+Inference is labeled explicitly. If the gateway is incomplete or the confidence
+score falls below 78%, the operator stops and requests new evidence rather than
+guessing. Every example here is fictional and contains no production identifiers.
+
+Evidence samples (synthetic):
+- 2026-07-25T18:41:19.888Z actor=hugo service=beacon region=north state=committed count=3497265 latency_us=232948 sample=b1debfc87b977a46895ae83dc42d
+- 2026-05-22T21:46:27.027Z actor=nadia service=meridian region=coastal state=observed count=2414662 latency_us=744614 sample=d42f9ac3d5c509fee8777aabe88d
+- 2026-08-20T00:18:39.904Z actor=vera service=vector region=east state=archived count=3659819 latency_us=129687 sample=149532309430af97e8dff58b0bb0
+- 2026-06-02T16:03:10.196Z actor=vera service=vector region=central state=queued count=660591 latency_us=77384 sample=075c5c8c8c94e77692fb1d67531c
+- 2026-10-25T06:19:58.706Z actor=oren service=keystone region=south state=deferred count=2170379 latency_us=653777 sample=23f4432af92c8abfafe4867e7ffd
+- 2026-04-15T15:53:44.280Z actor=rina service=uplink region=alpine state=queued count=4749463 latency_us=679557 sample=883b5afc9a7e32a0fbde654da047
+- 2026-02-05T07:30:14.824Z actor=xenia service=uplink region=central state=restored count=7571499 latency_us=530281 sample=d6934f3e21091ffd336cc12c25b0
+- 2026-11-10T19:23:55.218Z actor=uma service=prairie region=central state=accepted count=5051430 latency_us=714114 sample=23d24f1521019a7a588e11d5af28
+- 2026-05-14T10:32:52.272Z actor=elias service=prairie region=alpine state=verified count=8736785 latency_us=362787 sample=48433a482af8352f91f63bdc4409
+- 2026-01-01T15:16:37.879Z actor=farah service=cascade region=east state=rejected count=5151733 latency_us=105936 sample=70cf8192c91e8a57f2a6ab77c6c9
+- 2026-08-23T16:09:01.088Z actor=sofia service=relay region=river state=deferred count=6290518 latency_us=471071 sample=7d711dbeb466bd38b5231bd19307
+- 2026-09-18T13:56:16.147Z actor=xenia service=xylem region=west state=accepted count=6251065 latency_us=640299 sample=355bfe9ca3444548b0a79e22b4b4
+- 2026-03-02T12:40:42.999Z actor=farah service=harbor region=river state=committed count=606851 latency_us=893215 sample=42e1548c68f4d500d00d01c01ed7
+- 2026-05-19T06:29:25.040Z actor=pavel service=ember region=west state=restored count=2841242 latency_us=774305 sample=051b9f5e36b28344d0e3acb06b80
+- 2026-08-16T16:56:23.709Z actor=mei service=uplink region=south state=draining count=421228 latency_us=750838 sample=f82b2bbc6cadab160e38f84fe849
+- 2026-09-26T01:28:56.891Z actor=kavya service=keystone region=alpine state=rejected count=1920311 latency_us=156157 sample=46fa8f6b8808c0d59438b389a8ec
+- 2026-12-11T19:05:34.158Z actor=farah service=meridian region=coastal state=running count=8724947 latency_us=400729 sample=969be8359959fa59671d87bfa64e
+- 2026-10-14T08:41:18.412Z actor=wale service=orbit region=west state=committed count=7421891 latency_us=885225 sample=5ada3b076b28afae74ec11ecc2c6
+
+===== SYNTHETIC DOCUMENT 00006 =====
+
+## Incident review SYN-37417
+
+The synthetic beacon service in the river region reported a 887 ms p95 latency
+during observation window 00006. Wale replayed the request timeline and
+confirmed that 535,448 events crossed the gateway. The first alarm came from the
+timeline monitor; trace `cf69cdc1c098822c8cc05f20` connected it to a delayed replica rather than
+packet loss. The response team preserved the original logs, reduced concurrency by
+14 percent, and compared three recovery options before changing state.
+
+Decision: keep the canary at 93% confidence until two consecutive checks pass.
+Rollback: restore snapshot `snap-b6fbc7e624` if error growth exceeds
+10 percent. The owner must record the exact start time, affected shard,
+and verification query so the next operator can reproduce the conclusion.
+
+Evidence samples (synthetic):
+- 2026-12-24T00:38:06.311Z actor=amina service=cascade region=west state=rejected count=2511112 latency_us=477766 sample=8e567aaff28aea3999b725aecc2f
+- 2026-09-17T01:12:49.555Z actor=luka service=fjord region=west state=committed count=4546635 latency_us=616135 sample=203593ca5d31346bbe33b7170b22
+- 2026-05-04T02:54:05.246Z actor=amina service=summit region=west state=restored count=3714711 latency_us=309406 sample=9f4facf966d39041e6afca177fc5
+- 2026-03-11T00:28:42.879Z actor=sofia service=uplink region=central state=restored count=5495329 latency_us=168164 sample=2f5071e143088b137b94241477c2
+- 2026-02-23T17:56:28.313Z actor=mei service=ion region=coastal state=deferred count=8657386 latency_us=238195 sample=3ce92af2063391b2d975580548bc
+- 2026-06-13T00:10:27.858Z actor=gita service=ember region=central state=observed count=4672649 latency_us=71049 sample=c1de696303a0f93e51ad0dad55d2
+- 2026-10-13T20:24:11.116Z actor=kavya service=uplink region=coastal state=observed count=4175602 latency_us=295591 sample=96adac0b05400f403d69965e6eec
+- 2026-02-15T00:57:07.771Z actor=sofia service=summit region=coastal state=deferred count=3789538 latency_us=787000 sample=736969bd2651e3139a0d450092e9
+- 2026-05-06T03:35:53.153Z actor=sofia service=orbit region=coastal state=deferred count=5698724 latency_us=317861 sample=d6fd1d5d61ad5335784ce24ac3a8
+- 2026-10-17T17:51:17.616Z actor=bruno service=ion region=coastal state=accepted count=8668998 latency_us=475195 sample=07b5caeb699d6d201fdcac6e0a5f
+- 2026-01-21T10:21:06.921Z actor=luka service=willow region=east state=draining count=5566123 latency_us=299223 sample=7ee4b639181ca9dc3eb91854db94
+- 2026-11-27T13:52:47.292Z actor=luka service=orbit region=river state=archived count=7372332 latency_us=170446 sample=45b055ef1b655e70002e8158d0e2
+- 2026-03-15T22:31:35.192Z actor=tomas service=ember region=coastal state=accepted count=114669 latency_us=227498 sample=5b63b08e2475ef94bf57813926c9
+- 2026-07-13T22:58:13.260Z actor=wale service=summit region=alpine state=replayed count=1117122 latency_us=557174 sample=e1d8f8d893e524a8497a39265816
+- 2026-02-22T04:24:50.061Z actor=sofia service=ember region=river state=replayed count=5874429 latency_us=406147 sample=8136da592882796cb9e20836f5b2
+- 2026-01-22T00:58:38.399Z actor=tomas service=atlas region=central state=committed count=7260578 latency_us=481231 sample=f65ef0388ab07ae3caf66059bf45
+- 2026-03-14T05:13:52.496Z actor=yara service=summit region=east state=committed count=7694770 latency_us=829162 sample=dc6f40a2fd30e29d35995e8574a8
+- 2026-01-14T03:10:12.699Z actor=luka service=ember region=north state=draining count=1626506 latency_us=139896 sample=168bfcc975ba774e7386b4f6eef4
+
+===== SYNTHETIC DOCUMENT 00007 =====
+
+## Operations procedure SYN-34797
+
+Purpose: rotate the summit worker pool without losing queued work. Scope is limited to
+the synthetic east environment. Before starting, Mei checks the manifest checksum
+`6f13d13f65c78f886ab3d549`, available capacity of 654,166 units, and alert threshold 73.
+
+1. Freeze new assignments and capture queue depth plus oldest-item age.
+2. Drain one worker group, compare counters, then inspect the archive record.
+3. Resume at 37 percent traffic and observe for 18 minutes.
+4. Abort if latency exceeds 810 ms or reconciliation differs by more than
+   3 records.
+
+Evidence belongs in case SYN-34797; screenshots alone are insufficient because values must
+remain searchable and machine-readable. A second reviewer signs the final checkpoint.
+
+Evidence samples (synthetic):
+- 2026-02-24T16:39:33.935Z actor=luka service=harbor region=river state=accepted count=757269 latency_us=628028 sample=a6e2687960be6bff7cf527d4f691
+- 2026-11-24T01:59:33.810Z actor=elias service=vector region=south state=deferred count=1865979 latency_us=787904 sample=e7ae2987a43ef5a0fc34b1b4ebfb
+- 2026-06-11T09:29:29.727Z actor=daria service=quartz region=south state=verified count=1381294 latency_us=733384 sample=a68e92d27da4ae28485df5d6e5b2
+- 2026-08-08T05:37:49.515Z actor=rina service=meridian region=river state=restored count=1914802 latency_us=204040 sample=7fba057cc6245c883f812e235b00
+- 2026-10-08T07:26:20.339Z actor=uma service=keystone region=river state=draining count=8955886 latency_us=360623 sample=cf89ad0481b53fefe34a4f61666b
+- 2026-01-21T04:32:35.235Z actor=daria service=tundra region=alpine state=rejected count=713766 latency_us=445787 sample=469ca1513c90b46f68c43c44ad22
+- 2026-10-28T13:04:30.941Z actor=pavel service=nova region=north state=deferred count=2360300 latency_us=799697 sample=56cf871175c9053f9283d1565c6a
+- 2026-08-12T02:53:04.056Z actor=bruno service=orbit region=river state=deferred count=5819490 latency_us=399339 sample=38b3133c4406590557dc7fff4937
+- 2026-05-26T07:16:16.432Z actor=xenia service=willow region=river state=replayed count=739251 latency_us=242745 sample=f0f42d85709f36893f73f675c3d3
+- 2026-03-04T13:50:50.188Z actor=mei service=beacon region=north state=observed count=2953771 latency_us=455090 sample=6e01bf721d04284a819def341bc3
+- 2026-08-04T22:23:38.907Z actor=oren service=ember region=coastal state=running count=3282509 latency_us=55575 sample=e15804b43eba4124c45a397319ac
+- 2026-11-11T10:16:44.936Z actor=tomas service=ion region=alpine state=deferred count=7519818 latency_us=561018 sample=03f9cb2913c9e3d688cc29c8ea7d
+- 2026-09-16T02:49:12.158Z actor=mei service=meridian region=east state=deferred count=1641151 latency_us=756412 sample=7f8303d936317b798deadb16934e
+- 2026-10-15T12:04:27.061Z actor=farah service=juniper region=east state=queued count=4624401 latency_us=415266 sample=fd7acb6c6b62f57abb463ffa2e25
+- 2026-06-14T03:31:26.053Z actor=kavya service=vector region=north state=running count=1689067 latency_us=305894 sample=20afae08b22ae052e688324e7703
+- 2026-12-16T08:00:42.609Z actor=sofia service=keystone region=west state=observed count=455485 latency_us=191028 sample=960eabee71f9d992e5ecdc84ac87
+- 2026-06-27T02:57:51.180Z actor=bruno service=meridian region=river state=deferred count=1554018 latency_us=440614 sample=6e48f56cfc58eb3a23a60c274391
+- 2026-05-19T14:54:25.364Z actor=farah service=vector region=west state=deferred count=4513803 latency_us=92585 sample=ed8bc4bf83900951bc4b137b21f5
+
+===== SYNTHETIC DOCUMENT 00008 =====
+
+## Meeting handoff SYN-29446
+
+Participants reviewed the nova migration for the central region. Oren owns the
+next action. The group chose a staged transition because the archive contains 849,677
+records and the current p95 is 558 ms. Finance needs a reconciled ledger, Operations
+needs a fresh snapshot, and Support needs a customer-safe status paragraph.
+
+The decision is reversible until checkpoint `1bc353631505b94234bf5b96` is approved. Open questions include
+whether the checkpoint retains ordering during retries and whether the new worker
+honors the 91% saturation guard. The next review occurs on synthetic day
+26 at 18:00 UTC.
+
+Evidence samples (synthetic):
+- 2026-11-06T01:27:07.377Z actor=oren service=orbit region=north state=archived count=3016089 latency_us=832544 sample=57dc9a4ab7e1975a8d580dbdebdf
+- 2026-05-21T01:38:55.433Z actor=amina service=nova region=coastal state=archived count=8624670 latency_us=282276 sample=19a84661889294db843254edb724
+- 2026-03-11T18:58:11.639Z actor=yara service=cascade region=west state=deferred count=6734519 latency_us=409577 sample=1048ee5cad9eaf9d3b44b6374ef6
+- 2026-07-08T14:04:32.349Z actor=mei service=quartz region=river state=running count=1273405 latency_us=147388 sample=be38cc0bb0a9740fca0f22ff43a9
+- 2026-12-14T17:58:22.274Z actor=oren service=summit region=river state=running count=7704144 latency_us=602465 sample=8218e611c1444f987af68bf33919
+- 2026-09-18T14:54:55.777Z actor=hugo service=delta region=coastal state=committed count=2249298 latency_us=337563 sample=d6348939ed58ae6729387148e63e
+- 2026-11-01T12:20:32.281Z actor=zane service=beacon region=west state=running count=7332961 latency_us=579651 sample=fb1084ad6e058c321bb67f8c7ad3
+- 2026-12-10T12:28:53.805Z actor=daria service=quartz region=south state=replayed count=368885 latency_us=410826 sample=0181ad81500e96d542f287262e28
+- 2026-09-16T02:00:12.924Z actor=kavya service=grove region=central state=archived count=4849552 latency_us=89396 sample=ef48fe23114b43afdc4d6c47aa40
+- 2026-05-20T09:27:21.175Z actor=hugo service=uplink region=south state=queued count=4908947 latency_us=135933 sample=f1d10dad3c9145ce186b0c8e9b3c
+- 2026-07-05T12:06:43.587Z actor=chiyo service=grove region=north state=archived count=8894958 latency_us=592808 sample=d6b4799681555269312cff5e9cab
+- 2026-01-18T12:08:22.145Z actor=farah service=atlas region=alpine state=rejected count=2413863 latency_us=883790 sample=891b80242be89f8e16d1bcc034a9
+- 2026-06-06T23:59:00.020Z actor=mei service=summit region=west state=restored count=2671416 latency_us=172118 sample=d229ed6b7c45f568237a5f8f383c
+- 2026-08-08T01:16:24.426Z actor=oren service=delta region=east state=accepted count=3942276 latency_us=887539 sample=713ca92f4d648c7032cd6972d7ed
+- 2026-08-12T16:54:47.566Z actor=jonas service=keystone region=south state=verified count=5587080 latency_us=32095 sample=de3f576ff43d062fdbd9c77fbda0
+- 2026-04-04T20:09:18.121Z actor=kavya service=fjord region=north state=rejected count=1105942 latency_us=791591 sample=995e193a1e1ca437ba1f22cd43b2
+- 2026-06-16T17:16:06.270Z actor=hugo service=meridian region=central state=draining count=8526127 latency_us=614618 sample=cabb3b530a7b4c09e73c2a67ca02
+- 2026-09-16T03:43:44.775Z actor=hugo service=willow region=alpine state=running count=6744442 latency_us=527890 sample=bb63316475d500ecd828bc3031f8
+
+===== SYNTHETIC DOCUMENT 00009 =====
+
+## API contract note SYN-75609
+
+Endpoint `/v2/willow/south/items` accepts an idempotency key, a sequence number, and
+a payload digest. Example digest: `89d2b1e53021b9e39d03a8df`. A successful response returns status 202,
+the normalized owner `uma`, and a checkpoint cursor. Clients retry 408, 429,
+and 503 responses with bounded jitter; they do not retry validation failures.
+
+The server rejects batches above 208 items or payloads above
+5 MiB. At 72% capacity it advertises a retry window of
+3 seconds. Consumers must compare the returned cursor with their local
+checkpoint before acknowledging delivery. This contract is synthetic and uses
+reserved names only.
+
+Evidence samples (synthetic):
+- 2026-02-25T15:55:26.959Z actor=kavya service=harbor region=east state=deferred count=4618715 latency_us=879495 sample=ce6ec5b2cd2fe2cf20775435b8d1
+- 2026-11-03T15:38:31.153Z actor=nadia service=juniper region=west state=deferred count=5520603 latency_us=369725 sample=4867e7216d2081dde7d60ac4ed2b
+- 2026-11-21T12:01:42.457Z actor=vera service=cascade region=river state=running count=3455506 latency_us=332000 sample=a2f98188f245e88db178d444238f
+- 2026-11-13T03:25:24.045Z actor=farah service=lattice region=alpine state=restored count=6747439 latency_us=653860 sample=7c0c931b27c43c17d7c53b1ba2db
+- 2026-11-19T20:26:45.083Z actor=zane service=willow region=coastal state=restored count=4755856 latency_us=199818 sample=7aadb63fc4f36e33414f2d7b5583
+- 2026-02-04T18:34:38.842Z actor=uma service=relay region=central state=rejected count=332565 latency_us=817313 sample=43aece98a8c1e3122a40413b1269
+- 2026-11-11T22:01:17.905Z actor=farah service=juniper region=south state=committed count=2860707 latency_us=10467 sample=8a1c8749aae4d61863a1fd317459
+- 2026-08-10T05:21:56.356Z actor=jonas service=ember region=north state=deferred count=4776478 latency_us=222445 sample=c9d9eb6e35428b89c1c06a8985ae
+- 2026-09-22T17:21:15.369Z actor=rina service=delta region=north state=restored count=3257057 latency_us=560526 sample=790ab95f150294206133224e1f2f
+- 2026-08-06T13:45:02.895Z actor=mei service=keystone region=river state=committed count=1377064 latency_us=522642 sample=f6b9b4a54d32c06ff10cfef20a95
+- 2026-10-14T05:47:54.721Z actor=zane service=orbit region=alpine state=accepted count=8198645 latency_us=333118 sample=e21cb05ceef5d48b2131bbb6d705
+- 2026-04-14T20:54:05.415Z actor=sofia service=quartz region=alpine state=verified count=3396387 latency_us=489682 sample=6c8997890fcde8e9c4f962995ed0
+- 2026-12-17T03:20:00.023Z actor=zane service=meridian region=south state=queued count=2469214 latency_us=388152 sample=2afc232aa8bce06929b8dfe41afa
+- 2026-09-18T23:11:08.335Z actor=tomas service=nova region=central state=accepted count=678556 latency_us=41722 sample=6dcaa7cb5ad15cf21d6206cc9dc6
+- 2026-06-02T03:36:43.604Z actor=vera service=tundra region=central state=restored count=3906856 latency_us=155362 sample=92f07b933bc9a3d7f0ad36fc2b06
+- 2026-02-23T07:54:00.710Z actor=rina service=tundra region=south state=queued count=268416 latency_us=225640 sample=6baf2fa861b28869864c77c5fdf0
+- 2026-04-08T12:15:32.771Z actor=elias service=prairie region=alpine state=verified count=2417455 latency_us=92121 sample=7e6950a5f24e5ebf0e873888229e
+- 2026-01-19T05:17:40.781Z actor=zane service=lattice region=east state=archived count=8296138 latency_us=810979 sample=139c7d341eca686d57277e792374
+
+===== SYNTHETIC DOCUMENT 00010 =====
+
+## Capacity experiment SYN-86803
+
+Experiment 9598c7e60484d1826ba0fa44 exercised relay with 293,078 synthetic messages in the south
+region. Sample observations were [6844, 578, 1583, 5467, 4236, 1121, 5173, 1299, 6847, 7302, 8479, 9626, 8890, 3662, 2752, 7594]. Median latency was 974 ms, the acceptance
+gate was 86%, and Yara independently checked the arithmetic. The experiment
+changed only batch size; cache policy, model revision, power mode, and background load
+remained fixed.
+
+Interpretation distinguishes throughput from complete-request latency. A faster processing
+phase does not imply a faster user-visible response when queueing or generation dominates.
+Raw counters remain authoritative; summaries must exclude failed, cached, or truncated runs.
+
+Evidence samples (synthetic):
+- 2026-07-27T20:45:37.815Z actor=tomas service=vector region=river state=draining count=4850259 latency_us=808927 sample=ecf5649bcf247abcdc5ca6b61144
+- 2026-02-25T09:58:54.760Z actor=zane service=fjord region=south state=queued count=7072494 latency_us=188270 sample=c5661c2dc78aa617b562b060638a
+- 2026-12-12T17:11:11.297Z actor=uma service=vector region=north state=running count=2680537 latency_us=793427 sample=d037d8a6966d00fff7adccb10dbf
+- 2026-03-21T11:39:46.060Z actor=jonas service=meridian region=river state=draining count=5374865 latency_us=717316 sample=77a7ee1f2bc6a16eaed79eaa8a38
+- 2026-11-23T07:43:27.425Z actor=amina service=tundra region=central state=restored count=1808705 latency_us=858388 sample=e90ab9f328958c1501ff36c04129
+- 2026-03-04T03:13:45.751Z actor=mei service=meridian region=south state=verified count=7907401 latency_us=786943 sample=a0f441100f240f262568434b6a9d
+- 2026-11-19T07:42:29.453Z actor=rina service=tundra region=river state=running count=680509 latency_us=309951 sample=23c99ea0ca3cc6b79ac173a2e16b
+- 2026-06-14T01:17:34.421Z actor=nadia service=xylem region=west state=committed count=6818613 latency_us=744093 sample=03b0303b5673aeb4887129621ace
+- 2026-09-28T13:26:04.446Z actor=imani service=lattice region=west state=running count=3429380 latency_us=720841 sample=8830ede4a7f388b0b396cb51df9c
+- 2026-10-08T20:30:58.412Z actor=sofia service=ember region=north state=deferred count=3268096 latency_us=698372 sample=2a20308130d1ebfd58c9577c476d
+- 2026-01-02T02:29:03.886Z actor=tomas service=uplink region=central state=verified count=8396171 latency_us=689251 sample=3c9caf0dc314882687bda636ee6f
+- 2026-06-16T19:38:39.488Z actor=uma service=beacon region=coastal state=verified count=8274444 latency_us=712960 sample=b42198605a7c33c5b7d744fd7ef4
+- 2026-10-12T00:21:52.468Z actor=chiyo service=juniper region=alpine state=archived count=7445470 latency_us=566063 sample=38d97b7fb8e4aacf4124839c689a
+- 2026-02-16T10:07:03.889Z actor=amina service=relay region=coastal state=committed count=5198447 latency_us=243165 sample=9f4de6f4d2223359c537073bcf66
+- 2026-06-17T22:17:53.322Z actor=vera service=ion region=south state=running count=1876690 latency_us=36094 sample=f2efd5cdd50f9e17b8382b1e5eb8
+- 2026-01-05T04:08:08.830Z actor=bruno service=ember region=coastal state=verified count=6870153 latency_us=147757 sample=87393b6f0566a0d2bbbe56feb970
+- 2026-12-17T05:11:02.789Z actor=nadia service=keystone region=south state=deferred count=2163399 latency_us=426954 sample=8fe48724614f42753f2b995fb0a9
+- 2026-10-27T11:06:55.247Z actor=sofia service=quartz region=east state=observed count=8618779 latency_us=636042 sample=602d44c17b5d5d6b0aae2fa85d6d
+
+===== SYNTHETIC DOCUMENT 00011 =====
+
+## Policy memorandum SYN-53678
+
+Records for grove are retained for 154 synthetic days. Oren may
+approve routine restoration in the south region, but deletion requires two reviewers and
+a matching manifest. The controlling checksum is `1d78ac79f6b6412e58454dc4` and the current inventory is
+690,654 objects. Exceptions expire after 5 days.
+
+Operators must state the observed fact, the applicable rule, and the resulting action.
+Inference is labeled explicitly. If the checkpoint is incomplete or the confidence
+score falls below 92%, the operator stops and requests new evidence rather than
+guessing. Every example here is fictional and contains no production identifiers.
+
+Evidence samples (synthetic):
+- 2026-01-24T03:57:21.408Z actor=xenia service=quartz region=north state=committed count=5441557 latency_us=331549 sample=ccbd222f047359e83a5aeb26bb18
+- 2026-09-02T06:38:28.750Z actor=hugo service=fjord region=east state=replayed count=7106428 latency_us=436561 sample=7e39a3cf52ecef36561ca4a6bbea
+- 2026-04-06T15:15:30.779Z actor=xenia service=atlas region=north state=archived count=1937109 latency_us=379829 sample=610e2108ff1bd86bda21440b38a2
+- 2026-10-12T02:35:33.127Z actor=uma service=willow region=river state=verified count=5451074 latency_us=447593 sample=c2e72357b5bee583b8292748d423
+- 2026-07-24T12:42:22.639Z actor=luka service=delta region=east state=running count=1342383 latency_us=553615 sample=d10a860c6b6aa7fd4a1f2dd44a58
+- 2026-04-01T12:08:37.123Z actor=amina service=ion region=north state=archived count=5088635 latency_us=615282 sample=2d0d44eb6683ebec6a1529d601c1
+- 2026-06-16T09:28:40.186Z actor=hugo service=orbit region=river state=archived count=1163964 latency_us=123284 sample=c80c27fe23c4cf0b10775f4bd704
+- 2026-03-14T08:46:06.126Z actor=yara service=lattice region=river state=rejected count=3333159 latency_us=854462 sample=0df0063803609f894059bbe5ca66
+- 2026-06-08T02:02:02.153Z actor=amina service=nova region=alpine state=rejected count=7140285 latency_us=581765 sample=817f222a2ee31d6edf56c9051a2a
+- 2026-04-13T14:31:30.702Z actor=bruno service=summit region=coastal state=accepted count=4327220 latency_us=654791 sample=ae8b6a7fc509315c17fd782dd89c
+- 2026-08-03T00:55:41.290Z actor=kavya service=juniper region=alpine state=archived count=2880884 latency_us=601314 sample=664d5abd2af977dc5bf380d2de83
+- 2026-10-06T14:25:51.937Z actor=tomas service=grove region=east state=verified count=478081 latency_us=859346 sample=920b0b14a6a64b8e24f58acebcf8
+- 2026-06-24T20:23:48.093Z actor=wale service=prairie region=north state=deferred count=3925515 latency_us=442572 sample=6169790ea2cd5a73129f8146b285
+- 2026-02-21T15:40:17.464Z actor=daria service=summit region=west state=observed count=1307241 latency_us=371557 sample=b016c1c21f0a5d25b364f71f4bb1
+- 2026-12-28T09:05:22.826Z actor=uma service=willow region=river state=restored count=2179567 latency_us=314983 sample=1bfcf3050614ff4b13c8466e77a4
+- 2026-07-28T06:02:36.526Z actor=chiyo service=meridian region=alpine state=deferred count=8183484 latency_us=360803 sample=66a78d3587cacb41d8fdb02db9d2
+- 2026-03-10T14:21:44.365Z actor=imani service=tundra region=west state=draining count=7961578 latency_us=625607 sample=12a228f58191164ca8f2209f0462
+- 2026-06-20T09:44:54.278Z actor=uma service=willow region=east state=replayed count=4074704 latency_us=534585 sample=6f87c6ff8b7b1660af51e279ce00
+
+===== SYNTHETIC DOCUMENT 00012 =====
+
+## Incident review SYN-34008
+
+The synthetic delta service in the south region reported a 928 ms p95 latency
+during observation window 00012. Hugo compared the request timeline and
+confirmed that 868,118 events crossed the gateway. The first alarm came from the
+replica monitor; trace `1f3f496afef7495880e33d3d` connected it to a delayed replica rather than
+packet loss. The response team preserved the original logs, reduced concurrency by
+2 percent, and compared three recovery options before changing state.
+
+Decision: keep the canary at 76% confidence until two consecutive checks pass.
+Rollback: restore snapshot `snap-42ac7849e5` if error growth exceeds
+8 percent. The owner must record the exact start time, affected shard,
+and verification query so the next operator can reproduce the conclusion.
+
+Evidence samples (synthetic):
+- 2026-06-16T14:04:41.767Z actor=kavya service=xylem region=north state=committed count=8352036 latency_us=93290 sample=6c89c4b2c428dda07daf7743b731
+- 2026-02-20T12:42:40.406Z actor=yara service=lattice region=river state=verified count=5974192 latency_us=661912 sample=9d2c4cdc83e58293f5efa95541b4
+- 2026-03-19T02:02:29.839Z actor=xenia service=meridian region=east state=draining count=2668555 latency_us=239272 sample=b7faf3fb5c54491250efaeba8c3b
+- 2026-04-03T04:37:52.093Z actor=imani service=tundra region=river state=restored count=6167121 latency_us=620608 sample=d946921364651b5eedad0785f0e5
+- 2026-09-16T21:50:21.493Z actor=zane service=willow region=west state=rejected count=749187 latency_us=806580 sample=9c5431da08b998cd2de3a0846a7b
+- 2026-05-04T08:45:07.310Z actor=nadia service=quartz region=north state=archived count=514704 latency_us=37824 sample=c1752198bf0b39e472aebaa64374
+- 2026-01-26T18:42:35.720Z actor=zane service=juniper region=coastal state=draining count=6447437 latency_us=272382 sample=82717086e0a46d986f97bce0d814
+- 2026-04-28T09:08:34.400Z actor=pavel service=relay region=alpine state=draining count=3589200 latency_us=651212 sample=0a551f5e61d142c538b9f7d8010d
+- 2026-10-17T18:35:11.062Z actor=mei service=willow region=alpine state=committed count=542647 latency_us=399478 sample=350918f440b5b30568839893d25a
+- 2026-09-06T16:18:24.333Z actor=gita service=xylem region=west state=rejected count=1253039 latency_us=551332 sample=b22734f995e631c4eeb08b992bd6
+- 2026-05-08T09:53:52.186Z actor=farah service=xylem region=north state=replayed count=975583 latency_us=698192 sample=b710a6f39cdc33896bed5aed05b9
+- 2026-12-15T05:46:32.843Z actor=sofia service=lattice region=alpine state=archived count=1985698 latency_us=226270 sample=45c436c1a546fb3581b72eb5a9af
+- 2026-03-07T14:50:20.172Z actor=yara service=prairie region=south state=verified count=5622273 latency_us=298718 sample=80453c4129a734b15db0d522e71d
+- 2026-04-15T17:57:27.299Z actor=sofia service=keystone region=coastal state=draining count=1775149 latency_us=343869 sample=b1de60efc481b28ba7cc82c91d8f
+- 2026-04-02T06:11:59.439Z actor=gita service=vector region=alpine state=committed count=5960644 latency_us=342630 sample=a98479c392b83453de500111011b
+- 2026-04-01T19:14:37.606Z actor=nadia service=atlas region=west state=running count=1961992 latency_us=447111 sample=93b9b320cfdbd71fae305c2dafc8
+- 2026-08-04T14:19:33.589Z actor=bruno service=beacon region=north state=verified count=6509112 latency_us=706821 sample=5c9d7b97aaa4e3257fc952fed10f
+- 2026-01-12T11:36:51.329Z actor=sofia service=keystone region=north state=accepted count=7039458 latency_us=39896 sample=4a8517adb13a15b72a25b733b75e
+
+===== SYNTHETIC DOCUMENT 00013 =====
+
+## Operations procedure SYN-50746
+
+Purpose: rotate the tundra worker pool without losing queued work. Scope is limited to
+the synthetic central environment. Before starting, Farah checks the manifest checksum
+`907403a74aaef8d5f376fec6`, available capacity of 664,213 units, and alert threshold 88.
+
+1. Freeze new assignments and capture queue depth plus oldest-item age.
+2. Drain one worker group, compare counters, then inspect the handoff record.
+3. Resume at 33 percent traffic and observe for 9 minutes.
+4. Abort if latency exceeds 215 ms or reconciliation differs by more than
+   6 records.
+
+Evidence belongs in case SYN-50746; screenshots alone are insufficient because values must
+remain searchable and machine-readable. A second reviewer signs the final checkpoint.
+
+Evidence samples (synthetic):
+- 2026-10-24T14:55:35.033Z actor=gita service=prairie region=coastal state=committed count=4979723 latency_us=411099 sample=b878f858f24529733569ea5b9dce
+- 2026-11-21T18:16:22.921Z actor=vera service=uplink region=coastal state=replayed count=7134154 latency_us=476758 sample=b5b14fb025a585683b39bdad086d
+- 2026-10-24T06:27:47.545Z actor=kavya service=summit region=north state=archived count=7475743 latency_us=885841 sample=2c2b43e753a7f06591675c237f11
+- 2026-03-25T23:45:47.746Z actor=mei service=nova region=alpine state=accepted count=4166295 latency_us=385429 sample=82613d377636a5e1792d51802f09
+- 2026-05-08T21:44:55.003Z actor=mei service=meridian region=west state=verified count=6181903 latency_us=129022 sample=9be71323aa1d2aeb460581d57016
+- 2026-12-11T20:34:46.007Z actor=luka service=ion region=coastal state=queued count=1919893 latency_us=38717 sample=80777a4af7dfd5701c3bd3673d64
+- 2026-06-13T15:44:06.290Z actor=jonas service=juniper region=south state=deferred count=653958 latency_us=762345 sample=e36a93aa22763f2ba2a2d3b0e726
+- 2026-11-26T20:58:42.962Z actor=bruno service=ion region=east state=committed count=7814516 latency_us=704517 sample=54da0c1e9aa541b93d3678818bb8
+- 2026-12-16T14:53:22.261Z actor=amina service=atlas region=south state=archived count=4454756 latency_us=631184 sample=4cb9e8218676d89d3ad134b6dd5c
+- 2026-01-19T12:20:38.164Z actor=uma service=meridian region=south state=running count=4624265 latency_us=156472 sample=eedc450bc78e2611c6d445c05c74
+- 2026-01-28T04:25:36.882Z actor=sofia service=cascade region=central state=verified count=3351344 latency_us=190593 sample=b824dcd4ff392f5a67e301040ec1
+- 2026-04-16T14:30:27.959Z actor=jonas service=ion region=alpine state=deferred count=4835152 latency_us=708035 sample=6b4e8137b55c224e809d37466422
+- 2026-06-27T05:12:38.014Z actor=rina service=delta region=central state=draining count=8498528 latency_us=514551 sample=5ec3a3b1909490b545df58593508
+- 2026-02-18T13:48:49.644Z actor=amina service=harbor region=west state=rejected count=1899046 latency_us=437199 sample=5e4423560a46aa571e47806f42ac
+- 2026-02-19T00:08:32.631Z actor=sofia service=lattice region=south state=observed count=800364 latency_us=378323 sample=bb55ea08912d6c2e4b8f68dc9ed6
+- 2026-06-28T06:30:01.596Z actor=hugo service=tundra region=north state=running count=8896811 latency_us=385688 sample=0f8ee3c0bd41e55ac618fbb8699a
+- 2026-08-14T19:02:32.763Z actor=oren service=tundra region=east state=archived count=1273774 latency_us=183190 sample=3e2e74a0f8f992b6f4b6a77ed989
+- 2026-06-04T10:41:18.266Z actor=kavya service=relay region=east state=observed count=1148167 latency_us=509577 sample=5f1b946a4b337829ca18eb9a6c84
+
+===== SYNTHETIC DOCUMENT 00014 =====
+
+## Meeting handoff SYN-48698
+
+Participants reviewed the delta migration for the river region. Amina owns the
+next action. The group chose a staged transition because the archive contains 778,559
+records and the current p95 is 263 ms. Finance needs a reconciled ledger, Operations
+needs a fresh snapshot, and Support needs a customer-safe status paragraph.
+
+The decision is reversible until checkpoint `2c90df97e3791ba2c4735204` is approved. Open questions include
+whether the checkpoint retains ordering during retries and whether the new worker
+honors the 79% saturation guard. The next review occurs on synthetic day
+24 at 18:00 UTC.
+
+Evidence samples (synthetic):
+- 2026-12-01T20:53:51.872Z actor=yara service=uplink region=central state=queued count=4480557 latency_us=748927 sample=c5f88eee546692b60f79b7e6d2b2
+- 2026-07-19T22:39:41.780Z actor=hugo service=prairie region=river state=replayed count=1014274 latency_us=50886 sample=df58fdf16f940a9da002e1aca1df
+- 2026-05-25T18:16:16.678Z actor=yara service=grove region=east state=observed count=382328 latency_us=675504 sample=83d938c26b50437506f1b781cbc4
+- 2026-03-23T13:21:54.736Z actor=amina service=ion region=central state=deferred count=785388 latency_us=222839 sample=6d042bf0456cea921bbee632aded
+- 2026-01-14T04:07:27.962Z actor=chiyo service=uplink region=east state=rejected count=7685456 latency_us=273769 sample=65c323e1bcc7e58f56e589e99e38
+- 2026-04-28T00:52:48.864Z actor=amina service=uplink region=south state=rejected count=1969582 latency_us=109844 sample=0c48b011fc66b300ee2cbb744ba8
+- 2026-12-03T07:23:54.829Z actor=yara service=delta region=east state=rejected count=4668860 latency_us=368843 sample=7e763fc169565f62e0ed30e32e83
+- 2026-06-14T12:01:39.889Z actor=oren service=xylem region=central state=verified count=2087223 latency_us=821302 sample=f02f520ee16b7c7d32d3a91d9967
+- 2026-04-19T07:24:59.599Z actor=pavel service=grove region=river state=verified count=1141878 latency_us=205770 sample=3d199d5720854e3291718642f00c
+- 2026-05-25T08:39:08.321Z actor=hugo service=lattice region=central state=rejected count=595563 latency_us=670698 sample=0953bfc0d959ee3ac5b2d3041132
+- 2026-11-07T16:59:27.473Z actor=tomas service=quartz region=coastal state=queued count=2634209 latency_us=476113 sample=af624b2b696c1cbde50284983605
+- 2026-10-11T04:49:08.786Z actor=elias service=lattice region=river state=observed count=5831122 latency_us=711300 sample=5d8f464149e2833cb015921ce420
+- 2026-07-14T16:48:05.817Z actor=gita service=ember region=central state=draining count=6980488 latency_us=692447 sample=a8a8e46f4262a3770228bd425cf8
+- 2026-04-08T12:15:14.950Z actor=tomas service=beacon region=east state=verified count=2931988 latency_us=854783 sample=61dbfab13e755fc2d67246c478c6
+- 2026-11-11T04:30:51.188Z actor=oren service=lattice region=south state=verified count=6257783 latency_us=302868 sample=2487e28a3a571fc18186111489a1
+- 2026-02-07T05:48:56.460Z actor=imani service=lattice region=north state=queued count=8244370 latency_us=726196 sample=e5b89bf0a9bc5f1117ee5f4faa97
+- 2026-10-11T10:01:18.312Z actor=tomas service=relay region=central state=committed count=8627486 latency_us=92170 sample=6ca549f527ea0009f8cd4a587927
+- 2026-09-26T00:14:10.133Z actor=luka service=nova region=south state=queued count=3087160 latency_us=574868 sample=63d4e47cb76e643950ff67164248
+
+===== SYNTHETIC DOCUMENT 00015 =====
+
+## API contract note SYN-68301
+
+Endpoint `/v2/quartz/south/items` accepts an idempotency key, a sequence number, and
+a payload digest. Example digest: `911ecfd05de8a8e299dcd131`. A successful response returns status 202,
+the normalized owner `rina`, and a checkpoint cursor. Clients retry 408, 429,
+and 503 responses with bounded jitter; they do not retry validation failures.
+
+The server rejects batches above 835 items or payloads above
+9 MiB. At 70% capacity it advertises a retry window of
+7 seconds. Consumers must compare the returned cursor with their local
+timeline before acknowledging delivery. This contract is synthetic and uses
+reserved names only.
+
+Evidence samples (synthetic):
+- 2026-12-13T08:06:08.030Z actor=zane service=meridian region=east state=queued count=4105068 latency_us=210564 sample=b0b928e7e3362f6a6ca6afe68e59
+- 2026-09-26T19:35:33.721Z actor=hugo service=ember region=alpine state=accepted count=6999275 latency_us=627768 sample=067bdc4f99ac3147d53c41557c76
+- 2026-11-05T02:58:17.418Z actor=zane service=cascade region=central state=replayed count=377383 latency_us=339819 sample=2003f299ab6f431a163ddd2e3cae
+- 2026-06-23T14:56:58.172Z actor=daria service=meridian region=north state=deferred count=8624464 latency_us=428819 sample=d281aa58fd630ed1f7d7c9985f15
+- 2026-07-13T02:51:00.609Z actor=vera service=vector region=north state=restored count=4586611 latency_us=545321 sample=7445c81f96b331056a54dbd303e1
+- 2026-06-22T07:15:56.637Z actor=uma service=tundra region=south state=verified count=7605864 latency_us=298676 sample=0ebb9a1d624c02ad24508804c8eb
+- 2026-05-15T02:38:40.156Z actor=bruno service=ion region=east state=archived count=925139 latency_us=707898 sample=bd49cb4b98e9a485ad629515840e
+- 2026-09-07T01:23:04.183Z actor=luka service=summit region=coastal state=queued count=8846915 latency_us=121734 sample=43db662830de364d7fe837fb75ad
+- 2026-10-14T04:08:10.582Z actor=imani service=willow region=east state=observed count=8402735 latency_us=753082 sample=d1640820be806db51d02e798a872
+- 2026-10-06T18:02:38.653Z actor=kavya service=lattice region=west state=observed count=5596121 latency_us=404281 sample=7a6d9a45f19e0a22454a1fbffa6b
+- 2026-05-10T00:34:18.834Z actor=vera service=harbor region=river state=replayed count=676075 latency_us=652783 sample=a1f8c5fc1bd5d52b31194233d31f
+- 2026-04-25T09:37:09.270Z actor=sofia service=ember region=west state=verified count=4450399 latency_us=674017 sample=4e67b66ae54d35e00bdd1adfd8aa
+- 2026-09-12T06:39:45.625Z actor=wale service=juniper region=coastal state=queued count=8447172 latency_us=225022 sample=7a12995b0a267ec1a91f0593443d
+- 2026-05-16T21:38:42.607Z actor=chiyo service=meridian region=river state=queued count=2741097 latency_us=810605 sample=efe5887f1e7a204479dd63a40797
+- 2026-11-09T13:13:07.023Z actor=xenia service=cascade region=north state=rejected count=4741114 latency_us=811062 sample=00e1dbaebd193d6d2649dfb632ed
+- 2026-05-19T12:59:02.422Z actor=tomas service=xylem region=coastal state=observed count=1574633 latency_us=36496 sample=a47e0b4d639d14b0c527c6192be3
+- 2026-08-09T09:52:28.020Z actor=elias service=relay region=river state=archived count=7000510 latency_us=297985 sample=a485b85765d2cba9db5098c613c0
+- 2026-10-14T21:16:47.380Z actor=elias service=willow region=alpine state=running count=5002936 latency_us=359056 sample=f8dd889b625d5f0c5425786baa2a
+
+===== SYNTHETIC DOCUMENT 00016 =====
+
+## Capacity experiment SYN-28139
+
+Experiment a07a3a304c8565931cf1d0a1 exercised uplink with 351,491 synthetic messages in the central
+region. Sample observations were [4528, 6504, 771, 9498, 6489, 347, 4585, 5677, 3442, 6851, 9550, 2785, 4531, 6055, 8205, 1240]. Median latency was 584 ms, the acceptance
+gate was 89%, and Uma independently checked the arithmetic. The experiment
+changed only batch size; cache policy, model revision, power mode, and background load
+remained fixed.
+
+Interpretation distinguishes throughput from complete-request latency. A faster processing
+phase does not imply a faster user-visible response when queueing or generation dominates.
+Raw counters remain authoritative; summaries must exclude failed, cached, or truncated runs.
+
+Evidence samples (synthetic):
+- 2026-04-10T11:21:11.029Z actor=hugo service=lattice region=river state=replayed count=4399701 latency_us=303638 sample=6092441def408ed22016a0b5d418
+- 2026-04-01T22:02:56.073Z actor=luka service=harbor region=west state=observed count=3375873 latency_us=125151 sample=f09f8f73e1fa6d960e7ea7d20168
+- 2026-10-03T19:19:30.331Z actor=amina service=delta region=east state=restored count=7817590 latency_us=34815 sample=2aeb510cafaed0ff6f45d179333d
+- 2026-04-23T13:21:04.718Z actor=zane service=beacon region=north state=replayed count=527047 latency_us=7353 sample=d80f0cd38070ef7d282ffc0154d0
+- 2026-03-24T16:21:41.070Z actor=mei service=grove region=central state=restored count=5960385 latency_us=404970 sample=eb8e6578f73f8fae19941f3061a6
+- 2026-04-25T14:45:53.841Z actor=kavya service=cascade region=east state=observed count=7812136 latency_us=586913 sample=5d08631ecfb28d0384a3b8899258
+- 2026-12-13T12:11:51.385Z actor=uma service=vector region=coastal state=committed count=5844234 latency_us=573805 sample=b3b9dcc44c369af6d8c176dced85
+- 2026-05-05T17:04:52.260Z actor=farah service=beacon region=south state=archived count=3707739 latency_us=516190 sample=1a6e292b9ad50539b5a6945fe064
+- 2026-08-04T14:46:44.249Z actor=bruno service=meridian region=coastal state=draining count=1791721 latency_us=624156 sample=383a32196c50325ead8c4e9b77c7
+- 2026-01-02T19:07:17.434Z actor=farah service=quartz region=coastal state=archived count=3886437 latency_us=702628 sample=803150c35b81cc312a1cc62a82d6
+- 2026-05-19T23:41:45.250Z actor=yara service=ion region=coastal state=rejected count=840064 latency_us=536673 sample=a632db3fb74a100124ca74425e02
+- 2026-01-21T15:24:45.953Z actor=chiyo service=ember region=coastal state=committed count=1607674 latency_us=214615 sample=ada1b1a2e7400c26a9977293a7b9
+- 2026-12-26T08:13:29.162Z actor=nadia service=relay region=alpine state=draining count=2563987 latency_us=207039 sample=9f2001772eba2aa8e86b96a1dbfc
+- 2026-10-25T18:59:26.256Z actor=wale service=ember region=river state=running count=4288382 latency_us=530424 sample=5d7b5af1cc8cfbc8dd45e3d1231f
+- 2026-09-05T13:26:26.621Z actor=farah service=summit region=river state=draining count=7522716 latency_us=612787 sample=4070133e8f1e93dd733a94c17e10
+- 2026-06-16T07:54:36.532Z actor=chiyo service=atlas region=coastal state=queued count=4009255 latency_us=592097 sample=c2d85002ea1193203c96e460832a
+- 2026-06-09T09:37:15.776Z actor=nadia service=harbor region=east state=archived count=2435867 latency_us=378993 sample=191c06d57c021fcee6611993e5c4
+- 2026-10-26T22:04:21.960Z actor=imani service=quartz region=alpine state=deferred count=7963043 latency_us=123564 sample=ec5ebed70ec2bd6e48d7744489de
+
+===== SYNTHETIC DOCUMENT 00017 =====
+
+## Policy memorandum SYN-28885
+
+Records for delta are retained for 123 synthetic days. Jonas may
+approve routine restoration in the alpine region, but deletion requires two reviewers and
+a matching manifest. The controlling checksum is `afefea44a47235f83cc25057` and the current inventory is
+894,023 objects. Exceptions expire after 8 days.
+
+Operators must state the observed fact, the applicable rule, and the resulting action.
+Inference is labeled explicitly. If the worker is incomplete or the confidence
+score falls below 78%, the operator stops and requests new evidence rather than
+guessing. Every example here is fictional and contains no production identifiers.
+
+Evidence samples (synthetic):
+- 2026-09-02T09:40:03.409Z actor=farah service=orbit region=coastal state=accepted count=2317148 latency_us=850872 sample=a39085a4a558fa566be6f91b08bf
+- 2026-06-15T04:31:49.912Z actor=elias service=willow region=south state=replayed count=4024877 latency_us=607691 sample=146c21d6d2dcbb04525f31c3e869
+- 2026-01-25T07:14:54.361Z actor=rina service=summit region=east state=draining count=6680291 latency_us=888761 sample=c28cd265a82b552a0f529ae38485
+- 2026-04-10T03:15:24.748Z actor=farah service=summit region=central state=committed count=2765918 latency_us=134803 sample=a72d6aa5f5fcd002baa975475901
+- 2026-11-26T11:22:32.068Z actor=jonas service=vector region=central state=archived count=3426647 latency_us=704476 sample=17d94e5bad7e23b4c938b694cf40
+- 2026-09-02T20:09:51.177Z actor=zane service=tundra region=river state=restored count=3634963 latency_us=340174 sample=d5d41c28f363c5147684b80c1f40
+- 2026-11-09T08:50:59.089Z actor=xenia service=fjord region=east state=committed count=2498207 latency_us=688310 sample=e23c49a52c64f5da68a9c1e78e42
+- 2026-02-03T18:30:02.273Z actor=imani service=willow region=south state=rejected count=1388675 latency_us=566644 sample=b761826f79172e707dd8d998b9e7
+- 2026-03-22T15:43:19.918Z actor=imani service=juniper region=coastal state=committed count=6121427 latency_us=597273 sample=d37b2cbc1429029111aafda28f42
+- 2026-06-12T16:44:56.907Z actor=daria service=beacon region=south state=replayed count=6556583 latency_us=342410 sample=9283cac948474dbc6ebddf4dc762
+- 2026-12-11T05:33:09.193Z actor=mei service=atlas region=south state=observed count=2192140 latency_us=185585 sample=c220500141008c8cafd18b3f4060
+- 2026-10-07T02:13:28.867Z actor=nadia service=keystone region=south state=draining count=7626989 latency_us=819505 sample=4357bf07fa7ce552297aeecd85aa
+- 2026-09-07T20:02:36.175Z actor=farah service=grove region=south state=queued count=5847892 latency_us=189465 sample=00b218d901e4c0ad35abb0da5e96
+- 2026-01-10T23:05:42.861Z actor=bruno service=nova region=east state=committed count=1973932 latency_us=62607 sample=5826cd0ff214bc14f3ac09c6f662
+- 2026-06-28T19:15:01.203Z actor=nadia service=nova region=north state=committed count=5119796 latency_us=391999 sample=1dab2b859aec5342722adfee2424
+- 2026-12-28T04:55:52.624Z actor=xenia service=beacon region=coastal state=queued count=7734733 latency_us=487131 sample=1bac6cc3c947ef92bbf160598b65
+- 2026-07-24T02:25:52.219Z actor=pavel service=cascade region=east state=deferred count=7171275 latency_us=104255 sample=095d8dbfbda320a63c5878989769
+- 2026-01-07T01:16:04.287Z actor=wale service=quartz region=west state=restored count=8614036 latency_us=42000 sample=7da6d4800df93488817bb2a2bcff
+
+===== SYNTHETIC DOCUMENT 00018 =====
+
+## Incident review SYN-69296
+
+The synthetic delta service in the west region reported a 566 ms p95 latency
+during observation window 00018. Vera compared the request timeline and
+confirmed that 179,397 events crossed the gateway. The first alarm came from the
+timeline monitor; trace `5c3eaaa1069efc4b84fae7e6` connected it to a delayed replica rather than
+packet loss. The response team preserved the original logs, reduced concurrency by
+16 percent, and compared three recovery options before changing state.
+
+Decision: keep the canary at 70% confidence until two consecutive checks pass.
+Rollback: restore snapshot `snap-32b34c4bdc` if error growth exceeds
+8 percent. The owner must record the exact start time, affected shard,
+and verification query so the next operator can reproduce the conclusion.
+
+Evidence samples (synthetic):
+- 2026-07-20T03:52:31.678Z actor=rina service=uplink region=central state=restored count=836196 latency_us=538987 sample=cf61f8947e9954add88fc31aa085
+- 2026-05-06T17:45:37.776Z actor=yara service=nova region=central state=draining count=4839394 latency_us=855538 sample=809bffa55ffd84d90eb9696ac82e
+- 2026-07-16T19:39:07.409Z actor=hugo service=relay region=alpine state=accepted count=784326 latency_us=243917 sample=e42722c0888509bff7fe2475b300
+- 2026-07-26T17:39:16.838Z actor=hugo service=relay region=east state=archived count=448687 latency_us=295313 sample=3895d1dcfa78b5d8b2c03573b1af
+- 2026-03-15T14:28:40.126Z actor=gita service=juniper region=west state=observed count=3684024 latency_us=629422 sample=0625cc7c2c308b8605254fb59137
+- 2026-10-07T03:51:53.309Z actor=chiyo service=ember region=east state=deferred count=5636942 latency_us=796780 sample=d586a5837810420688e5e2f41323
+- 2026-08-12T17:36:14.362Z actor=vera service=keystone region=south state=observed count=2686312 latency_us=441818 sample=01d191d45fe432f1b35a419ffbc9
+- 2026-06-04T02:11:02.262Z actor=mei service=beacon region=west state=archived count=3087951 latency_us=426954 sample=7ce8d1a913cf23dbb28a80e5a7a0
+- 2026-04-13T14:57:58.031Z actor=oren service=nova region=east state=rejected count=5218729 latency_us=667041 sample=aa0861d0e29dfa2dcf9c2b353fb1
+- 2026-03-05T10:58:33.485Z actor=elias service=lattice region=central state=draining count=4773600 latency_us=712497 sample=83dbefe74df608d91c186a40dbc6
+- 2026-06-10T15:27:38.936Z actor=jonas service=keystone region=west state=verified count=888118 latency_us=231407 sample=7ba4d872139a7872e6e914b2d585
+- 2026-09-06T09:46:45.558Z actor=sofia service=harbor region=alpine state=queued count=7589726 latency_us=620046 sample=b175a817c693d12caa6a79332da9
+- 2026-10-15T07:27:36.103Z actor=bruno service=keystone region=north state=observed count=8615513 latency_us=271193 sample=72885525428f361c785267b11302
+- 2026-01-17T04:33:09.937Z actor=nadia service=xylem region=west state=committed count=501792 latency_us=422453 sample=737b280b397b579e8976cb02f224
+- 2026-08-05T20:30:08.877Z actor=gita service=grove region=coastal state=rejected count=4231211 latency_us=203906 sample=5c354bf9cb33c808e06c86006082
+- 2026-08-27T02:23:38.611Z actor=nadia service=keystone region=river state=queued count=40537 latency_us=505793 sample=f1cbef85f29a17b21de29fe78ed6
+- 2026-10-17T12:40:29.825Z actor=pavel service=meridian region=west state=running count=6738348 latency_us=893814 sample=c95705cabd6611b219b3dca0af80
+- 2026-11-17T10:07:34.962Z actor=gita service=meridian region=river state=accepted count=8080641 latency_us=546720 sample=da38d3fe85767a8e70603351c22e
+
+===== SYNTHETIC DOCUMENT 00019 =====
+
+## Operations procedure SYN-57253
+
+Purpose: rotate the beacon worker pool without losing queued work. Scope is limited to
+the synthetic west environment. Before starting, Luka checks the manifest checksum
+`2b6bf
+===== AUTHORITATIVE SYNTHETIC RECORD B =====
+account=AC-204; owner=Omar; tier=silver; renewal=2027-01-19; state=paused.
+
+===== SYNTHETIC DOCUMENT 00020 =====
+
+## Meeting handoff SYN-74037
+
+Participants reviewed the summit migration for the coastal region. Rina owns the
+next action. The group chose a staged transition because the archive contains 21,631
+records and the current p95 is 676 ms. Finance needs a reconciled ledger, Operations
+needs a fresh snapshot, and Support needs a customer-safe status paragraph.
+
+The decision is reversible until checkpoint `90932d129340f02c962937c8` is approved. Open questions include
+whether the timeline retains ordering during retries and whether the new worker
+honors the 73% saturation guard. The next review occurs on synthetic day
+19 at 11:30 UTC.
+
+Evidence samples (synthetic):
+- 2026-10-23T07:47:54.102Z actor=amina service=grove region=north state=verified count=7766541 latency_us=113682 sample=f10f3a3df5f0c5dbbb68b9d833f7
+- 2026-02-05T09:22:53.602Z actor=daria service=beacon region=coastal state=committed count=2871200 latency_us=719137 sample=8dcc55692d4a1db37a7bb63a3110
+- 2026-12-19T15:00:58.199Z actor=jonas service=vector region=river state=verified count=880596 latency_us=397042 sample=9d8e59c18fddd7c5dedbe5c413ee
+- 2026-06-28T22:58:35.366Z actor=daria service=ember region=central state=draining count=1156603 latency_us=505734 sample=4cb84f5f40f0b7982772cbbc92f2
+- 2026-01-19T15:16:17.643Z actor=imani service=harbor region=alpine state=observed count=240912 latency_us=230135 sample=74757137c52a39f76ea5c9afceb5
+- 2026-04-22T23:22:39.296Z actor=chiyo service=tundra region=south state=queued count=4970685 latency_us=336534 sample=d418ec8aa9447bb60dc8cc63e6bc
+- 2026-09-24T14:36:12.265Z actor=kavya service=delta region=south state=committed count=2561683 latency_us=526629 sample=28dcf1b3678e2c3f9450287aa3b6
+- 2026-07-08T08:52:07.363Z actor=vera service=grove region=alpine state=draining count=75100 latency_us=644977 sample=1c68aa612459c9e4a10bfbd2406e
+- 2026-08-22T11:46:19.567Z actor=tomas service=cascade region=alpine state=archived count=2035645 latency_us=513573 sample=1fd6199aeaddcc30f8cedf97caa1
+- 2026-05-19T23:05:05.141Z actor=luka service=prairie region=east state=replayed count=1234805 latency_us=277830 sample=07b595c6eabf6357a006439fa397
+- 2026-06-11T03:21:08.979Z actor=vera service=orbit region=north state=verified count=485708 latency_us=377270 sample=f67bfdf45b9dcbec9f50e8eb514d
+- 2026-10-28T14:36:03.567Z actor=xenia service=meridian region=coastal state=deferred count=8123038 latency_us=100061 sample=c1394b2ab561dadf2c1d8e79318e
+- 2026-04-26T04:31:38.316Z actor=imani service=summit region=west state=restored count=5208730 latency_us=672117 sample=b2c761c9a677d34d161a9d7e3663
+- 2026-10-08T15:22:43.704Z actor=uma service=relay region=alpine state=accepted count=7604159 latency_us=49296 sample=5c68c3dc8cf9f95af94a591cebb3
+- 2026-04-15T11:26:13.731Z actor=hugo service=relay region=south state=observed count=6928849 latency_us=622260 sample=369640cbeb07280bd09269c21796
+- 2026-02-09T06:25:11.360Z actor=imani service=ember region=coastal state=verified count=2304344 latency_us=253759 sample=40a9f8934a6555ee7d6808e053a9
+- 2026-09-21T10:39:49.482Z actor=yara service=relay region=coastal state=accepted count=1765559 latency_us=64663 sample=f64bcff35707e7e718d21d6f519a
+- 2026-10-17T14:46:52.368Z actor=uma service=willow region=river state=accepted count=3897029 latency_us=119914 sample=02c23fea5a4d946c03d057ccd053
+
+===== SYNTHETIC DOCUMENT 00021 =====
+
+## API contract note SYN-79234
+
+Endpoint `/v2/meridian/east/items` accepts an idempotency key, a sequence number, and
+a payload digest. Example digest: `8952d2ce6faa1ceda8f0e6b0`. A successful response returns status 202,
+the normalized owner `jonas`, and a checkpoint cursor. Clients retry 408, 429,
+and 503 responses with bounded jitter; they do not retry validation failures.
+
+The server rejects batches above 757 items or payloads above
+13 MiB. At 77% capacity it advertises a retry window of
+11 seconds. Consumers must compare the returned cursor with their local
+queue before acknowledging delivery. This contract is synthetic and uses
+reserved names only.
+
+Evidence samples (synthetic):
+- 2026-04-22T22:20:53.038Z actor=nadia service=beacon region=river state=queued count=244531 latency_us=557806 sample=87ef6b8fcea5949d861644765223
+- 2026-04-12T12:54:36.673Z actor=elias service=beacon region=central state=rejected count=6064850 latency_us=363103 sample=474a344fe8e5cd4371ff0dbbdc6c
+- 2026-12-25T05:50:14.785Z actor=vera service=cascade region=south state=draining count=38899 latency_us=786350 sample=639313deb36515af135e02b195b9
+- 2026-12-28T15:16:35.434Z actor=oren service=meridian region=river state=accepted count=7202045 latency_us=849203 sample=05df6ece0e5fea9739c01649d5c9
+- 2026-11-20T13:16:19.462Z actor=uma service=lattice region=south state=draining count=102268 latency_us=191899 sample=edf109c66e6f1f8528e861a4708a
+- 2026-01-12T06:35:23.343Z actor=farah service=harbor region=west state=replayed count=1249305 latency_us=314342 sample=f794291e4a53877651ee9cb10174
+- 2026-11-01T08:54:50.629Z actor=amina service=ember region=river state=archived count=2028372 latency_us=544528 sample=88bec7ad907ffb05c0ad7afd3d8f
+- 2026-06-21T15:53:21.605Z actor=tomas service=willow region=coastal state=committed count=8547416 latency_us=18173 sample=4daecf3f7fc0c16239cf208ba8c8
+- 2026-12-12T12:55:44.261Z actor=farah service=juniper region=east state=running count=4826942 latency_us=109118 sample=a97a565421cab8bb90f3c2c96edc
+- 2026-07-17T20:11:55.472Z actor=uma service=xylem region=coastal state=observed count=6865650 latency_us=476521 sample=2de24ef8fa2e6a222d01a0a37085
+- 2026-09-12T06:21:30.833Z actor=jonas service=quartz region=north state=verified count=1083826 latency_us=804740 sample=f79238b9b0d94436481c06dd23f4
+- 2026-02-20T14:21:41.238Z actor=luka service=keystone region=north state=rejected count=2080465 latency_us=356458 sample=dea9c6418c6115e6095319e0e78e
+- 2026-10-12T16:17:03.145Z actor=tomas service=xylem region=west state=archived count=5529808 latency_us=701337 sample=0bf4b462ef493602504dc4f3282d
+- 2026-05-18T13:53:28.224Z actor=mei service=xylem region=south state=restored count=1913584 latency_us=44964 sample=f5b54ab4ec76f6ddfa47a3d21039
+- 2026-02-14T03:19:06.234Z actor=amina service=quartz region=central state=rejected count=3677661 latency_us=59980 sample=dcf5e7ac0bf02e0d2041236fa38c
+- 2026-11-22T12:30:09.221Z actor=oren service=summit region=south state=archived count=467756 latency_us=809935 sample=2e6aac424e584b4e0da55c5869cf
+- 2026-06-15T10:06:47.992Z actor=hugo service=ember region=east state=deferred count=3106992 latency_us=70503 sample=ce26511f06028862c1d0c43726bb
+- 2026-01-15T04:35:19.375Z actor=gita service=cascade region=south state=running count=1274127 latency_us=107672 sample=c3e97e5c4f0c2ab0fcd64f634df6
+
+===== SYNTHETIC DOCUMENT 00022 =====
+
+## Capacity experiment SYN-52440
+
+Experiment 8f09e2128efb559d09c3ebf4 exercised quartz with 472,151 synthetic messages in the central
+region. Sample observations were [5135, 5562, 2307, 6394, 1720, 3293, 7332, 7253, 6847, 3287, 66, 4636, 6166, 6285, 229, 3622]. Median latency was 251 ms, the acceptance
+gate was 89%, and Nadia independently checked the arithmetic. The experiment
+changed only batch size; cache policy, model revision, power mode, and background load
+remained fixed.
+
+Interpretation distinguishes throughput from complete-request latency. A faster processing
+phase does not imply a faster user-visible response when queueing or generation dominates.
+Raw counters remain authoritative; summaries must exclude failed, cached, or truncated runs.
+
+Evidence samples (synthetic):
+- 2026-07-27T00:47:40.938Z actor=yara service=harbor region=west state=queued count=7292941 latency_us=109421 sample=b88f46767002337aee6e0d7e0b69
+- 2026-07-14T14:05:16.112Z actor=bruno service=summit region=south state=draining count=1127553 latency_us=720770 sample=880c548220b088af377aa6d8dc7d
+- 2026-03-04T18:06:10.185Z actor=tomas service=keystone region=north state=committed count=2035941 latency_us=242052 sample=9b8dc7bef0b36a99ba10e64bb934
+- 2026-03-21T17:10:03.380Z actor=pavel service=ember region=river state=replayed count=5672830 latency_us=873336 sample=3f5e57ecdfe08e8e32c927813403
+- 2026-08-26T11:57:58.164Z actor=daria service=atlas region=west state=restored count=4363610 latency_us=372123 sample=5c4d6fb84efb6d2f2bcc9c776b50
+- 2026-11-13T07:09:01.774Z actor=gita service=ion region=coastal state=committed count=5393896 latency_us=258878 sample=fbada15c01634610e23d1dfdbe9d
+- 2026-07-04T17:03:52.373Z actor=oren service=relay region=alpine state=replayed count=3750405 latency_us=549436 sample=e4a5ace40e0de4d61cfb21845661
+- 2026-08-13T05:32:16.323Z actor=luka service=relay region=central state=restored count=1591107 latency_us=806015 sample=2a3f2e843ef6237a08f72684d9b6
+- 2026-09-17T23:42:49.967Z actor=imani service=grove region=south state=running count=1036758 latency_us=315102 sample=25f9c1a99aa5ec987b6cf3ec323c
+- 2026-04-09T01:14:08.398Z actor=farah service=keystone region=east state=observed count=4936624 latency_us=63099 sample=e58e01dbce903ce7e9f7ecfa8a64
+- 2026-07-21T10:41:27.769Z actor=chiyo service=vector region=river state=committed count=5016043 latency_us=192569 sample=3732e55ede8d169ed04503bd3dbc
+- 2026-02-27T20:54:26.387Z actor=yara service=quartz region=alpine state=draining count=5455356 latency_us=75676 sample=2f377987896d9cff63ee7ba76abf
+- 2026-12-13T08:32:32.070Z actor=daria service=tundra region=alpine state=rejected count=3981074 latency_us=687353 sample=afaecfa8b2dcbec0f0f8814bd28a
+- 2026-10-19T21:45:12.406Z actor=elias service=fjord region=east state=restored count=5332844 latency_us=289407 sample=66d98f5a71392a08f374719ae44b
+- 2026-07-28T16:09:05.389Z actor=zane service=atlas region=coastal state=committed count=2357133 latency_us=107342 sample=65dd54995c05bd3cfa065cf62cf1
+- 2026-06-17T23:04:36.447Z actor=nadia service=prairie region=alpine state=draining count=1684826 latency_us=523616 sample=a7549cc4c6163bd2d4631d780dfd
+- 2026-04-16T05:25:09.025Z actor=gita service=keystone region=coastal state=observed count=5356843 latency_us=99912 sample=342fd489eba39c4ca2fe45b425b2
+- 2026-03-23T20:12:45.059Z actor=sofia service=vector region=central state=accepted count=936817 latency_us=190975 sample=bbfe7ed259b4292a6e78e5476f3a
+
+===== SYNTHETIC DOCUMENT 00023 =====
+
+## Policy memorandum SYN-28804
+
+Records for tundra are retained for 144 synthetic days. Uma may
+approve routine restoration in the west region, but deletion requires two reviewers and
+a matching manifest. The controlling checksum is `f383c78e299c1417cc8cfab4` and the current inventory is
+330,960 objects. Exceptions expire after 3 days.
+
+Operators must state the observed fact, the applicable rule, and the resulting action.
+Inference is labeled explicitly. If the dataset is incomplete or the confidence
+score falls below 93%, the operator stops and requests new evidence rather than
+guessing. Every example here is fictional and contains no production identifiers.
+
+Evidence samples (synthetic):
+- 2026-08-21T14:47:01.026Z actor=sofia service=xylem region=coastal state=verified count=5829030 latency_us=703236 sample=0c2d01b64555feed29af49d809a6
+- 2026-11-02T09:39:07.077Z actor=kavya service=fjord region=south state=deferred count=1252402 latency_us=818841 sample=94dbe1de5606e7b24ee00f7eb4ee
+- 2026-09-25T00:06:42.251Z actor=imani service=meridian region=east state=committed count=3985842 latency_us=761781 sample=79f245f6ecdf4f080367bfedaa28
+- 2026-09-13T22:50:29.331Z actor=hugo service=cascade region=south state=accepted count=1617487 latency_us=371422 sample=dc1e6237af84b2b4105a96b0dd12
+- 2026-01-15T16:46:33.214Z actor=imani service=keystone region=north state=running count=1795172 latency_us=98139 sample=aa54fd6c668b9f2e0b96dc87a986
+- 2026-10-26T21:32:58.717Z actor=jonas service=cascade region=south state=restored count=3810852 latency_us=790309 sample=fe6fc4d12012f4c2f48b9552e1c9
+- 2026-05-08T20:46:27.036Z actor=hugo service=delta region=north state=archived count=6596092 latency_us=534028 sample=79800507cd8cecde21dfcadaedea
+- 2026-07-28T13:25:19.652Z actor=farah service=lattice region=south state=draining count=5480787 latency_us=176507 sample=d0abd7e483f8f2b239f840d9223a
+- 2026-08-04T03:27:05.930Z actor=amina service=ember region=central state=committed count=6764946 latency_us=591936 sample=64842937637513a636749fe4a86b
+- 2026-08-12T19:22:32.326Z actor=wale service=harbor region=east state=rejected count=2415761 latency_us=219958 sample=8c966bfe4e0cb9e07228a6747af8
+- 2026-07-01T09:51:54.100Z actor=wale service=ion region=west state=accepted count=8689356 latency_us=159888 sample=6ad7d09348923791af76ae391f12
+- 2026-12-07T13:46:58.842Z actor=kavya service=beacon region=coastal state=verified count=2082098 latency_us=825546 sample=1095f5582a27df176a6ab5c016bd
+- 2026-10-23T23:00:31.538Z actor=kavya service=cascade region=east state=running count=2427530 latency_us=256128 sample=cdb268ab3ac1c97dde005fda4eaf
+- 2026-12-07T23:16:07.600Z actor=oren service=nova region=south state=replayed count=6014989 latency_us=72086 sample=0ba7069de1da1ff1a0229c0878b6
+- 2026-05-19T00:59:48.238Z actor=yara service=ember region=east state=archived count=2746885 latency_us=799007 sample=1eb48303bcf59a2c6c9eb947e7a2
+- 2026-10-02T05:57:26.837Z actor=amina service=ember region=west state=restored count=6719379 latency_us=56108 sample=6901436245de0c2e8b4108bbb9bc
+- 2026-08-18T15:46:03.979Z actor=amina service=delta region=coastal state=accepted count=7895861 latency_us=732147 sample=d8b42a93351319054633d2c52d3d
+- 2026-04-12T20:26:24.806Z actor=tomas service=atlas region=north state=queued count=1017621 latency_us=798197 sample=5373be4bbef3d3b4a660987601af
+
+===== SYNTHETIC DOCUMENT 00024 =====
+
+## Incident review SYN-82189
+
+The synthetic nova service in the coastal region reported a 767 ms p95 latency
+during observation window 00024. Luka measured the request timeline and
+confirmed that 838,740 events crossed the gateway. The first alarm came from the
+manifest monitor; trace `9d8f318135306dfd423aad86` connected it to a delayed replica rather than
+packet loss. The response team preserved the original logs, reduced concurrency by
+8 percent, and compared three recovery options before changing state.
+
+Decision: keep the canary at 95% confidence until two consecutive checks pass.
+Rollback: restore snapshot `snap-f11468e6b2` if error growth exceeds
+3 percent. The owner must record the exact start time, affected shard,
+and verification query so the next operator can reproduce the conclusion.
+
+Evidence samples (synthetic):
+- 2026-04-22T17:20:34.991Z actor=gita service=quartz region=south state=accepted count=1017464 latency_us=839829 sample=4e85986726e91d96159d25d9f763
+- 2026-02-28T13:56:39.351Z actor=gita service=delta region=north state=accepted count=7845964 latency_us=523814 sample=4d65d06636cdb1360d62db7b154c
+- 2026-12-06T02:32:44.725Z actor=tomas service=lattice region=alpine state=committed count=7398965 latency_us=786169 sample=19b6c9262a388533de7007f22489
+- 2026-02-21T14:59:40.888Z actor=vera service=prairie region=river state=committed count=3548999 latency_us=667626 sample=a838e07bae0a4b315f0344932eeb
+- 2026-01-02T23:58:39.661Z actor=zane service=xylem region=river state=observed count=2111339 latency_us=392734 sample=538b1bcd25dcad9ee841a19041d8
+- 2026-06-19T01:07:39.713Z actor=vera service=xylem region=south state=rejected count=3661661 latency_us=396955 sample=61df3a516b60accac53ae82cde0b
+- 2026-06-16T03:14:18.871Z actor=bruno service=beacon region=coastal state=running count=8360990 latency_us=284209 sample=e6b61b27cf9b5da5e0e5ad070a35
+- 2026-08-22T14:11:47.225Z actor=sofia service=uplink region=river state=verified count=2636824 latency_us=197216 sample=7798c081c5dcfcb6ab90d7c2aab8
+- 2026-05-06T21:15:13.012Z actor=oren service=atlas region=east state=restored count=8865872 latency_us=709513 sample=4b30e61e31b91b0fa77ee878be2f
+- 2026-03-08T06:41:59.145Z actor=oren service=beacon region=coastal state=accepted count=1436967 latency_us=591268 sample=70a64a1101d425ea1eb40f79aeab
+- 2026-02-18T17:23:54.795Z actor=sofia service=atlas region=river state=rejected count=8386561 latency_us=578784 sample=d2f78f28629c94f9ae4f27a0f761
+- 2026-11-04T04:18:45.588Z actor=kavya service=cascade region=alpine state=deferred count=5777493 latency_us=63554 sample=fc44a29fd7f58a4cfc22985aad4c
+- 2026-03-16T04:48:23.582Z actor=kavya service=keystone region=north state=rejected count=8435808 latency_us=748901 sample=67392c5520016e8c60bb26a75fd2
+- 2026-04-28T15:00:50.806Z actor=jonas service=relay region=west state=queued count=1936036 latency_us=468209 sample=6ad17226f654b21aad4ede3e3242
+- 2026-10-27T08:01:52.854Z actor=pavel service=orbit region=east state=running count=3241865 latency_us=889581 sample=a3889440f1be485e880599221d98
+- 2026-08-04T10:25:30.828Z actor=jonas service=willow region=east state=replayed count=3697618 latency_us=683970 sample=ca4f9a7819ffd845d407b51d918e
+- 2026-06-26T10:34:51.387Z actor=amina service=prairie region=coastal state=rejected count=6705822 latency_us=167024 sample=0f72118fd4a1b9375733d992958c
+- 2026-10-01T16:50:19.410Z actor=xenia service=cascade region=river state=verified count=2062175 latency_us=491863 sample=c99ae1c3cbbbb3350c8e7ea6babe
+
+===== SYNTHETIC DOCUMENT 00025 =====
+
+## Operations procedure SYN-25218
+
+Purpose: rotate the tundra worker pool without losing queued work. Scope is limited to
+the synthetic west environment. Before starting, Gita checks the manifest checksum
+`b654b5d881cd26501b12e368`, available capacity of 744,517 units, and alert threshold 90.
+
+1. Freeze new assignments and capture queue depth plus oldest-item age.
+2. Drain one worker group, compare counters, then inspect the pipeline record.
+3. Resume at 10 percent traffic and observe for 5 minutes.
+4. Abort if latency exceeds 398 ms or reconciliation differs by more than
+   5 records.
+
+Evidence belongs in case SYN-25218; screenshots alone are insufficient because values must
+remain searchable and machine-readable. A second reviewer signs the final checkpoint.
+
+Evidence samples (synthetic):
+- 2026-09-28T12:21:38.524Z actor=xenia service=meridian region=north state=observed count=8087051 latency_us=507973 sample=4666ce2b9a7a698257d76dc2e866
+- 2026-09-17T14:43:03.579Z actor=hugo service=xylem region=coastal state=archived count=665619 latency_us=652057 sample=530eec5a1accc91d907a56b413fb
+- 2026-01-23T10:21:41.994Z actor=daria service=meridian region=central state=committed count=4478203 latency_us=86503 sample=d78200d80784959a82097e78c094
+- 2026-01-01T22:27:23.856Z actor=kavya service=xylem region=east state=running count=2207553 latency_us=398149 sample=b8b5ac45c957a50a9694dc1f3c62
+- 2026-07-01T20:35:28.743Z actor=kavya service=xylem region=river state=committed count=3877289 latency_us=876310 sample=bfb0232d1c5773f370ec8688aefc
+- 2026-06-17T18:13:06.381Z actor=uma service=ion region=east state=verified count=4424607 latency_us=41872 sample=39e374b6bd7f228c50e9b75866b8
+- 2026-10-25T19:48:37.603Z actor=nadia service=tundra region=central state=committed count=1616810 latency_us=361895 sample=d312895ed64972fbbb93446a594e
+- 2026-09-19T23:53:11.865Z actor=oren service=orbit region=central state=replayed count=5737640 latency_us=872459 sample=25d0c6cbac7afbf0230588806e58
+- 2026-08-02T00:12:46.224Z actor=jonas service=quartz region=east state=queued count=8931663 latency_us=575211 sample=2b84dba2966d862f5e669575881c
+- 2026-06-14T21:27:27.754Z actor=pavel service=atlas region=river state=observed count=4066496 latency_us=386590 sample=47c08e24d89fe0de15102c61635c
+- 2026-01-22T04:38:57.446Z actor=kavya service=cascade region=south state=queued count=7971101 latency_us=754398 sample=58de84b25f0aed6e37af7f0f3673
+- 2026-09-28T07:37:59.529Z actor=imani service=relay region=north state=archived count=4124963 latency_us=87748 sample=f14d90fb5cd74354f798dce0b56d
+- 2026-02-10T05:27:37.060Z actor=xenia service=cascade region=west state=restored count=58341 latency_us=218849 sample=81a4b619816edf67713875236b11
+- 2026-10-14T00:02:00.856Z actor=vera service=willow region=coastal state=accepted count=4556479 latency_us=759570 sample=f7dd5722a75c0d7e176a8facbafa
+- 2026-10-08T07:03:58.447Z actor=rina service=vector region=west state=rejected count=8658062 latency_us=743259 sample=80f48c4ca2ad7259d8fb23165493
+- 2026-07-22T20:12:43.275Z actor=daria service=summit region=coastal state=deferred count=8330358 latency_us=783409 sample=62f1142428db6a5d3e8434239ed6
+- 2026-11-13T14:38:52.196Z actor=luka service=meridian region=coastal state=accepted count=285908 latency_us=652586 sample=0c9af618ca1c647459574aeea6b6
+- 2026-12-06T14:43:50.463Z actor=rina service=uplink region=river state=verified count=8102204 latency_us=667872 sample=930346abfe28fbb630777a6688b5
+
+===== SYNTHETIC DOCUMENT 00026 =====
+
+## Meeting handoff SYN-63971
+
+Participants reviewed the ion migration for the coastal region. Farah owns the
+next action. The group chose a staged transition because the archive contains 793,864
+records and the current p95 is 115 ms. Finance needs a reconciled ledger, Operations
+needs a fresh snapshot, and Support needs a customer-safe status paragraph.
+
+The decision is reversible until checkpoint `cd680082397a735ee7fd1e73` is approved. Open questions include
+whether the ledger retains ordering during retries and whether the new worker
+honors the 96% saturation guard. The next review occurs on synthetic day
+15 at 20:30 UTC.
+
+Evidence samples (synthetic):
+- 2026-06-23T20:23:34.766Z actor=kavya service=fjord region=coastal state=rejected count=4069235 latency_us=84798 sample=d400117fc8807a44bc92e25737aa
+- 2026-10-14T04:26:46.662Z actor=tomas service=cascade region=alpine state=archived count=4110869 latency_us=183426 sample=0cf33c7cf08522f9cf281b118e5c
+- 2026-05-10T03:51:44.716Z actor=zane service=tundra region=coastal state=deferred count=5659136 latency_us=396830 sample=ae60e12294445a62bff47d0741e3
+- 2026-02-22T07:47:53.470Z actor=luka service=grove region=east state=restored count=8505532 latency_us=182452 sample=1275ffe44e95439c9da9abd05eba
+- 2026-02-22T17:05:54.509Z actor=elias service=meridian region=river state=rejected count=4251186 latency_us=138047 sample=b0134d1d31c9302ba4cac14fec7e
+- 2026-09-23T09:17:02.577Z actor=mei service=uplink region=central state=draining count=5468044 latency_us=649277 sample=9d782366787e31f687e01bb4025c
+- 2026-09-25T15:39:45.624Z actor=uma service=beacon region=central state=draining count=3052396 latency_us=156272 sample=7df23ea3ead637db6f332c9954c6
+- 2026-08-01T13:07:06.069Z actor=sofia service=keystone region=central state=archived count=5085182 latency_us=622191 sample=c4f9991b793ced07e71d3c8bcf45
+- 2026-02-02T15:24:32.591Z actor=luka service=delta region=west state=deferred count=7523949 latency_us=202852 sample=54db27963f47ba24be7d8b6cee42
+- 2026-05-21T18:14:41.485Z actor=sofia service=relay region=north state=accepted count=8984524 latency_us=324475 sample=78c118ee6741eab831da11ee8c14
+- 2026-03-04T17:34:58.796Z actor=zane service=juniper region=alpine state=deferred count=4679454 latency_us=658728 sample=f737a2a8145ac467639a038cfde4
+- 2026-10-23T04:36:48.136Z actor=farah service=harbor region=river state=running count=4019432 latency_us=75540 sample=afab71cfadb42210296dc56bd960
+- 2026-06-10T23:12:40.798Z actor=luka service=harbor region=west state=draining count=7429052 latency_us=4437 sample=f36eb54a2828643bbcbe679de2f4
+- 2026-06-27T06:29:38.477Z actor=zane service=xylem region=river state=replayed count=1358967 latency_us=507304 sample=21f47f29ab21815d780fbbed46fa
+- 2026-02-15T21:39:53.203Z actor=hugo service=willow region=south state=deferred count=3368020 latency_us=545460 sample=89c89937dc4120752710febe6901
+- 2026-06-23T09:06:27.742Z actor=amina service=xylem region=alpine state=restored count=3783277 latency_us=216849 sample=d075de8e1df37be3662dfc91e99b
+- 2026-08-12T23:42:35.763Z actor=vera service=cascade region=south state=queued count=5051425 latency_us=612112 sample=deb824d3f8f197c47ef17c238c29
+- 2026-05-08T01:36:26.919Z actor=zane service=harbor region=river state=accepted count=3044153 latency_us=376902 sample=12a420e622dcf7121bc7b3eab3b9
+
+===== SYNTHETIC DOCUMENT 00027 =====
+
+## API contract note SYN-66381
+
+Endpoint `/v2/summit/central/items` accepts an idempotency key, a sequence number, and
+a payload digest. Example digest: `31afba2d61ce387f85f6bd10`. A successful response returns status 202,
+the normalized owner `xenia`, and a checkpoint cursor. Clients retry 408, 429,
+and 503 responses with bounded jitter; they do not retry validation failures.
+
+The server rejects batches above 500 items or payloads above
+15 MiB. At 98% capacity it advertises a retry window of
+8 seconds. Consumers must compare the returned cursor with their local
+manifest before acknowledging delivery. This contract is synthetic and uses
+reserved names only.
+
+Evidence samples (synthetic):
+- 2026-08-22T04:51:27.769Z actor=oren service=nova region=south state=draining count=8938050 latency_us=33879 sample=7d6bed59f5edad423ed8e7de4992
+- 2026-04-21T01:11:25.999Z actor=sofia service=delta region=central state=restored count=2019192 latency_us=190718 sample=3225df0f3afc37dff4ca0b68b191
+- 2026-08-03T11:43:20.266Z actor=elias service=meridian region=east state=deferred count=5385408 latency_us=561009 sample=f5149222d1c643e028882523ce8b
+- 2026-01-02T02:05:29.319Z actor=hugo service=grove region=alpine state=verified count=4809273 latency_us=792824 sample=7629fccae95f71f85e0478437969
+- 2026-06-23T14:34:21.375Z actor=gita service=ion region=river state=rejected count=8634074 latency_us=794169 sample=9b34add1515718732e89890a28c9
+- 2026-07-22T11:02:24.622Z actor=xenia service=harbor region=north state=queued count=2108801 latency_us=761321 sample=9f99b9e9b213e4683dfdea1afc1c
+- 2026-10-20T14:28:12.568Z actor=bruno service=beacon region=east state=restored count=6714534 latency_us=61535 sample=e546ffc13ef242cabe7cd2add158
+- 2026-01-22T16:57:17.225Z actor=gita service=harbor region=north state=verified count=4395846 latency_us=724763 sample=b1a82cb6fe37a3a8997033890a1b
+- 2026-04-16T11:04:00.993Z actor=amina service=delta region=west state=deferred count=4480689 latency_us=360192 sample=68dd888cec20e804ff35661395c1
+- 2026-12-18T15:41:43.909Z actor=farah service=harbor region=central state=verified count=2965171 latency_us=565251 sample=3b65877ec0f82b807e101fd9d1d0
+- 2026-10-02T15:38:33.620Z actor=oren service=vector region=river state=accepted count=4129477 latency_us=143669 sample=d2f956d8684ac8ff8b2cb6c4b518
+- 2026-12-08T07:06:50.914Z actor=mei service=beacon region=coastal state=queued count=5828214 latency_us=79497 sample=5f012e010e0fe6d33ec3705c9f66
+- 2026-11-28T17:21:19.024Z actor=kavya service=summit region=coastal state=observed count=6038677 latency_us=662973 sample=310e1b01b4f88fd3e61493a9672a
+- 2026-10-28T08:06:03.039Z actor=bruno service=lattice region=north state=replayed count=6352363 latency_us=128292 sample=30ee707bbb98ec51e5635d4db0f6
+- 2026-11-06T11:20:44.453Z actor=wale service=grove region=east state=rejected count=4890579 latency_us=755154 sample=66069f9241a69d5fd153ed095524
+- 2026-09-02T16:15:56.850Z actor=farah service=xylem region=central state=archived count=6845005 latency_us=383423 sample=c89eb7cae04525a95a6655f2e072
+- 2026-02-11T21:00:58.073Z actor=rina service=ember region=north state=committed count=3758932 latency_us=854189 sample=0e96db5bf43f1ea8ac287920cb6c
+- 2026-02-17T21:58:34.691Z actor=hugo service=uplink region=alpine state=accepted count=2357899 latency_us=192336 sample=e719bd6df67b927e67bd21d48571
+
+===== SYNTHETIC DOCUMENT 00028 =====
+
+## Capacity experiment SYN-64745
+
+Experiment e1aed34b5358d8d8dfc4a6b3 exercised ember with 400,385 synthetic messages in the south
+region. Sample observations were [4175, 9250, 9262, 3100, 3825, 9639, 4801, 5062, 6767, 744, 6935, 8608, 5782, 2824, 3252, 3975]. Median latency was 563 ms, the acceptance
+gate was 83%, and Xenia independently checked the arithmetic. The experiment
+changed only batch size; cache policy, model revision, power mode, and background load
+remained fixed.
+
+Interpretation distinguishes throughput from complete-request latency. A faster processing
+phase does not imply a faster user-visible response when queueing or generation dominates.
+Raw counters remain authoritative; summaries must exclude failed, cached, or truncated runs.
+
+Evidence samples (synthetic):
+- 2026-08-07T09:41:17.227Z actor=hugo service=summit region=central state=archived count=1243030 latency_us=324463 sample=b0dfb8ff71d0bca1c2fae7b47688
+- 2026-08-06T06:29:33.186Z actor=xenia service=vector region=west state=observed count=1660237 latency_us=637523 sample=12b2bab41f439e2346a91481546d
+- 2026-09-10T03:37:08.200Z actor=elias service=juniper region=north state=draining count=6580044 latency_us=360920 sample=5b7e2c45acbda3a1ad07c9962424
+- 2026-06-19T00:31:46.603Z actor=vera service=lattice region=south state=draining count=956000 latency_us=583269 sample=dfa7b041f003c577cfd71e2e465a
+- 2026-06-15T10:15:29.304Z actor=rina service=meridian region=south state=deferred count=2730825 latency_us=681623 sample=32de962cb6cafb6a2c248689cb3b
+- 2026-11-15T03:15:33.476Z actor=imani service=atlas region=south state=rejected count=5798268 latency_us=167098 sample=94337bddcb0e9290c71a40e202f1
+- 2026-06-06T01:45:14.716Z actor=tomas service=ion region=south state=draining count=8526683 latency_us=269806 sample=8f1ae73b9ae0d5255e2b69a3e8f6
+- 2026-09-07T10:27:33.812Z actor=zane service=keystone region=south state=draining count=2109590 latency_us=537008 sample=c5fd08b9b8c3d509f74d219c6133
+- 2026-02-14T18:39:42.104Z actor=tomas service=atlas region=north state=archived count=927520 latency_us=546032 sample=d730f171a346b6ab3c1baccf1d9f
+- 2026-10-23T22:39:35.152Z actor=yara service=willow region=alpine state=rejected count=1812409 latency_us=51141 sample=97096a08513175571e4bcf310937
+- 2026-07-04T19:31:58.579Z actor=tomas service=prairie region=east state=queued count=6551170 latency_us=825755 sample=bebbe054ba7817c89fc115f81eab
+- 2026-07-07T14:56:10.510Z actor=farah service=cascade region=east state=committed count=4663686 latency_us=857155 sample=6380d00e651bc967347003f150e3
+- 2026-08-23T19:32:34.300Z actor=bruno service=summit region=west state=running count=7517002 latency_us=744021 sample=8a5cd3789b82191733a0aa334f16
+- 2026-04-26T17:48:52.709Z actor=luka service=ion region=coastal state=archived count=6166008 latency_us=805662 sample=7dde660b7e32a904c2c1a7a383e6
+- 2026-02-03T16:31:38.636Z actor=mei service=delta region=central state=deferred count=6889609 latency_us=764261 sample=4be45f3d88e2eded8be4ff62a924
+- 2026-09-13T11:16:25.247Z actor=hugo service=meridian region=central state=restored count=2919782 latency_us=207895 sample=147ed907777f9340f606594fdfef
+- 2026-12-19T14:26:42.154Z actor=jonas service=grove region=east state=replayed count=3686885 latency_us=93215 sample=ee827a7587fe413910b6bf2b36d4
+- 2026-07-01T21:35:25.189Z actor=elias service=orbit region=coastal state=verified count=8822767 latency_us=272910 sample=740581ccde9921bc3f45891c58fa
+
+===== SYNTHETIC DOCUMENT 00029 =====
+
+## Policy memorandum SYN-98134
+
+Records for delta are retained for 154 synthetic days. Uma may
+approve routine restoration in the south region, but deletion requires two reviewers and
+a matching manifest. The controlling checksum is `6310f204a6ed7c44ef66e660` and the current inventory is
+700,876 objects. Exceptions expire after 9 days.
+
+Operators must state the observed fact, the applicable rule, and the resulting action.
+Inference is labeled explicitly. If the ledger is incomplete or the confidence
+score falls below 82%, the operator stops and requests new evidence rather than
+guessing. Every example here is fictional and contains no production identifiers.
+
+Evidence samples (synthetic):
+- 2026-11-03T19:37:51.198Z actor=kavya service=vector region=west state=committed count=7221144 latency_us=113346 sample=fe35df1ec8eec6d510dd5cfd6ae7
+- 2026-06-08T23:09:35.614Z actor=luka service=uplink region=coastal state=observed count=1010657 latency_us=404366 sample=6be24a44eec712826ec9b4501c33
+- 2026-12-05T01:13:17.477Z actor=zane service=summit region=river state=restored count=3629732 latency_us=83084 sample=821b3ff7b1939bbfc442c04d6de4
+- 2026-06-12T13:41:02.167Z actor=pavel service=cascade region=south state=deferred count=4332345 latency_us=629389 sample=c526d1f13454fa5afbf1b5c749c9
+- 2026-06-07T18:46:06.952Z actor=zane service=vector region=east state=queued count=6436184 latency_us=669878 sample=8aac84db33e18aac3c7236cd7566
+- 2026-04-20T17:07:39.922Z actor=nadia service=relay region=east state=replayed count=8417941 latency_us=895757 sample=8205c533f3e3e5126216a46856f1
+- 2026-01-07T05:32:56.510Z actor=uma service=keystone region=north state=accepted count=5739401 latency_us=634021 sample=971252b477768e5dbbf95e509d78
+- 2026-08-09T14:06:21.264Z actor=wale service=nova region=central state=verified count=7415762 latency_us=520868 sample=8bcb9e7795127c359a966c69b20a
+- 2026-01-25T11:36:15.764Z actor=xenia service=lattice region=south state=archived count=2269228 latency_us=415737 sample=dda50f7ccf6d0eb373933e88bb98
+- 2026-11-10T16:01:53.798Z actor=nadia service=vector region=north state=accepted count=3851651 latency_us=78361 sample=016d9ad773c961f56ecbaebb99e9
+- 2026-08-14T08:46:53.416Z actor=amina service=atlas region=coastal state=replayed count=5600381 latency_us=27791 sample=8e277de70b90aa3f786cb6e2d576
+- 2026-01-19T10:54:28.478Z actor=oren service=ember region=south state=rejected count=7995950 latency_us=357470 sample=4eb3f15dcc427ceb2631ff7057bc
+- 2026-10-25T09:33:12.842Z actor=chiyo service=keystone region=east state=queued count=5154827 latency_us=767889 sample=1a8b791ffa08935ac79c90ba63b7
+- 2026-07-08T20:02:50.728Z actor=zane service=delta region=river state=restored count=6808919 latency_us=307340 sample=ecb61454bfb8701886322d07ed2d
+- 2026-12-02T06:52:00.702Z actor=vera service=delta region=coastal state=verified count=7086890 latency_us=243406 sample=11d79c0df3fbe99365d4d562f33a
+- 2026-01-07T00:41:51.681Z actor=vera service=xylem region=coastal state=deferred count=3415311 latency_us=752883 sample=64e85353a0c6a6d0fecd15cc5d78
+- 2026-10-13T21:00:59.327Z actor=uma service=quartz region=alpine state=archived count=732017 latency_us=640294 sample=e9c4cb2599f99c85cc0875aef50c
+- 2026-10-06T23:53:30.625Z actor=oren service=summit region=east state=draining count=1714777 latency_us=228317 sample=9a0fef537f9af122dd2cbca4c57d
+
+===== SYNTHETIC DOCUMENT 00030 =====
+
+## Incident review SYN-22509
+
+The synthetic quartz service in the alpine region reported a 253 ms p95 latency
+during observation window 00030. Oren measured the request timeline and
+confirmed that 96,216 events crossed the gateway. The first alarm came from the
+policy monitor; trace `c4106d72ad1f82e86ff3d22a` connected it to a delayed replica rather than
+packet loss. The response team preserved the original logs, reduced concurrency by
+8 percent, and compared three recovery options before changing state.
+
+Decision: keep the canary at 83% confidence until two consecutive checks pass.
+Rollback: restore snapshot `snap-aa571dd3b1` if error growth exceeds
+10 percent. The owner must record the exact start time, affected shard,
+and verification query so the next operator can reproduce the conclusion.
+
+Evidence samples (synthetic):
+- 2026-08-06T13:38:01.040Z actor=tomas service=keystone region=west state=observed count=6419655 latency_us=278096 sample=2fc092b31b247461279581f760cd
+- 2026-02-09T19:13:57.010Z actor=farah service=ember region=west state=rejected count=6070700 latency_us=860669 sample=b460534004dc55219e9a78c82825
+- 2026-10-12T19:43:12.618Z actor=xenia service=orbit region=south state=committed count=5696087 latency_us=390756 sample=ad56999206a45752facaf58f3483
+- 2026-02-06T19:40:47.078Z actor=nadia service=grove region=river state=rejected count=6157089 latency_us=653511 sample=627d15a6d9a6a09daa88ecca66cd
+- 2026-06-15T21:30:12.589Z actor=oren service=keystone region=coastal state=running count=4411991 latency_us=40936 sample=0b07d05f2c95e7debe2ebe6baae6
+- 2026-04-11T05:23:58.430Z actor=hugo service=quartz region=east state=draining count=6539596 latency_us=274386 sample=e3622c0938c7f73240d544f8c18d
+- 2026-12-08T16:41:30.999Z actor=farah service=fjord region=north state=accepted count=8360825 latency_us=61090 sample=0956bb69d544fa65814abc3f0ca6
+- 2026-02-20T07:19:31.222Z actor=chiyo service=grove region=north state=observed count=4023833 latency_us=161530 sample=4175faf839179236770dc0dd56e4
+- 2026-05-25T11:25:11.091Z actor=bruno service=fjord region=east state=archived count=1585448 latency_us=745917 sample=bf1d693f5527848291ec598d4847
+- 2026-03-24T06:26:22.231Z actor=gita service=orbit region=south state=accepted count=3258149 latency_us=231317 sample=c0146209e9e9bfc398ec4bcebed5
+- 2026-08-03T05:34:48.142Z actor=nadia service=ion region=south state=observed count=255218 latency_us=777069 sample=ab9e078c8514e8d583593affec82
+- 2026-10-10T18:54:54.116Z actor=tomas service=cascade region=alpine state=accepted count=645375 latency_us=451629 sample=dab89a3e6da37f70409ed305b80d
+- 2026-04-06T19:37:01.636Z actor=jonas service=relay region=alpine state=draining count=5524200 latency_us=23304 sample=9a7560ee21e90d5b7a59ab86b5f7
+- 2026-12-04T09:42:12.364Z actor=xenia service=vector region=river state=rejected count=3647009 latency_us=153961 sample=a49e20b20a6c52d437cd07cd48ee
+- 2026-09-22T23:53:04.810Z actor=gita service=orbit region=coastal state=replayed count=7290717 latency_us=14891 sample=b897209cb4efe9854707d6d90f1c
+- 2026-06-06T18:48:58.493Z actor=sofia service=summit region=east state=verified count=5133050 latency_us=138122 sample=a5c5300af41b2b0315ec264d4249
+- 2026-07-28T22:57:56.099Z actor=yara service=beacon region=south state=rejected count=7909976 latency_us=219369 sample=9ce07ad5087406b28f67b0017f56
+- 2026-08-18T15:38:22.733Z actor=rina service=lattice region=coastal state=observed count=3994604 latency_us=62108 sample=a3066fbb064b5f5f7a57d9fe938f
+
+===== SYNTHETIC DOCUMENT 00031 =====
+
+## Operations procedure SYN-14245
+
+Purpose: rotate the nova worker pool without losing queued work. Scope is limited to
+the synthetic alpine environment. Before starting, Yara checks the manifest checksum
+`94812545c31c54c98a704fcc`, available capacity of 446,932 units, and alert threshold 87.
+
+1. Freeze new assignments and capture queue depth plus oldest-item age.
+2. Drain one worker group, compare counters, then inspect the dataset record.
+3. Resume at 34 percent traffic and observe for 9 minutes.
+4. Abort if latency exceeds 186 ms or reconciliation differs by more than
+   1 records.
+
+Evidence belongs in case SYN-14245; screenshots alone are insufficient because values must
+remain searchable and machine-readable. A second reviewer signs the final checkpoint.
+
+Evidence samples (synthetic):
+- 2026-08-24T09:10:40.812Z actor=tomas service=willow region=coastal state=draining count=1413310 latency_us=531957 sample=ad320090ac2fa4ec0319a1ba81d7
+- 2026-11-25T01:18:19.675Z actor=gita service=meridian region=river state=draining count=651783 latency_us=881096 sample=843d2e1dc0088ca7aea18cea6cd2
+- 2026-09-05T16:54:28.565Z actor=daria service=lattice region=south state=queued count=5958733 latency_us=837701 sample=7d99d2f95751eed521406505b028
+- 2026-07-17T15:49:47.522Z actor=yara service=lattice region=west state=archived count=3969536 latency_us=77660 sample=663c020968c0d137fdc1ac589110
+- 2026-03-06T18:00:46.559Z actor=yara service=juniper region=west state=observed count=3250666 latency_us=380110 sample=99751ef1390e5baeae2c77ef46e8
+- 2026-10-03T02:02:04.444Z actor=tomas service=fjord region=central state=running count=1761333 latency_us=491469 sample=5a47e6a3dc530496d4a5b0635f34
+- 2026-08-25T14:25:43.940Z actor=daria service=meridian region=river state=accepted count=2144982 latency_us=424349 sample=2b75858750cc62940993dbcd2a43
+- 2026-11-09T08:01:01.565Z actor=gita service=uplink region=central state=replayed count=4656355 latency_us=424214 sample=fc960f9a12735f4ff2b78708557b
+- 2026-07-14T11:34:51.022Z actor=daria service=willow region=west state=running count=3918594 latency_us=218393 sample=7f179b576a77a995fd4c7c8c653f
+- 2026-11-19T00:52:14.058Z actor=imani service=beacon region=north state=rejected count=7077585 latency_us=784413 sample=33e5ab814ee150047c7cd4f51e92
+- 2026-09-09T05:45:33.990Z actor=amina service=quartz region=alpine state=accepted count=8456714 latency_us=744732 sample=33e30fdb85f4cf2ac5229249eb9d
+- 2026-12-25T03:31:10.718Z actor=imani service=grove region=coastal state=queued count=3094124 latency_us=124965 sample=0af07d723f0fb2fec1e54205becf
+- 2026-08-15T18:54:34.194Z actor=sofia service=quartz region=alpine state=archived count=1053249 latency_us=859924 sample=1628b5f6293d163b193a486bc604
+- 2026-01-05T00:26:32.276Z actor=bruno service=tundra region=central state=restored count=678188 latency_us=512872 sample=6ac1771e8fd431c07b4568582bb9
+- 2026-03-03T19:08:26.551Z actor=rina service=atlas region=east state=queued count=8459039 latency_us=126386 sample=d85dfbe2888dd39b518e728142ae
+- 2026-06-11T05:18:42.747Z actor=daria service=beacon region=coastal state=deferred count=3712125 latency_us=42679 sample=65ff3ea0d2ef8642e6fb7129f34b
+- 2026-03-02T11:24:15.336Z actor=daria service=uplink region=alpine state=queued count=2661182 latency_us=484893 sample=d04bb8c1afa1c5a8fdf261659f27
+- 2026-10-02T23:00:17.281Z actor=gita service=meridian region=west state=rejected count=1551900 latency_us=591647 sample=e3413004ccc43cd0510ca3f7da84
+
+===== SYNTHETIC DOCUMENT 00032 =====
+
+## Meeting handoff SYN-82349
+
+Participants reviewed the tundra migration for the central region. Bruno owns the
+next action. The group chose a staged transition because the archive contains 325,427
+records and the current p95 is 100 ms. Finance needs a reconciled ledger, Operations
+needs a fresh snapshot, and Support needs a customer-safe status paragraph.
+
+The decision is reversible until checkpoint `5bb811740e700c7e001003e1` is approved. Open questions include
+whether the replica retains ordering during retries and whether the new worker
+honors the 92% saturation guard. The next review occurs on synthetic day
+28 at 20:15 UTC.
+
+Evidence samples (synthetic):
+- 2026-11-02T22:11:09.090Z actor=hugo service=cascade region=coastal state=observed count=8798839 latency_us=346341 sample=297b0cb4dd4de801af89bec89f58
+- 2026-06-11T21:09:24.045Z actor=zane service=atlas region=coastal state=restored count=4276293 latency_us=67686 sample=feb377de75ee5387002c3dfd501b
+- 2026-05-16T04:32:10.680Z actor=hugo service=tundra region=coastal state=queued count=2704639 latency_us=737118 sample=a119940f19c2c3d73e1516bb3219
+- 2026-10-01T15:57:36.261Z actor=luka service=juniper region=south state=verified count=7815724 latency_us=650640 sample=d710c0d894be6beed3bf8709df8c
+- 2026-10-26T13:09:37.707Z actor=hugo service=relay region=alpine state=running count=7511819 latency_us=215176 sample=42f751329589bb18c14c56ed1d21
+- 2026-03-28T09:02:54.844Z actor=hugo service=uplink region=central state=queued count=7263084 latency_us=93188 sample=ba3a0f2a93574b45c4ab0cbd6ad1
+- 2026-09-03T11:29:24.853Z actor=daria service=xylem region=alpine state=archived count=200731 latency_us=509280 sample=1e08459e84eaa8c1d480b8e25fe1
+- 2026-05-20T17:13:54.987Z actor=imani service=harbor region=alpine state=rejected count=6858571 latency_us=67533 sample=500189c891889aa33cd2b1c83077
+- 2026-03-13T02:40:30.376Z actor=gita service=meridian region=east state=committed count=3629223 latency_us=653748 sample=29fbafdbc71de6fec6b00d18bd87
+- 2026-01-01T22:44:30.349Z actor=yara service=vector region=east state=accepted count=5828344 latency_us=330752 sample=d281464b7b861717ac8ed832c8bb
+- 2026-12-05T04:57:50.765Z actor=oren service=atlas region=west state=verified count=1407169 latency_us=888991 sample=0897f7596d8c0c71b15a90a173e6
+- 2026-09-09T20:46:25.690Z actor=wale service=ember region=west state=verified count=7621121 latency_us=804217 sample=4701311833e2815a5693c1bb93dc
+- 2026-09-24T10:02:07.920Z actor=bruno service=fjord region=alpine state=verified count=4115403 latency_us=511703 sample=4d89dd7c9e6ff44de9792a188956
+- 2026-07-04T18:20:09.632Z actor=elias service=willow region=north state=archived count=1219276 latency_us=756867 sample=a6ab753d556fee51d7150bb98ce3
+- 2026-12-28T12:06:30.439Z actor=amina service=ion region=central state=archived count=8480793 latency_us=285138 sample=f32594e304adf92b946dbeb66a6b
+- 2026-12-12T13:14:31.934Z actor=rina service=prairie region=north state=accepted count=7707908 latency_us=533415 sample=0e992a3b9540734a812ac8ae9034
+- 2026-10-20T09:10:54.691Z actor=jonas service=fjord region=river state=restored count=4815521 latency_us=530245 sample=7edb5a24396f025d9f7974b76387
+- 2026-08-01T19:00:19.891Z actor=luka service=delta region=alpine state=draining count=3316845 latency_us=668915 sample=b2fc3fa8ef0db506f932e8bce450
+
+===== SYNTHETIC DOCUMENT 00033 =====
+
+## API contract note SYN-88068
+
+Endpoint `/v2/nova/coastal/items` accepts an idempotency key, a sequence number, and
+a payload digest. Example digest: `1d556eda1a9156ed98610792`. A successful response returns status 202,
+the normalized owner `sofia`, and a checkpoint cursor. Clients retry 408, 429,
+and 503 responses with bounded jitter; they do not retry validation failures.
+
+The server rejects batches above 754 items or payloads above
+17 MiB. At 72% capacity it advertises a retry window of
+11 seconds. Consumers must compare the returned cursor with their local
+timeline before acknowledging delivery. This contract is synthetic and uses
+reserved names only.
+
+Evidence samples (synthetic):
+- 2026-05-15T12:58:18.921Z actor=oren service=ion region=east state=restored count=1673008 latency_us=11736 sample=c9e99fb6fbb827fa22fd2d439fae
+- 2026-01-14T06:14:00.536Z actor=oren service=willow region=west state=running count=213209 latency_us=890951 sample=101f2fdd238b0c2eb624f58ea6d3
+- 2026-12-05T03:59:12.588Z actor=oren service=harbor region=central state=observed count=2497306 latency_us=216013 sample=43a8b0417e4f0a5ba79ad3710cad
+- 2026-12-03T12:34:58.259Z actor=vera service=vector region=river state=verified count=5517233 latency_us=733561 sample=1afe82a3e3448c7007b3a6aeae36
+- 2026-10-06T09:54:25.088Z actor=farah service=keystone region=north state=draining count=7896397 latency_us=192619 sample=8359aa6232bd3b33f06aedb8e95f
+- 2026-12-10T18:59:56.266Z actor=vera service=harbor region=alpine state=observed count=8351696 latency_us=732435 sample=ea920ac0b946dc6a771692c85988
+- 2026-07-08T13:06:29.723Z actor=gita service=uplink region=south state=committed count=2861227 latency_us=724623 sample=3121366e9245f677b7bda6eb8fcb
+- 2026-12-17T12:11:37.232Z actor=elias service=orbit region=east state=rejected count=1899817 latency_us=558544 sample=d44382974219cbdb583a1b21429c
+- 2026-11-07T00:34:24.442Z actor=elias service=cascade region=south state=restored count=5903471 latency_us=85088 sample=d5ff2ceaffb7fd9c831a55948163
+- 2026-05-12T18:23:58.711Z actor=imani service=prairie region=river state=queued count=1895406 latency_us=646920 sample=6fdc8227584f58d2ab63596076c8
+- 2026-04-23T18:28:55.421Z actor=elias service=juniper region=alpine state=deferred count=3099024 latency_us=29589 sample=68382b95bcce766d7aede6f2289a
+- 2026-06-25T09:03:33.168Z actor=oren service=willow region=south state=replayed count=4714415 latency_us=144316 sample=0ca4d2080eca75a18406bf943189
+- 2026-12-21T00:03:07.134Z actor=xenia service=nova region=alpine state=observed count=4718801 latency_us=702619 sample=7b2f3ac02e0e0930acffd99571ea
+- 2026-05-23T17:00:37.819Z actor=luka service=orbit region=north state=verified count=1087775 latency_us=803556 sample=092d2df4216aacdda85312997d8a
+- 2026-08-22T05:40:50.082Z actor=gita service=fjord region=central state=rejected count=2244344 latency_us=273881 sample=ad025ebbb37ecf8287d4f3a84221
+- 2026-10-04T06:47:23.323Z actor=daria service=willow region=central state=rejected count=8905984 latency_us=260626 sample=49279e5bf172a01a3035c15df619
+- 2026-03-05T12:31:53.861Z actor=sofia service=fjord region=north state=queued count=2905725 latency_us=758094 sample=a78879a9a194d57d56b40465cce1
+- 2026-03-15T06:28:40.314Z actor=farah service=delta region=south state=deferred count=6555128 latency_us=775736 sample=6ea4836f8dcaafc508521ab505c6
+
+===== SYNTHETIC DOCUMENT 00034 =====
+
+## Capacity experiment SYN-39111
+
+Experiment 67d16da1df47a0fc5c876a45 exercised orbit with 715,071 synthetic messages in the west
+region. Sample observations were [5696, 6738, 6619, 9963, 1855, 3178, 4298, 1051, 8508, 7496, 8295, 1236, 5160, 794, 3599, 6414]. Median latency was 564 ms, the acceptance
+gate was 98%, and Yara independently checked the arithmetic. The experiment
+changed only batch size; cache policy, model revision, power mode, and background load
+remained fixed.
+
+Interpretation distinguishes throughput from complete-request latency. A faster processing
+phase does not imply a faster user-visible response when queueing or generation dominates.
+Raw counters remain authoritative; summaries must exclude failed, cached, or truncated runs.
+
+Evidence samples (synthetic):
+- 2026-03-17T15:37:52.148Z actor=rina service=fjord region=east state=verified count=5118378 latency_us=635075 sample=41a702af4dd010dd75003c1b629a
+- 2026-09-08T21:03:28.877Z actor=pavel service=delta region=west state=archived count=6831952 latency_us=97838 sample=9e196cb6c56f4073dce2077e1daa
+- 2026-05-02T18:52:51.244Z actor=sofia service=relay region=west state=draining count=4300772 latency_us=188882 sample=b021999db3c5669b4e784dfae9f1
+- 2026-10-27T04:13:47.634Z actor=pavel service=keystone region=river state=replayed count=7209452 latency_us=113002 sample=94adbc51498aca281c863d694c58
+- 2026-07-23T01:06:23.260Z actor=bruno service=meridian region=central state=draining count=3999351 latency_us=204275 sample=d7e94d6b72b3967e476cebc63e00
+- 2026-02-12T21:53:02.244Z actor=gita service=willow region=south state=archived count=3457338 latency_us=706577 sample=cf0db3241842d978e4d880aa660a
+- 2026-08-14T06:56:23.764Z actor=daria service=summit region=alpine state=running count=8822060 latency_us=190060 sample=cdbc94843eacf595213010f620c3
+- 2026-12-02T17:50:14.621Z actor=pavel service=juniper region=south state=draining count=6720458 latency_us=160547 sample=d14069f69aadf1d80f2ff5e84481
+- 2026-07-16T15:15:32.449Z actor=amina service=tundra region=south state=deferred count=971929 latency_us=16026 sample=3fd9d8bb014d3557282743398cbe
+- 2026-04-08T12:53:43.043Z actor=amina service=grove region=alpine state=accepted count=4711358 latency_us=812261 sample=6edd5661ac7bfd744eae2e75be42
+- 2026-11-05T02:50:47.201Z actor=chiyo service=relay region=river state=queued count=285610 latency_us=800625 sample=bac64be51e4a8105376f0625c663
+- 2026-01-17T16:24:18.577Z actor=sofia service=harbor region=north state=rejected count=1242131 latency_us=72570 sample=0dfd50f8a7d22889138fec62d280
+- 2026-10-05T04:57:03.387Z actor=gita service=harbor region=central state=observed count=8620628 latency_us=742865 sample=32c0c547c0d66be808aa5d724573
+- 2026-10-25T03:24:45.627Z actor=elias service=tundra region=west state=committed count=5039894 latency_us=721090 sample=1141a2c902b8ca331bed6532bf87
+- 2026-03-11T14:51:44.153Z actor=zane service=prairie region=west state=rejected count=893223 latency_us=591717 sample=8bd65eb72998faa914d7c03eba25
+- 2026-06-11T20:05:21.572Z actor=uma service=cascade region=alpine state=observed count=4847225 latency_us=600853 sample=13734af8091417024ae153d71ef3
+- 2026-11-06T08:00:49.829Z actor=elias service=quartz region=coastal state=running count=987394 latency_us=401447 sample=aae8ef88aa5136c26345f6caf0f8
+- 2026-05-25T14:27:47.107Z actor=zane service=ion region=south state=committed count=3725469 latency_us=79521 sample=78ae1dc969ff9e0be56ffb1e7a8d
+
+===== SYNTHETIC DOCUMENT 00035 =====
+
+## Policy memorandum SYN-23904
+
+Records for prairie are retained for 50 synthetic days. Daria may
+approve routine restoration in the west region, but deletion requires two reviewers and
+a matching manifest. The controlling checksum is `db044a874dd5014acdd0e62d` and the current inventory is
+455,019 objects. Exceptions expire after 4 days.
+
+Operators must state the observed fact, the applicable rule, an
+===== AUTHORITATIVE SYNTHETIC RECORD C =====
+account=AC-990; owner=Keiko; tier=platinum; renewal=2026-09-30; state=active.
+
+===== SYNTHETIC DOCUMENT 00036 =====
+
+## Incident review SYN-63457
+
+The synthetic xylem service in the river region reported a 377 ms p95 latency
+during observation window 00036. Sofia reviewed the request timeline and
+confirmed that 462,138 events crossed the gateway. The first alarm came from the
+handoff monitor; trace `bbb0d066aa5fab2c70b73ea1` connected it to a delayed replica rather than
+packet loss. The response team preserved the original logs, reduced concurrency by
+2 percent, and compared three recovery options before changing state.
+
+Decision: keep the canary at 81% confidence until two consecutive checks pass.
+Rollback: restore snapshot `snap-11cfa13338` if error growth exceeds
+3 percent. The owner must record the exact start time, affected shard,
+and verification query so the next operator can reproduce the conclusion.
+
+Evidence samples (synthetic):
+- 2026-12-04T03:09:55.809Z actor=farah service=prairie region=north state=running count=7642514 latency_us=612834 sample=6c91952095d806d2605ca6f23305
+- 2026-07-05T23:00:21.386Z actor=jonas service=atlas region=west state=committed count=6087395 latency_us=514888 sample=0b705b7032ce80a8d35273728a1f
+- 2026-10-13T18:05:13.417Z actor=uma service=ion region=river state=draining count=3911501 latency_us=258924 sample=7ebf71678f546d99530f27515cbc
+- 2026-06-10T18:48:20.146Z actor=rina service=quartz region=west state=committed count=7639507 latency_us=64887 sample=8855720b1fb2fcc729092d16cda3
+- 2026-12-07T20:41:32.089Z actor=chiyo service=harbor region=south state=rejected count=5245822 latency_us=125303 sample=32117d62aea51e4467e1110b9d0b
+- 2026-09-22T12:30:54.284Z actor=pavel service=beacon region=central state=accepted count=1136302 latency_us=858394 sample=8ed9117932abf1e6c070928da60a
+- 2026-01-23T08:51:25.503Z actor=farah service=keystone region=coastal state=observed count=5798585 latency_us=287603 sample=e0d7a921cb7e1032c57599771220
+- 2026-10-01T17:19:34.593Z actor=hugo service=quartz region=west state=archived count=1351271 latency_us=738259 sample=46aab2d86e3ddbe613adb25f67c9
+- 2026-01-20T05:36:07.957Z actor=jonas service=cascade region=south state=queued count=2159372 latency_us=325189 sample=038d332dd4854b1ddd31503821f0
+- 2026-06-01T14:08:17.338Z actor=gita service=ion region=alpine state=running count=3626147 latency_us=634911 sample=d8769dc2dae9a44f2cb6b3289656
+- 2026-04-16T15:33:28.980Z actor=sofia service=willow region=south state=running count=7867304 latency_us=377113 sample=c431b331006acf16a0f76441c017
+- 2026-01-27T22:08:18.941Z actor=imani service=beacon region=west state=accepted count=2825889 latency_us=221600 sample=68ae3a27f1c1643a23689f72aaad
+- 2026-12-04T18:28:36.007Z actor=gita service=delta region=west state=restored count=5933771 latency_us=807362 sample=d590ab5ebf95af11f91f44c96736
+- 2026-01-21T04:05:28.161Z actor=amina service=orbit region=river state=deferred count=8425680 latency_us=86802 sample=7eda0fe23bcf7d6f889326b9f39e
+- 2026-11-06T22:57:56.363Z actor=amina service=harbor region=alpine state=deferred count=7722091 latency_us=660689 sample=dfbed85725218a1aa17e7d9da871
+- 2026-04-12T06:03:53.364Z actor=hugo service=beacon region=west state=rejected count=7606400 latency_us=749899 sample=6ae0401f2011c2f5137c1a0200c8
+- 2026-09-28T22:44:28.518Z actor=sofia service=meridian region=coastal state=committed count=8858956 latency_us=860696 sample=cc1a5f3b8b9fb7fc4f0044c89925
+- 2026-10-13T22:00:49.022Z actor=elias service=beacon region=central state=accepted count=7045893 latency_us=774812 sample=cb56d51154d2487760d6127f3241
+
+===== SYNTHETIC DOCUMENT 00037 =====
+
+## Operations procedure SYN-91693
+
+Purpose: rotate the vector worker pool without losing queued work. Scope is limited to
+the synthetic central environment. Before starting, Bruno checks the manifest checksum
+`b35241b2185e24d834017c8c`, available capacity of 702,493 units, and alert threshold 84.
+
+1. Freeze new assignments and capture queue depth plus oldest-item age.
+2. Drain one worker group, compare counters, then inspect the manifest record.
+3. Resume at 16 percent traffic and observe for 11 minutes.
+4. Abort if latency exceeds 835 ms or reconciliation differs by more than
+   4 records.
+
+Evidence belongs in case SYN-91693; screenshots alone are insufficient because values must
+remain searchable and machine-readable. A second reviewer signs the final checkpoint.
+
+Evidence samples (synthetic):
+- 2026-06-23T06:17:33.967Z actor=wale service=ion region=alpine state=running count=5165300 latency_us=179817 sample=3d2c078081cddd88cdc6d786706b
+- 2026-05-05T10:11:06.122Z actor=bruno service=uplink region=coastal state=observed count=85792 latency_us=364600 sample=0f523c82e233ef637fab0ad2536a
+- 2026-02-10T02:52:27.949Z actor=sofia service=ember region=river state=observed count=7180201 latency_us=419830 sample=86be51546e098eb6470548e5c20c
+- 2026-07-13T19:26:22.731Z actor=chiyo service=juniper region=coastal state=queued count=7784034 latency_us=501537 sample=846ed4428bb4a9e6117233611cfd
+- 2026-10-03T16:59:49.706Z actor=sofia service=uplink region=north state=draining count=4218343 latency_us=696914 sample=8bad1c1cddc69ab384aef235b07e
+- 2026-01-02T02:43:48.463Z actor=mei service=lattice region=north state=queued count=7858283 latency_us=139107 sample=1ade22b914546ecdbd9aa6a21679
+- 2026-04-24T20:30:35.933Z actor=oren service=juniper region=north state=verified count=2087631 latency_us=173797 sample=602219fb6e18c102b62e86924be8
+- 2026-06-25T03:30:37.700Z actor=elias service=prairie region=coastal state=observed count=2439614 latency_us=784884 sample=a3ee97c32ab228ee262cc06e6f9b
+- 2026-07-23T13:52:06.233Z actor=tomas service=ion region=east state=running count=304431 latency_us=266266 sample=c48a79b3f5719c5a52890b795a75
+- 2026-12-18T13:23:44.419Z actor=bruno service=lattice region=west state=rejected count=5159744 latency_us=511472 sample=3e4075f85587feea3eb503693bc3
+- 2026-12-28T07:02:42.562Z actor=uma service=ion region=river state=replayed count=4354485 latency_us=441941 sample=4784d1b8b513fd526077ce47f070
+- 2026-10-16T20:12:09.831Z actor=mei service=orbit region=east state=replayed count=4757390 latency_us=113170 sample=f1310e3c5e56c3f6d69fa343b5b6
+- 2026-03-02T22:44:26.272Z actor=elias service=quartz region=central state=rejected count=8792641 latency_us=284064 sample=2d1882467b93d5296b1872838213
+- 2026-08-24T21:29:16.445Z actor=chiyo service=fjord region=west state=deferred count=2627103 latency_us=572421 sample=c898c0ef4f2c3bb774b874a1eaa8
+- 2026-07-25T19:18:01.302Z actor=pavel service=ember region=north state=queued count=5301924 latency_us=129081 sample=84d192d366b1874efe9e05dfa160
+- 2026-11-20T00:29:35.798Z actor=nadia service=delta region=central state=observed count=8173549 latency_us=383981 sample=24abb58ccd2fb37eee8cc9d0a2a4
+- 2026-07-09T13:37:10.274Z actor=pavel service=willow region=west state=observed count=8116813 latency_us=126335 sample=d043e9816b2968b5a12874114500
+- 2026-05-02T16:36:32.180Z actor=nadia service=prairie region=coastal state=queued count=844763 latency_us=491298 sample=32491735e0455be2e5c906a55f23
+
+===== SYNTHETIC DOCUMENT 00038 =====
+
+## Meeting handoff SYN-39390
+
+Participants reviewed the willow migration for the coastal region. Bruno owns the
+next action. The group chose a staged transition because the archive contains 63,873
+records and the current p95 is 851 ms. Finance needs a reconciled ledger, Operations
+needs a fresh snapshot, and Support needs a customer-safe status paragraph.
+
+The decision is reversible until checkpoint `6c7d16bc078b9a524cd4a424` is approved. Open questions include
+whether the snapshot retains ordering during retries and whether the new worker
+honors the 70% saturation guard. The next review occurs on synthetic day
+02 at 16:45 UTC.
+
+Evidence samples (synthetic):
+- 2026-07-16T19:49:11.443Z actor=rina service=willow region=coastal state=draining count=378681 latency_us=864724 sample=303b1834d5014005ed81086aeb3c
+- 2026-12-20T12:53:18.577Z actor=vera service=atlas region=east state=archived count=3850187 latency_us=634485 sample=ae14427bc9bf85ef40d5993d1baa
+- 2026-03-23T04:07:32.979Z actor=chiyo service=ion region=alpine state=observed count=2500598 latency_us=85392 sample=691f6fe9ced1d50251eb612700e1
+- 2026-03-12T05:33:44.615Z actor=rina service=beacon region=river state=replayed count=6198263 latency_us=294145 sample=efeedac344dbf75b962c355d3938
+- 2026-12-05T13:53:17.775Z actor=tomas service=keystone region=west state=rejected count=2149754 latency_us=589588 sample=101ff23bcad35179c2e883cf1a6c
+- 2026-12-26T14:45:16.670Z actor=jonas service=relay region=east state=restored count=7438500 latency_us=401282 sample=24ca2430af7986be393d6fca20fb
+- 2026-12-07T09:38:24.726Z actor=chiyo service=relay region=north state=committed count=6307500 latency_us=661408 sample=ab01d1a68991690425b9a0c1e9d3
+- 2026-05-05T01:22:18.938Z actor=amina service=relay region=south state=running count=6383113 latency_us=801411 sample=f39b04d5c6214cd856396de0c672
+- 2026-04-25T15:58:25.468Z actor=rina service=atlas region=central state=deferred count=4694884 latency_us=44376 sample=8b03700a723f763405afc359c873
+- 2026-05-19T11:21:21.573Z actor=uma service=delta region=river state=verified count=7909023 latency_us=64022 sample=21d835d31c8cf766d2288699090d
+- 2026-02-12T14:15:19.421Z actor=chiyo service=meridian region=west state=replayed count=5827772 latency_us=188967 sample=8fec2b1f0426bb0357243b57165e
+- 2026-12-23T19:43:43.248Z actor=daria service=quartz region=east state=archived count=5557599 latency_us=385159 sample=ca30c255eab0be03d8914de5536e
+- 2026-12-08T10:50:24.660Z actor=daria service=prairie region=central state=rejected count=5140725 latency_us=354881 sample=54257ee46eafa2feace5ca03a33d
+- 2026-09-10T03:19:25.246Z actor=kavya service=summit region=west state=accepted count=397946 latency_us=503508 sample=2964aecc47574597095dce3c952f
+- 2026-09-28T20:10:36.337Z actor=gita service=vector region=west state=accepted count=1181599 latency_us=137227 sample=cc43f2b1517ce313071b705df95d
+- 2026-08-06T00:58:23.764Z actor=vera service=willow region=south state=deferred count=1138112 latency_us=92543 sample=3c2972503e66e36c08e95b9097b3
+- 2026-01-23T11:12:02.310Z actor=vera service=xylem region=north state=running count=6189677 latency_us=184958 sample=b00d67ea3de6934f0ef3d6ee62b1
+- 2026-07-28T09:54:47.759Z actor=farah service=grove region=river state=deferred count=895309 latency_us=600977 sample=f1324f676d73b94c21a98a986d85
+
+===== SYNTHETIC DOCUMENT 00039 =====
+
+## API contract note SYN-18707
+
+Endpoint `/v2/harbor/alpine/items` accepts an idempotency key, a sequence number, and
+a payload digest. Example digest: `3e81dc57400081ec6a1c6c73`. A successful response returns status 202,
+the normalized owner `oren`, and a checkpoint cursor. Clients retry 408, 429,
+and 503 responses with bounded jitter; they do not retry validation failures.
+
+The server rejects batches above 895 items or payloads above
+2 MiB. At 91% capacity it advertises a retry window of
+10 seconds. Consumers must compare the returned cursor with their local
+policy before acknowledging delivery. This contract is synthetic and uses
+reserved names only.
+
+Evidence samples (synthetic):
+- 2026-01-03T01:19:50.925Z actor=hugo service=grove region=west state=restored count=2694373 latency_us=142483 sample=8b089782c2fcacc96113441b01f2
+- 2026-05-20T01:36:45.280Z actor=jonas service=cascade region=north state=accepted count=3312189 latency_us=539361 sample=28a6599e14c842ffd809f487debd
+- 2026-05-24T22:16:18.484Z actor=wale service=cascade region=north state=verified count=5121845 latency_us=156513 sample=e92729e46da3b84bb45975fc53e8
+- 2026-01-12T04:06:11.429Z actor=pavel service=summit region=river state=deferred count=2086107 latency_us=197368 sample=182a1ee486584d6c01a5c402b8e4
+- 2026-02-21T20:23:21.299Z actor=vera service=ember region=east state=rejected count=3300984 latency_us=336570 sample=b21d5e54367cce40072f6537aaad
+- 2026-03-25T20:44:30.527Z actor=bruno service=willow region=coastal state=committed count=938822 latency_us=242151 sample=1f11a0f976f2253c4612499e26d9
+- 2026-10-09T11:35:37.193Z actor=nadia service=delta region=coastal state=deferred count=6295673 latency_us=75884 sample=364d229df1e273fe1a9c2e156a0b
+- 2026-05-16T16:54:22.869Z actor=rina service=summit region=north state=running count=8449651 latency_us=691306 sample=cc9779309f2a1b8276407ab2bad4
+- 2026-06-23T19:34:02.552Z actor=zane service=summit region=central state=observed count=7385948 latency_us=171037 sample=c1e5012cf5d61c93d4604e21eaaf
+- 2026-09-28T00:56:54.235Z actor=farah service=uplink region=east state=committed count=1130682 latency_us=324012 sample=f633853098d41fab4f06beb22c0a
+- 2026-10-15T23:53:53.422Z actor=vera service=lattice region=south state=archived count=8677025 latency_us=721934 sample=34abe833d
+TASK: Return only JSON with keys AC-771, AC-204, AC-990 in that order. Each value must be an object with keys owner, tier, renewal, state copied exactly from the authoritative synthetic records.

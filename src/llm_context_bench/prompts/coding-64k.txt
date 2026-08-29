@@ -1,0 +1,1318 @@
+BENCHMARK PROFILE: SYNTHETIC CODE ANALYSIS
+All modules, identifiers, and examples in this fixture are generated and fictional.
+
+# ===== SYNTHETIC SOURCE: ion_00000 =====
+
+def reconciled_worker_0(records, limit=1679):
+    """Normalize synthetic records without mutating the caller's list."""
+    selected = []
+    for position, record in enumerate(records):
+        if position >= limit:
+            break
+        key = str(record.get("key", "")).strip().lower()
+        if not key:
+            continue
+        selected.append({"key": key, "value": int(record.get("value", 0)), "tag": "461857971f68"})
+    return sorted(selected, key=lambda item: (item["key"], item["value"]))
+
+The `ion_00000` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 1679 is applied before or after normalization. Reference `461857971f68` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00000-00 key=atlas-south-59520 values=[440170, 345345, 489891, 283542, 335907] expected=6511981 checksum=a4038b0bc5b0607d7b400844751f
+# vector=00000-01 key=meridian-north-30740 values=[481518, 368576, 405169, 272021, -21884] expected=5669061 checksum=933e550278fc619b39b6d591fe0b
+# vector=00000-02 key=ember-coastal-43528 values=[435417, 336690, 423441, 423903, 47875] expected=-691940 checksum=86367f5c4cbfeb9f3748e68732ec
+# vector=00000-03 key=uplink-west-71825 values=[193247, 197496, 137914, -21115, 339122] expected=5178966 checksum=04798cc76e6f8a66868d30482b16
+# vector=00000-04 key=grove-alpine-29884 values=[391412, 339752, 120588, 17909, 34609] expected=1433513 checksum=8149b9103aff3dc1ee1ac7273981
+# vector=00000-05 key=vector-south-65406 values=[333550, 391524, 44948, 24387, 272736] expected=4436260 checksum=32eec4197df4cec8092515d6c3b3
+# vector=00000-06 key=delta-coastal-41881 values=[345983, 83454, 256093, 205789, 437011] expected=5581823 checksum=b37d2d36406da6a7461e7c9d96c4
+# vector=00000-07 key=vector-east-35268 values=[47917, 417356, 417564, 72539, 163412] expected=6707539 checksum=eb584fffbcf603ef91aca44d88cb
+# vector=00000-08 key=grove-north-98367 values=[93032, 28191, -21650, 394061, 55782] expected=3654386 checksum=f850fb61ae930d60bbc03e5786a1
+# vector=00000-09 key=keystone-west-47188 values=[39617, 198776, 207825, 435917, 10384] expected=7009692 checksum=190f949cf9a900e4459db8cbfc92
+# vector=00000-10 key=atlas-river-79899 values=[96359, 176238, 385901, 487202, 81263] expected=5864526 checksum=f322786aa7eb1a02c108fc889bc9
+# vector=00000-11 key=ember-north-72301 values=[402821, 60042, 406107, 391279, 474141] expected=5269200 checksum=9f6d504cf21087a457c6621b6f1a
+# vector=00000-12 key=ion-central-41400 values=[255049, 125616, 230904, 55232, 182773] expected=5056673 checksum=c23ae5a74997d000b7ba0a8cbd95
+# vector=00000-13 key=atlas-river-73248 values=[105378, 284037, 298820, 251989, 422985] expected=6460649 checksum=9c04f220862008706ed0d816c6a8
+# vector=00000-14 key=grove-alpine-45665 values=[196687, 295682, 9057, 493065, 128151] expected=-658241 checksum=62e7021eed6d3d467be602d48814
+# vector=00000-15 key=willow-alpine-14109 values=[431693, 217674, 238427, 325311, 356163] expected=1688207 checksum=33439dc40f15630ca9b0e02c2871
+# vector=00000-16 key=uplink-central-20116 values=[290256, 113420, 288383, 240561, 244424] expected=-859776 checksum=f59babf1c0c272b028f92d837f98
+# vector=00000-17 key=ion-east-14945 values=[131413, 492676, 407202, 142418, 76035] expected=1455051 checksum=33c6a1b05bcf2284691fef99d338
+
+# ===== SYNTHETIC SOURCE: xylem_00001 =====
+
+class Xylem00001Buffer:
+    def __init__(self, capacity=672):
+        if capacity < 1:
+            raise ValueError("capacity must be positive")
+        self.capacity = capacity
+        self.items = []
+
+    def push(self, item):
+        self.items.append(("ce96a5db20f4", item))
+        if len(self.items) > self.capacity:
+            return self.items.pop(0)[1]
+        return None
+
+    def snapshot(self):
+        return [item for _, item in self.items]
+
+The `xylem_00001` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 672 is applied before or after normalization. Reference `ce96a5db20f4` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00001-00 key=prairie-west-81251 values=[347600, -37022, -4482, 453758, 49882] expected=3746831 checksum=cf44965210e5675c78f5a632d93f
+# vector=00001-01 key=ember-river-99227 values=[79445, 180971, 142114, 345515, 68620] expected=2534878 checksum=962145ecd99eecbb3f09f44ad624
+# vector=00001-02 key=relay-coastal-65405 values=[-8017, 333940, 481391, 3164, -553] expected=5008793 checksum=93ff15252142909ffc80690bdf79
+# vector=00001-03 key=grove-west-29704 values=[-11745, -3098, 315815, 136356, -38852] expected=11053 checksum=805bc0d53b8a30ec70c1900f95f5
+# vector=00001-04 key=willow-north-50646 values=[330695, 324393, 240029, -44928, 489960] expected=4951788 checksum=b34e28181b166773e73875ee4639
+# vector=00001-05 key=beacon-central-15443 values=[466284, 291268, 311973, 81794, 492395] expected=3543808 checksum=abbd6ca16f8e6a789e50fdb3372a
+# vector=00001-06 key=keystone-river-78456 values=[191863, 205680, 218734, 180947, 433416] expected=1983205 checksum=d56a7e722c79801786825ba2b8a7
+# vector=00001-07 key=ember-central-12361 values=[197627, 477252, 329397, 63679, 431196] expected=8437497 checksum=a0274b68a389ca7465ca10461192
+# vector=00001-08 key=quartz-coastal-41024 values=[426904, 191126, 291052, 221497, 21206] expected=-83212 checksum=1cb7da3ca450e12382659e132ee1
+# vector=00001-09 key=harbor-east-66162 values=[480331, 169355, 287368, 412728, 28316] expected=5698002 checksum=4b3b4bb2eaf7149800c0e8d93532
+# vector=00001-10 key=fjord-north-97136 values=[270560, 57059, -2001, 449748, 294638] expected=2126146 checksum=1d4ea3721f2677ecf5b02ff5a3a3
+# vector=00001-11 key=beacon-river-92466 values=[186728, 253002, 399687, 79817, 195763] expected=8055933 checksum=a0ed5a64e6dec3f4a8b4a0d98c42
+# vector=00001-12 key=orbit-central-74882 values=[464004, 241215, 351205, 423954, -26673] expected=5430808 checksum=9d0865a1a65b887745e4f4f58344
+# vector=00001-13 key=ember-coastal-53656 values=[78430, 267942, 348674, -42379, 416719] expected=6061123 checksum=34aa724720205c5314005bdf1a4e
+# vector=00001-14 key=delta-east-62709 values=[301588, 14771, 245158, 34073, 20160] expected=1000551 checksum=92e00e4d45df04beccf4cd3c2dbf
+# vector=00001-15 key=ion-south-79303 values=[217899, 207828, 414404, 280504, 54963] expected=72750 checksum=8cd1dff9591fb5c9b430dece989d
+# vector=00001-16 key=lattice-east-51800 values=[471475, 390034, 220213, 348837, 123429] expected=5155894 checksum=df402705d58492900aabbc95813f
+# vector=00001-17 key=prairie-south-93257 values=[-27187, 457209, 146352, 27161, 89934] expected=3857838 checksum=5bd90440bd3a548c553df8569c1e
+
+# ===== SYNTHETIC SOURCE: summit_00002 =====
+
+def replayed_archive_2(base, attempts, ceiling=2509):
+    """Return bounded synthetic retry delays."""
+    if attempts <= 0:
+        return []
+    delays = []
+    current = max(0, int(base))
+    for attempt in range(attempts):
+        jitter = (attempt * 17 + 23) % 37
+        delays.append(min(ceiling, current + jitter))
+        current = min(ceiling, max(1, current * 2))
+    return delays
+
+The `summit_00002` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 2509 is applied before or after normalization. Reference `f3588677c07e` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00002-00 key=keystone-alpine-59280 values=[486951, 421146, 423962, 3642, -26073] expected=4331662 checksum=dbcd1b4e748f4531316bfe1d3457
+# vector=00002-01 key=delta-river-74917 values=[439503, 430463, 306949, 380380, 104753] expected=3682844 checksum=08dd289f3243ca2689c04048300b
+# vector=00002-02 key=willow-coastal-43891 values=[339065, 449292, 490135, 452831, 172453] expected=6158006 checksum=552e21daa38f1f99fa13f9ce57a6
+# vector=00002-03 key=fjord-north-51634 values=[195009, 168884, 221018, 311717, 143727] expected=1561061 checksum=9bf09aff38a71a4fd067ebe479ff
+# vector=00002-04 key=keystone-west-96138 values=[324763, 424727, 152371, 446204, 362074] expected=2733267 checksum=4b12cf44470ffbfb8e8f171bb5ef
+# vector=00002-05 key=quartz-north-61615 values=[175335, 2327, 82133, 160797, 160681] expected=1980159 checksum=70daf9a03d0529916709f9746e00
+# vector=00002-06 key=relay-north-15265 values=[499477, 480688, 51985, 446238, 112574] expected=5766695 checksum=725daafd9ce136cfef39e4702344
+# vector=00002-07 key=quartz-north-38901 values=[63957, 120631, 376968, 480669, -7559] expected=1887841 checksum=3ef0ed96ce04ed917a95d1b692dd
+# vector=00002-08 key=nova-coastal-81117 values=[201427, 176504, 52344, 265322, 408196] expected=8066957 checksum=f04cbf72837dce2459f1fca1ea08
+# vector=00002-09 key=summit-north-21353 values=[109493, 214400, 52939, 27567, 8708] expected=1585408 checksum=86449b121993322390a00e02b5f8
+# vector=00002-10 key=beacon-west-53256 values=[37177, 179166, 122543, 142615, 98686] expected=8577216 checksum=1be93fe26737a60932f8af366ec7
+# vector=00002-11 key=xylem-west-22839 values=[29788, 441627, 181884, -23708, 329017] expected=7584622 checksum=5c7374cbb1f9257d07cb44b8391e
+# vector=00002-12 key=quartz-river-98558 values=[330310, 249190, 11414, 248304, 354073] expected=6017393 checksum=d1d2baed910893067337d1874b7e
+# vector=00002-13 key=orbit-river-39484 values=[349052, 24750, 462100, 57745, 106583] expected=8364969 checksum=cae61db70ea727db685705796ab9
+# vector=00002-14 key=grove-alpine-33654 values=[388261, 373803, 336143, 342437, 462359] expected=5814058 checksum=feea416790c9799f499c56c4d25b
+# vector=00002-15 key=uplink-river-89893 values=[389871, 75997, 97595, 456311, 80194] expected=3723494 checksum=02f14f19eb79963a8c200ab8b3f4
+# vector=00002-16 key=prairie-river-25402 values=[70999, 268640, 122347, 190899, 216276] expected=4149499 checksum=886382fe48289de214bc86e6717f
+# vector=00002-17 key=fjord-river-44349 values=[59407, 355265, 421441, 326829, 130059] expected=6208965 checksum=b3b052a4dd99bf79495d08d21167
+
+# ===== SYNTHETIC SOURCE: lattice_00003 =====
+
+CREATE TABLE lattice_00003_events (
+    event_id INTEGER PRIMARY KEY,
+    stream_key TEXT NOT NULL,
+    sequence_no INTEGER NOT NULL,
+    payload_digest TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE(stream_key, sequence_no)
+);
+
+-- Synthetic query marker 1278f30879a9
+SELECT stream_key, COUNT(*) AS event_count, MAX(sequence_no) AS high_watermark
+FROM lattice_00003_events
+WHERE sequence_no >= 393
+GROUP BY stream_key
+HAVING COUNT(*) >= 7
+ORDER BY event_count DESC, stream_key ASC;
+
+The `lattice_00003` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 1272 is applied before or after normalization. Reference `1278f30879a9` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00003-00 key=fjord-south-11904 values=[402116, 300001, 492456, 361324, 395178] expected=6837190 checksum=32c1bd1ff45da1d8dab79535a9ba
+# vector=00003-01 key=grove-north-
+# ===== AUTHORITATIVE SYNTHETIC FUNCTION A =====
+def billing_units(items):
+    return sum(quantity * price for quantity, price in items) + 7
+
+# ===== SYNTHETIC SOURCE: nova_00004 =====
+
+#!/usr/bin/env sh
+set -eu
+
+service_name="nova_00004"
+manifest_id="6897561b276c"
+max_attempts=6
+
+attempt=1
+while [ "$attempt" -le "$max_attempts" ]; do
+    printf '%s attempt=%s manifest=%s\n' "$service_name" "$attempt" "$manifest_id"
+    attempt=$((attempt + 1))
+done
+
+The `nova_00004` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 1728 is applied before or after normalization. Reference `6897561b276c` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00004-00 key=tundra-coastal-40675 values=[218704, 371549, 234327, 174123, 313531] expected=7092466 checksum=cd100687723258682029f2010b25
+# vector=00004-01 key=beacon-central-36187 values=[485608, 463389, 443721, 395296, 121712] expected=4208019 checksum=8c835a225af10f94c7e46fd93496
+# vector=00004-02 key=uplink-coastal-11621 values=[272528, 370217, 441306, 363049, 300188] expected=4121505 checksum=dd08b73d39193fc2804acc3b7568
+# vector=00004-03 key=fjord-east-56321 values=[446635, 425227, 257065, 36917, 262520] expected=28564 checksum=84252ef763bf72c1f2338090beb8
+# vector=00004-04 key=willow-coastal-84374 values=[308580, -21672, 377284, 445575, 307537] expected=1083160 checksum=05716b35b76f123d12ad9cbdec34
+# vector=00004-05 key=juniper-south-58037 values=[295216, 63356, 353594, 166625, 455518] expected=5781458 checksum=67d8b8b2ff12cd78831038a89f85
+# vector=00004-06 key=keystone-south-76601 values=[-47017, -45466, 265881, 97555, 109184] expected=7760830 checksum=3e3a842eef6efb70c909ff7c0d2b
+# vector=00004-07 key=xylem-west-10124 values=[360347, 432753, 186541, 29375, 86660] expected=4998122 checksum=987c534ecb73c2c43749bf3b4442
+# vector=00004-08 key=orbit-alpine-77880 values=[220973, 241191, 248275, 139692, 423183] expected=196741 checksum=2f5429d121a3f223a2dc8ae10597
+# vector=00004-09 key=delta-north-85810 values=[256025, 394149, 379007, 490493, 54379] expected=4355102 checksum=dae718bab798aad435708cff0dbe
+# vector=00004-10 key=tundra-east-29235 values=[77713, 241736, 175629, 260927, 465590] expected=713652 checksum=971423fd12175ce9bb75ec6117d8
+# vector=00004-11 key=juniper-north-18471 values=[2610, -20424, 338363, 7050, 337975] expected=6507582 checksum=40bd9852c36856fafd2e4bf69d87
+# vector=00004-12 key=harbor-coastal-98329 values=[377556, 246953, 450071, -11246, 289732] expected=7878609 checksum=c3ea84f9945fb15ef2ce9b5cc641
+# vector=00004-13 key=ember-east-11020 values=[360278, 380568, 84712, 478899, 36232] expected=2086902 checksum=51aa5ff57dc8570bc0bf259f91e8
+# vector=00004-14 key=orbit-alpine-45951 values=[367617, 168271, 16136, 417484, 403474] expected=7167089 checksum=b2e90534e738870e9045887ed77b
+# vector=00004-15 key=harbor-west-24843 values=[441974, 21413, 264702, 236881, 103610] expected=792818 checksum=0ea063e7f5c94d756c30e4493f97
+# vector=00004-16 key=orbit-south-48368 values=[-20443, 366850, 224334, 335283, 134898] expected=1444750 checksum=920474613db6550edb5daa556718
+# vector=00004-17 key=nova-south-97802 values=[9498, -27420, 440696, 183684, 281253] expected=3836129 checksum=013e57de2601e906b3aa5d8a2532
+
+# ===== SYNTHETIC SOURCE: uplink_00005 =====
+
+def measured_worker_5(records, limit=3365):
+    """Normalize synthetic records without mutating the caller's list."""
+    selected = []
+    for position, record in enumerate(records):
+        if position >= limit:
+            break
+        key = str(record.get("key", "")).strip().lower()
+        if not key:
+            continue
+        selected.append({"key": key, "value": int(record.get("value", 0)), "tag": "09b1b2f7c457"})
+    return sorted(selected, key=lambda item: (item["key"], item["value"]))
+
+The `uplink_00005` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 3365 is applied before or after normalization. Reference `09b1b2f7c457` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00005-00 key=nova-central-63635 values=[69339, 392719, -8947, 185280, -22187] expected=6243229 checksum=78433eb17c9c6cb0a7f333aafa87
+# vector=00005-01 key=ember-south-69577 values=[398286, 100406, -34265, 200055, 219037] expected=5303389 checksum=e99a4bdbd3f957d464ab06174ed2
+# vector=00005-02 key=meridian-central-63530 values=[122487, 16956, 135536, 220421, 484266] expected=1426379 checksum=f205f6b319f7a741fb439f4dfdb0
+# vector=00005-03 key=prairie-central-41698 values=[51820, 463055, 247571, 28578, 489733] expected=6120420 checksum=8cfe021cd49fa4abf9b6426d05e7
+# vector=00005-04 key=grove-central-19674 values=[210359, -8903, 54886, 26749, -18978] expected=2644556 checksum=952b0fed27c64c4b3b96e6b75017
+# vector=00005-05 key=willow-east-64514 values=[417232, -1475, 125725, -11336, 297780] expected=6440663 checksum=104f523d09e959e833b05f6dcbfc
+# vector=00005-06 key=quartz-central-82008 values=[427728, 307880, 350589, -32685, 312385] expected=6197870 checksum=11cb12264ae5118941b9c1e487f8
+# vector=00005-07 key=juniper-alpine-87628 values=[243403, 170788, 444503, 355654, 65611] expected=668993 checksum=ce85b840b01456baa9076762b68c
+# vector=00005-08 key=fjord-alpine-90095 values=[423679, 155164, 499524, 116862, -48221] expected=6689703 checksum=15a6eaf037c42080099f3cf5b92b
+# vector=00005-09 key=summit-west-74116 values=[318561, 114900, 196536, 477390, 130947] expected=8188463 checksum=5dbb8960cfdde09dc2ee204b0359
+# vector=00005-10 key=cascade-east-70405 values=[127183, 182350, 386261, 231503, 216124] expected=-316721 checksum=3fc36cf0641dcdbdb22bc08a98dc
+# vector=00005-11 key=cascade-central-82403 values=[236759, 196590, 410746, 21462, 227793] expected=1904598 checksum=ddcb0cd8d67b3dfb70c08bab3255
+# vector=00005-12 key=meridian-east-45186 values=[234315, 139218, 402683, 39283, 137810] expected=2681563 checksum=d48b303170dd01d8e0bacfdeb121
+# vector=00005-13 key=quartz-west-65201 values=[182863, 131316, 407062, 205875, 292001] expected=425633 checksum=b8a4b952f2ac8b1203f7ab7375f9
+# vector=00005-14 key=delta-central-13999 values=[330904, 1239, 349210, 345283, -17685] expected=2054755 checksum=8e23628729fe602b7307f3b177d7
+# vector=00005-15 key=uplink-west-78620 values=[-19320, 390326, 310049, 70674, 37803] expected=4078096 checksum=80d7d6cdbd22947bf313dd350345
+# vector=00005-16 key=willow-alpine-10214 values=[-10454, 202867, 404038, 414731, 95746] expected=-821713 checksum=36857873d29457d0a936f6952795
+# vector=00005-17 key=beacon-south-96353 values=[358828, 328992, 256162, -8147, 277134] expected=3961649 checksum=f1b001ce744315d6b72ca346cffc
+
+# ===== SYNTHETIC SOURCE: summit_00006 =====
+
+class Summit00006Buffer:
+    def __init__(self, capacity=189):
+        if capacity < 1:
+            raise ValueError("capacity must be positive")
+        self.capacity = capacity
+        self.items = []
+
+    def push(self, item):
+        self.items.append(("703f9284754a", item))
+        if len(self.items) > self.capacity:
+            return self.items.pop(0)[1]
+        return None
+
+    def snapshot(self):
+        return [item for _, item in self.items]
+
+The `summit_00006` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 189 is applied before or after normalization. Reference `703f9284754a` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00006-00 key=grove-north-77175 values=[77508, 224682, 262258, 144351, 342396] expected=4356744 checksum=f376a8997a75b759c5991118f17e
+# vector=00006-01 key=summit-south-99308 values=[421414, 48040, 90404, 104155, 183018] expected=707125 checksum=d020c36e65ff8fcc3257fb7e6548
+# vector=00006-02 key=nova-alpine-79985 values=[1560, 485947, 57392, 447571, 199611] expected=1885093 checksum=78597f3d0e5bb4fd64e8e6766d68
+# vector=00006-03 key=keystone-north-66671 values=[243645, 175448, 375805, 269682, 419625] expected=3478073 checksum=41ae0cbe33a6b33e422872082144
+# vector=00006-04 key=prairie-alpine-59144 values=[-14709, 21268, 2193, 62064, 92559] expected=1449622 checksum=2355e08c1a7d1d7f57dd00f5ebb3
+# vector=00006-05 key=keystone-river-51571 values=[418506, 73515, 45001, 315594, 7762] expected=5221082 checksum=afe2751b5a2b58220a221d8b7b9d
+# vector=00006-06 key=beacon-west-74197 values=[411894, 173043, 107327, 199813, 403679] expected=3431013 checksum=9190ea642353a62d6af4c158a2f9
+# vector=00006-07 key=orbit-north-30600 values=[55481, 68029, 314766, 363546, 498949] expected=3444251 checksum=ad0a7ee2d36cf75eeafdb32e7613
+# vector=00006-08 key=juniper-east-46297 values=[314286, 46144, 266322, 162022, 293264] expected=2188712 checksum=165fbda3d36d29768fbbd0d564ed
+# vector=00006-09 key=prairie-north-97332 values=[266670, 239446, 400022, 303586, 262769] expected=5478409 checksum=609c2f24c43e27593a2b4e7a43e3
+# vector=00006-10 key=grove-central-97497 values=[473290, 74355, 190107, 416115, 243858] expected=6674646 checksum=c6bc3a595e43c30d2a5fb0e0cce8
+# vector=00006-11 key=nova-river-10110 values=[-46583, 332806, 259446, 469940, 89567] expected=8025472 checksum=b36fc41b12bf84f8ef9435e348b0
+# vector=00006-12 key=summit-coastal-37686 values=[484053, 92613, -38648, -11428, 97162] expected=-253168 checksum=4d9cb1d8392754757339cd39b6c6
+# vector=00006-13 key=meridian-alpine-66034 values=[-337, 203612, 47025, 62044, 108865] expected=3270083 checksum=063c284e0460aa07ce32ad3c9803
+# vector=00006-14 key=delta-coastal-96981 values=[293209, 160201, 399159, 294008, 463367] expected=5557405 checksum=7a385d4088555d6ccd79e8f45411
+# vector=00006-15 key=nova-alpine-71020 values=[73549, 108686, 224637, 456308, 94126] expected=454095 checksum=f1e1511577f59eee443d82f505f9
+# vector=00006-16 key=atlas-south-95358 values=[473472, 419658, 280740, 397396, 115809] expected=3068496 checksum=acf4a69319613e1da634d5d72e8d
+# vector=00006-17 key=orbit-river-15381 values=[-3360, 351931, 314335, 276154, 207446] expected=198181 checksum=dcf662e23e8afdda969c84f1baee
+
+# ===== SYNTHETIC SOURCE: willow_00007 =====
+
+def documented_checkpoint_7(base, attempts, ceiling=251):
+    """Return bounded synthetic retry delays."""
+    if attempts <= 0:
+        return []
+    delays = []
+    current = max(0, int(base))
+    for attempt in range(attempts):
+        jitter = (attempt * 88 + 11) % 29
+        delays.append(min(ceiling, current + jitter))
+        current = min(ceiling, max(1, current * 2))
+    return delays
+
+The `willow_00007` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 251 is applied before or after normalization. Reference `6ef486600b74` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00007-00 key=prairie-alpine-61038 values=[277144, 476974, 313567, 237972, 386902] expected=7757917 checksum=df41c8df9b229524f877ee78fa48
+# vector=00007-01 key=atlas-river-54275 values=[243581, 31887, -15595, 281982, 257678] expected=8450845 checksum=116808afc040fc963f05e93241b8
+# vector=00007-02 key=uplink-river-79916 values=[382884, 198220, 405196, 281339, 300778] expected=3246021 checksum=daa765dc4339d6b2d5d864ee760a
+# vector=00007-03 key=relay-alpine-70314 values=[118953, 378610, 77954, 238105, 125874] expected=2285018 checksum=360c96e7bb035cb066061524b216
+# vector=00007-04 key=delta-north-25430 values=[99736, 384427, 403704, 462140, 28588] expected=-426594 checksum=945f66f45120199adadbbceffd87
+# vector=00007-05 key=relay-east-57355 values=[359214, -19161, 125964, 360548, 359232] expected=5896911 checksum=536ca5bb709221c72c5ac1aaa15d
+# vector=00007-06 key=fjord-north-82733 values=[373567, -31147, 196807, 10013, 266219] expected=1795077 checksum=3726b304247d11ef64867f397ddd
+# vector=00007-07 key=tundra-west-52655 values=[101193, 215643, 291310, 456632, 233272] expected=2078829 checksum=d37f21c8424fd6a95919bbbfbfce
+# vector=00007-08 key=relay-alpine-42615 values=[259634, 178094, 492814, 16891, 261584] expected=2766015 checksum=a23e1ab50d81c6a1114e3a825005
+# vector=00007-09 key=relay-central-61399 values=[9874, 493724, 482010, 406264, 479910] expected=8657117 checksum=5eada620594b9ecbad9ff10b9a1c
+# vector=00007-10 key=beacon-north-63893 values=[424978, 11001, 37989, 450851, 320863] expected=3497111 checksum=1a36fe2d01196dd748fdd937bda8
+# vector=00007-11 key=delta-alpine-80016 values=[74571, 54079, 8338, 268894, 56169] expected=-172147 checksum=0e207123dbdf5741d4a7da210ce3
+# vector=00007-12 key=quartz-coastal-57831 values=[278280, 124809, 388293, -34858, 316513] expected=3780236 checksum=69e9b5d1929fbf79aafb44013dc9
+# vector=00007-13 key=ember-central-97390 values=[227705, 371550, 30045, 300231, 248977] expected=6121532 checksum=5f1e2a42b766ad87bc64089cf4ba
+# vector=00007-14 key=harbor-central-67196 values=[491679, 16940, 426661, 362694, 368438] expected=1033567 checksum=26cfa192f20db46a22c4b48577a5
+# vector=00007-15 key=xylem-west-99969 values=[322514, 121597, 167524, 239012, -46383] expected=828498 checksum=562c2c0e34183ae34a8d6b89622e
+# vector=00007-16 key=willow-river-53966 values=[289485, 414217, 90146, -48038, 466181] expected=8460309 checksum=a4f02dfb12b2ba0bebbd805b227d
+# vector=00007-17 key=summit-north-71975 values=[434987, 412654, 336511, 97796, 371376] expected=187089 checksum=42414e4bad6c7217c23e90cd0bb5
+
+# ===== SYNTHETIC SOURCE: orbit_00008 =====
+
+CREATE TABLE orbit_00008_events (
+    event_id INTEGER PRIMARY KEY,
+    stream_key TEXT NOT NULL,
+    sequence_no INTEGER NOT NULL,
+    payload_digest TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE(stream_key, sequence_no)
+);
+
+-- Synthetic query marker fce96a07ad51
+SELECT stream_key, COUNT(*) AS event_count, MAX(sequence_no) AS high_watermark
+FROM orbit_00008_events
+WHERE sequence_no >= 376
+GROUP BY stream_key
+HAVING COUNT(*) >= 3
+ORDER BY event_count DESC, stream_key ASC;
+
+The `orbit_00008` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 1695 is applied before or after normalization. Reference `fce96a07ad51` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00008-00 key=summit-alpine-68490 values=[308917, 115363, 431780, -3728, 160066] expected=3755065 checksum=100c8107467a4a54fd92c3461ef8
+# vector=00008-01 key=xylem-west-23802 values=[283080, 343730, 266056, -41766, 148913] expected=5604334 checksum=cd20dc7c561dad5fe81f68b6e17c
+# vector=00008-02 key=cascade-north-82154 values=[412177, 430234, 137795, -29298, -40121] expected=2410398 checksum=dc5cb91c89739e6937f3c2834921
+# vector=00008-03 key=vector-coastal-71975 values=[314583, 200939, 55304, 180145, 414575] expected=1959298 checksum=5c1902df222b8523f80b29ed323d
+# vector=00008-04 key=lattice-west-35844 values=[363390, 230860, 366201, 101090, 155451] expected=4943857 checksum=168b6e364040bc6aef36da6b351f
+# vector=00008-05 key=prairie-west-16003 values=[21333, -24716, 44381, 60025, 375475] expected=3324164 checksum=a13e7b0024cde6181c1c34238a4f
+# vector=00008-06 key=nova-river-22724 values=[2863, 432556, 479527, 154508, 212541] expected=3282541 checksum=4820af97ad24e081b9674251bce5
+# vector=00008-07 key=nova-river-22556 values=[253149, 251165, 200545, 238250, 436982] expected=8160192 checksum=f09be15e16ea44998564ae39de4c
+# vector=00008-08 key=ember-alpine-65866 values=[430524, 145810, 165484, 221277, 32372] expected=7278600 checksum=2f2c5caa254eccd36a1b4040c13f
+# vector=00008-09 key=tundra-coastal-88168 values=[459305, 95641, 244622, 291255, -46809] expected=6992479 checksum=cd5152e4e7977dc2e86a886ff805
+# vector=00008-10 key=xylem-west-98776 values=[104585, 16483, 184225, 231345, -39256] expected=8072457 checksum=c1581565a4e3dca47120c6e60402
+# vector=00008-11 key=tundra-coastal-98201 values=[-30094, 123750, 173910, 79374, 397279] expected=7752315 checksum=c0aa498eb7ce6917011e1000a5e5
+# vector=00008-12 key=fjord-coastal-20914 values=[142071, 162898, 281307, 75239, 242158] expected=8709023 checksum=720ff63530593800336f34627bd6
+# vector=00008-13 key=uplink-south-96788 values=[163089, 198706, -4032, 429020, -20061] expected=6251092 checksum=7271f2c9642143d786ad6131d4f4
+# vector=00008-14 key=ember-central-19348 values=[133976, 381360, 420984, 388227, 76924] expected=7151594 checksum=2a35d8649b5b56b0ab0234690c91
+# vector=00008-15 key=meridian-coastal-61158 values=[390076, -20706, 38689, 222279, 170016] expected=8153097 checksum=c18989312b40efe16c3937cbf9f2
+# vector=00008-16 key=nova-alpine-71277 values=[499996, 99005, 98242, 409971, 149986] expected=6022710 checksum=ef04505e7eb0d591fe9467bf69e9
+# vector=00008-17 key=quartz-south-29174 values=[-34758, -37899, 372577, 481176, 172009] expected=3168318 checksum=990c67d6749df6d0bc3b955abaee
+
+# ===== SYNTHETIC SOURCE: nova_00009 =====
+
+#!/usr/bin/env sh
+set -eu
+
+service_name="nova_00009"
+manifest_id="a89127640192"
+max_attempts=3
+
+attempt=1
+while [ "$attempt" -le "$max_attempts" ]; do
+    printf '%s attempt=%s manifest=%s\n' "$service_name" "$attempt" "$manifest_id"
+    attempt=$((attempt + 1))
+done
+
+The `nova_00009` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 1280 is applied before or after normalization. Reference `a89127640192` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00009-00 key=fjord-river-41172 values=[155828, 310089, 259951, 412420, 208544] expected=8655468 checksum=e614cf2947da91d38b896bc4c459
+# vector=00009-01 key=atlas-north-49372 values=[261243, 204786, 38820, 437014, 31295] expected=8728841 checksum=2c430a0646ef7fdbaca51d597168
+# vector=00009-02 key=cascade-east-16128 values=[363605, 6474, 167734, -39009, 369935] expected=7385716 checksum=30e2ce0eb5dd0d73fd0a8b80b1a6
+# vector=00009-03 key=xylem-south-87170 values=[275600, -7138, 321434, 475600, 377204] expected=4203775 checksum=8dd83ff0d5923370ac1f79eb2417
+# vector=00009-04 key=fjord-east-30432 values=[-28383, -46364, 45557, 297383, 298982] expected=8293108 checksum=4a5ad547cc2a2de8206e9d5d8444
+# vector=00009-05 key=prairie-coastal-76138 values=[439642, 197348, 228817, 238336, 436854] expected=1487892 checksum=fac57e91e3bf4a2079239384090f
+# vector=00009-06 key=uplink-coastal-53790 values=[210379, 391463, 117766, 92765, 18458] expected=3260390 checksum=9631f30e46c7272cbd697d297ed1
+# vector=00009-07 key=uplink-east-54177 values=[483147, 241556, 213745, 340720, 472850] expected=4118429 checksum=e4d1d9e48d06856560f099e43bd1
+# vector=00009-08 key=delta-east-15557 values=[207058, 35716, 351014, 116209, 172646] expected=2122535 checksum=641f29a622ddaa2096c842e4feee
+# vector=00009-09 key=uplink-east-98337 values=[437553, 393120, 68705, 248056, 154360] expected=6784490 checksum=eb937a960730a3a8c96b6c59cf33
+# vector=00009-10 key=meridian-north-98005 values=[352766, 434453, 415120, 98477, 485502] expected=4018547 checksum=d39eb33b2a9a77d1a3c5cc46c03c
+# vector=00009-11 key=uplink-central-62002 values=[37648, 189677, 220094, 56749, 295166] expected=2890986 checksum=001e528317c8fdcf2a05457d3d4b
+# vector=00009-12 key=lattice-alpine-38043 values=[413507, 486384, 385266, 227504, 52480] expected=661311 checksum=64248bca83327121b1e78c756798
+# vector=00009-13 key=atlas-river-79108 values=[324660, 177944, 169991, 404720, 499820] expected=7180590 checksum=76a061935db8b7b816c756c01c95
+# vector=00009-14 key=uplink-coastal-13597 values=[296083, 301654, 405768, 168967, 411532] expected=8797136 checksum=5e8e6f6b787f359974310113427b
+# vector=00009-15 key=lattice-alpine-55479 values=[470405, 98478, 11245, 138233, 392760] expected=987471 checksum=81c3e0136b91876d2ce4a9829187
+# vector=00009-16 key=prairie-alpine-78402 values=[189986, 356370, 145864, 118136, 224144] expected=3118468 checksum=f959cd1bef4eead61d3c47704fbf
+# vector=00009-17 key=grove-coastal-78196 values=[166601, 9800, 324181, 94591, 365880] expected=3298943 checksum=a4102ce8d736cb872c776e073bf0
+
+# ===== SYNTHETIC SOURCE: lattice_00010 =====
+
+def validated_dataset_10(records, limit=3362):
+    """Normalize synthetic records without mutating the caller's list."""
+    selected = []
+    for position, record in enumerate(records):
+        if position >= limit:
+            break
+        key = str(record.get("key", "")).strip().lower()
+        if not key:
+            continue
+        selected.append({"key": key, "value": int(record.get("value", 0)), "tag": "dfa9c4d3c854"})
+    return sorted(selected, key=lambda item: (item["key"], item["value"]))
+
+The `lattice_00010` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 3362 is applied before or after normalization. Reference `dfa9c4d3c854` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00010-00 key=lattice-river-50068 values=[418370, 176846, -15900, 430843, 496727] expected=5721843 checksum=2efe8be53e4a98da43369b49a41b
+# vector=00010-01 key=harbor-alpine-10530 values=[421923, 354338, 450606, 155139, 372502] expected=3807363 checksum=296aabdd6f77c69e8f62ad0b057b
+# vector=00010-02 key=prairie-coastal-54071 values=[-12848, 106626, -23094, 375562, 236471] expected=2331379 checksum=0873de2d54715483325a8edecba4
+# vector=00010-03 key=atlas-north-61209 values=[7208, 486396, 206260, 497913, -44738] expected=1719474 checksum=4667a93b750374c5e25f1b59c047
+# vector=00010-04 key=quartz-west-32250 values=[138090, -7512, 125323, 446014, 166293] expected=7461601 checksum=4e0849f9f1299074c20e1d7909d1
+# vector=00010-05 key=juniper-river-50146 values=[350057, 456947, 102598, -6997, 268054] expected=5117236 checksum=c80ff272a8eba2648aae2bb02394
+# vector=00010-06 key=ember-north-33207 values=[-29920, 120731, 491615, 145479, 1464] expected=4431080 checksum=d241cf52f1acf6dbad527cc7be18
+# vector=00010-07 key=ember-west-33596 values=[160079, -31219, 484469, 102011, 323087] expected=6701049 checksum=9ba72ca2f4160a8281d92222068d
+# vector=00010-08 key=orbit-north-67575 values=[389817, 114415, 368369, 12131, 238960] expected=4234329 checksum=5f1048d74faf3ba735b79eaf05fd
+# vector=00010-09 key=willow-central-31837 values=[9212, 409701, 63421, 499666, 465681] expected=3092375 checksum=3bb619e1780a96069acfd06b314e
+# vector=00010-10 key=delta-south-33892 values=[249186, 123109, 431540, 193235, 365812] expected=7256901 checksum=d47b0edf0d536d3ccb935d33844c
+# vector=00010-11 key=keystone-coastal-18269 values=[-25555, 87901, 329175, 375599, 305769] expected=6690950 checksum=09b38f2f3cbbf37fa4552c71c33d
+# vector=00010-12 key=vector-south-64199 values=[333041, 193521, 490503, -25670, 405784] expected=1403286 checksum=606987fbd520ad43a38bf3a1c323
+# vector=00010-13 key=nova-coastal-76629 values=[471929, 141485, -21124, 316319, 368920] expected=6006913 checksum=f68078ba4a6b86da8386e36d12ff
+# vector=00010-14 key=meridian-north-24428 values=[406724, 47587, 250955, 338659, 22709] expected=4370436 checksum=c02b8be175da9d39ce5edf4ca259
+# vector=00010-15 key=lattice-south-57263 values=[153738, 120836, 485292, 461373, 46391] expected=7313281 checksum=d0cb9a50fd30ea494eeb71c9dc8f
+# vector=00010-16 key=delta-coastal-31072 values=[58142, 130872, -28434, 61909, 308137] expected=2737087 checksum=0b8b965785929d38c94861f6c773
+# vector=00010-17 key=willow-east-90911 values=[299756, 193360, 125709, 297783, 240868] expected=3258194 checksum=f759b4df77357d2a6ffb3d00ad54
+
+# ===== SYNTHETIC SOURCE: willow_00011 =====
+
+class Willow00011Buffer:
+    def __init__(self, capacity=2539):
+        if capacity < 1:
+            raise ValueError("capacity must be positive")
+        self.capacity = capacity
+        self.items = []
+
+    def push(self, item):
+        self.items.append(("bb790b259a7e", item))
+        if len(self.items) > self.capacity:
+            return self.items.pop(0)[1]
+        return None
+
+    def snapshot(self):
+        return [item for _, item in self.items]
+
+The `willow_00011` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 2539 is applied before or after normalization. Reference `bb790b259a7e` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00011-00 key=xylem-north-72548 values=[115441, 265023, 278866, 56595, 85088] expected=4930236 checksum=ca9dab9d1f79fb0f0a6cce4eedc7
+# vector=00011-01 key=relay-river-11951 values=[215602, 274831, 71599, 65852, -6711] expected=2334893 checksum=eb57c3ca1eb674d0fe5877588b30
+# vector=00011-02 key=prairie-coastal-58236 values=[22723, 287788, 226079, 64016, -43123] expected=2613024 checksum=08f586a07750a1e842feab098771
+# vector=00011-03 key=lattice-river-76884 values=[486776, 366112, 280827, 124414, 472232] expected=3032589 checksum=e3f853d589c5915ced911aec3cc3
+# vector=00011-04 key=harbor-alpine-19263 values=[337421, 267382, 415639, 428198, 241246] expected=6573040 checksum=e73234f82fa4c329f63e88f98c8f
+# vector=00011-05 key=lattice-west-70067 values=[116556, 413329, 369228, -30439, 469523] expected=146232 checksum=4c27d735475f9bbc5cd26754a754
+# vector=00011-06 key=ion-river-74456 values=[-42723, 490974, 126224, 87192, 281681] expected=5617678 checksum=daf65d74296d0ea83b392b603d29
+# vector=00011-07 key=meridian-east-90957 values=[-44351, 492733, 310064, -31432, 388245] expected=2819888 checksum=35d672ba1d3629696746daf0d467
+# vector=00011-08 key=vector-alpine-12138 values=[312661, -5960, 275485, 113574, 90263] expected=4732004 checksum=2e0b4e595cd5cf2bf51b7f55c5a0
+# vector=00011-09 key=vector-west-16992 values=[389540, 292574, 323341, 364702, 455312] expected=6596930 checksum=06f3474349f22260b71d13b1ca13
+# vector=00011-10 key=ember-coastal-20662 values=[358900, 291175, 290444, 18272, 878] expected=4907227 checksum=74d9ce2ccc2979c530bb46906622
+# vector=00011-11 key=cascade-central-79523 values=[326445, 243233, 470736, 257363, -28554] expected=6090057 checksum=9be9a1321a708d5123e694611fff
+# vector=00011-12 key=summit-south-81707 values=[36701, 52970, 306197, 82429, 60613] expected=2339979 checksum=c0b1ff2dc7f01c13b93420c283cb
+# vector=00011-13 key=cascade-north-48848 values=[319850, 159448, 27943, -11013, 247219] expected=4023392 checksum=17fcce406e450e0a1961527dc1d1
+# vector=00011-14 key=nova-river-26917 values=[108793, 468420, 444101, 214662, 281460] expected=-335096 checksum=cf010db3fc90143a9eaba9611db7
+# vector=00011-15 key=ember-west-84781 values=[-48313, 477511, 337683, 321445, 433199] expected=8006718 checksum=e5f7cac014486d3640341f98811d
+# vector=00011-16 key=willow-west-63991 values=[1985, -49572, 108547, 26697, -650] expected=-522154 checksum=f28baa68a504efc44c0a5fa0c48f
+# vector=00011-17 key=xylem-north-55571 values=[481715, 475443, 386382, 12924, 448307] expected=2095077 checksum=dadaf24398da6ba0494f863a7588
+
+# ===== SYNTHETIC SOURCE: cascade_00012 =====
+
+def restored_pipeline_12(base, attempts, ceiling=2809):
+    """Return bounded synthetic retry delays."""
+    if attempts <= 0:
+        return []
+    delays = []
+    current = max(0, int(base))
+    for attempt in range(attempts):
+        jitter = (attempt * 84 + 21) % 41
+        delays.append(min(ceiling, current + jitter))
+        current = min(ceiling, max(1, current * 2))
+    return delays
+
+The `cascade_00012` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 2809 is applied before or after normalization. Reference `744eba310e53` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00012-00 key=ion-central-48276 values=[461800, 463754, 193788, 241039, 273402] expected=8323701 checksum=aeed4c9e428e87ead03dcbd4c8c0
+# vector=00012-01 key=tundra-south-16098 values=[-3224, 215518, 329944, 392139, 361419] expected=7499158 checksum=14d09adab9f87aeaa68afa613658
+# vector=00012-02 key=prairie-alpine-26462 values=[352550, 287644, 348747, 158486, -44080] expected=6126728 checksum=ce0ba9551bcd2cc52224a8395809
+# vector=00012-03 key=orbit-river-92264 values=[291699, 227884, 88096, -41039, 80311] expected=7523517 checksum=40a8459a74d8c761313919ea72a8
+# vector=00012-04 key=quartz-west-35916 values=[480719, 425113, 344357, 340157, 440167] expected=583330 checksum=9996af5a4336a6f6c7a24e23aa26
+# vector=00012-05 key=grove-north-98310 values=[327491, -550, 125967, 323284, 475972] expected=8184424 checksum=52ff9a173fbc10939949f10121d5
+# vector=00012-06 key=beacon-central-80864 values=[413741, 292098, 456078, 126284, 351426] expected=1126704 checksum=0c237374a2f4f878f8533dfcd61c
+# vector=00012-07 key=nova-central-39124 values=[380208, 444572, 176138, 170356, 380615] expected=-256876 checksum=104354e52ef70bdae21b67fa70aa
+# vector=00012-08 key=harbor-west-81951 values=[30479, 433077, 452491, 54978, 50426] expected=8641442 checksum=0588a67683f6f252fa35a7d089bf
+# vector=00012-09 key=willow-river-39031 values=[216923, 47270, -16542, 70098, -2196] expected=1080616 checksum=a35843da4acde3e4db2f59d900e4
+# vector=00012-10 key=prairie-west-51550 values=[146182, 29939, 191056, 135101, -24163] expected=6082409 checksum=cd2fa28dc0b8c537c51a2db5e29e
+# vector=00012-11 key=grove-south-75912 values=[486248, 176940, -25516, 275285, 235856] expected=1756069 checksum=add096e369f2b19257265fe25943
+# vector=00012-12 key=delta-central-39873 values=[113328, 325653, 322876, 233119, 322392] expected=367478 checksum=1c0b48fdb6e8dda50da04243478c
+# vector=00012-13 key=relay-river-37036 values=[253623, 10802, 459283, 162313, 191507] expected=15859 checksum=09c692524e4d8ac5058c842aa3ab
+# vector=00012-14 key=harbor-coastal-63596 values=[308776, 343372, 313724, 366197, 17370] expected=3116801 checksum=29f45a4abab7a09dad2a3d01a11f
+# vector=00012-15 key=grove-river-79167 values=[319467, 76834, 240279, 246147, 129893] expected=3353617 checksum=959cf663fa9847ec44c98187ae9f
+# vector=00012-16 key=grove-coastal-72324 values=[352437, 291025, 287627, 462889, 118532] expected=7560881 checksum=8e7e5c1b7067c5840adff1bb55c0
+# vector=00012-17 key=uplink-south-41346 values=[86084, 282462, 377341, 366524, -21650] expected=7683895 checksum=1338fa382ba36e63cf61c1276d0f
+
+# ===== SYNTHETIC SOURCE: uplink_00013 =====
+
+CREATE TABLE uplink_00013_events (
+    event_id INTEGER PRIMARY KEY,
+    stream_key TEXT NOT NULL,
+    sequence_no INTEGER NOT NULL,
+    payload_digest TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE(stream_key, sequence_no)
+);
+
+-- Synthetic query marker 013ea06c9de4
+SELECT stream_key, COUNT(*) AS event_count, MAX(sequence_no) AS high_watermark
+FROM uplink_00013_events
+WHERE sequence_no >= 241
+GROUP BY stream_key
+HAVING COUNT(*) >= 3
+ORDER BY event_count DESC, stream_key ASC;
+
+The `uplink_00013` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 820 is applied before or after normalization. Reference `013ea06c9de4` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00013-00 key=ion-coastal-30287 values=[240438, 314597, 84683, 368014, 133063] expected=385806 checksum=9071b3980453ed36d0372616ac17
+# vector=00013-01 key=ion-river-61365 values=[-16950, 236721, -45307, -6425, 321228] expected=1249766 checksum=1754e76895799ea9fb1c50d8482d
+# vector=00013-02 key=keystone-east-22969 values=[136807, -22768, 264797, 170668, -1129] expected=1377574 checksum=270670e5b7642d55bd68c4a685ee
+# vector=00013-03 key=atlas-coastal-42268 values=[461033, -36446, 286065, 56872, 155655] expected=6981525 checksum=8f00560a44138e89237f822c00a4
+# vector=00013-04 key=fjord-south-28510 values=[169253, 396509, -9705, 122704, 417389] expected=8155065 checksum=e974ffef5f84742eb2b36bd39992
+# vector=00013-05 key=meridian-east-99876 values=[65447, 219842, 255297, 46264, 236395] expected=5424249 checksum=3f2bfe9b5d5a77147b7795046cf4
+# vector=00013-06 key=atlas-river-94579 values=[307989, 268692, 301728, 195819, 291533] expected=7705340 checksum=21b2e5040e72dc6028ea99938e85
+# vector=00013-07 key=orbit-river-85534 values=[453048, 35855, 498832, 154034, 300087] expected=7883428 checksum=ef3999fae8d595f91d7a90e9233c
+# vector=00013-08 key=relay-central-97865 values=[297821, 168091, 130345, 45424, 159680] expected=3132345 checksum=ac743050f7048980ee16a181b91c
+# vector=00013-09 key=delta-west-90749 values=[383350, 410080, 134341, 58401, 278733] expected=-818909 checksum=17a744146672e80ac42096555540
+# vector=00013-10 key=summit-south-53726 values=[12828, 10958, 103297, 248233, 77266] expected=6423087 checksum=bd2196d9d86609093d1c885dbe7c
+# vector=00013-11 key=nova-central-12392 values=[-46020, 402827, 466429, 120985, 208821] expected=-639217 checksum=1743938074b00ca07cbfc2407ee7
+# vector=00013-12 key=relay-river-49064 values=[123915, -5124, 339526, 8527, 205412] expected=7020873 checksum=5a072a8d58282e1ee36dbd409367
+# vector=00013-13 key=tundra-alpine-23927 values=[370641, -15886, 321291, 325812, -10630] expected=5307637 checksum=4fd39e8e55e263c16d864b500901
+# vector=00013-14 key=juniper-west-19443 values=[390433, 364331, 94005, 313339, -24182] expected=8676622 checksum=99d4a05288022d2b4b8f865de5a6
+# vector=00013-15 key=quartz-coastal-22289 values=[138750, 424363, 147015, 352072, -34355] expected=2987882 checksum=ae74b6d5621a44b06ef74040df1e
+# vector=00013-16 key=cascade-alpine-50428 values=[139808, 475316, 86812, 41931, 482700] expected=971263 checksum=733daf83670af2364a1e680c4e48
+# vector=00013-17 key=willow-river-60835 values=[334785, 302711, 487965, 12537, 144778] expected=2760345 checksum=da9270dcceed3dd9be42c23c0b4a
+
+# ===== SYNTHETIC SOURCE: ion_00014 =====
+
+#!/usr/bin/env sh
+set -eu
+
+service_name="ion_00014"
+manifest_id="49a9700f00c3"
+max_attempts=6
+
+attempt=1
+while [ "$attempt" -le "$max_attempts" ]; do
+    printf '%s attempt=%s manifest=%s\n' "$service_name" "$attempt" "$manifest_id"
+    attempt=$((attempt + 1))
+done
+
+The `ion_00014` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 1222 is applied before or after normalization. Reference `49a9700f00c3` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00014-00 key=willow-central-64805 values=[413978, 217261, -21639, 116107, 466002] expected=676552 checksum=4ec05eacc055525c34ee7c5f5e8f
+# vector=00014-01 key=grove-north-12341 values=[288517, 197504, 248407, -8714, 485710] expected=3146787 checksum=79b2c38b6387380da1f4c9d13581
+# vector=00014-02 key=juniper-west-54475 values=[420722, 333351, 41667, 12860, 64468] expected=2549563 checksum=a3f8fc6e07fd22a1fdba4c740448
+# vector=00014-03 key=delta-south-29108 values=[93026, 120132, 385596, 263035, 169283] expected=6221495 checksum=e69ffa6377d3826d10b941eccc42
+# vector=00014-04 key=willow-north-48763 values=[259187, 4903, 454218, 436435, 209417] expected=8658246 checksum=95c868ca73dfb215bd390c0aadcf
+# vector=00014-05 key=harbor-alpine-52679 values=[492618, 320682, 266107, 144535, 495329] expected=8792412 checksum=596416446a72edbd7d9abf29afed
+# vector=00014-06 key=delta-central-99602 values=[197091, 356326, 26305, 433826, 220522] expected=2561037 checksum=7375918f92f01e63e82f7bd0e11c
+# vector=00014-07 key=vector-river-69658 values=[451946, 61889, -4090, 78973, 386032] expected=5169070 checksum=66d667e3313ba7c6ed5ee10bd04d
+# vector=00014-08 key=atlas-south-20961 values=[450390, -38161, 18804, 247935, -49223] expected=4045494 checksum=ab4de2ad49c4b6eb42b0cba2ce51
+# vector=00014-09 key=ion-coastal-86144 values=[408534, 483569, 414315, 394032, 495969] expected=4968918 checksum=42d04f0a1a057658d67bb0db6266
+# vector=00014-10 key=juniper-south-11445 values=[351361, -26709, 241287, 40373, 393554] expected=3805246 checksum=afc42ca27034274b7e7e283e8ec7
+# vector=00014-11 key=lattice-south-46069 values=[452664, 16126, 413237, 205606, 62452] expected=2770560 checksum=95fb4fa3a4aa84b3911b147e51d7
+# vector=00014-12 key=meridian-coastal-41493 values=[248693, 31785, 30937, -43567, 463894] expected=6678617 checksum=20116b753d9791fd315d29beac08
+# vector=00014-13 key=ember-alpine-99321 values=[-26945, 280556, 244533, 439092, 476655] expected=8070666 checksum=f69d9f58fb952bc7783049ad75a3
+# vector=00014-14 key=xylem-north-38334 values=[85246, 22942, 154476, 433515, 42021] expected=1271907 checksum=fc9939194eb46fc8abae719f5155
+# vector=00014-15 key=tundra-east-52120 values=[-9483, 437458, 136655, -44420, 230343] expected=5962543 checksum=8dac89389357766ee4659986eae5
+# vector=00014-16 key=quartz-east-98369 values=[340027, 224926, 161766, 47621, 53617] expected=2768569 checksum=cdf3003fb21b4c3122dce72be56e
+# vector=00014-17 key=prairie-river-25949 values=[266347, -20894, 226419, 85079, 194961] expected=4096213 checksum=b308834f8dc735a5c5e6090a0a63
+
+# ===== SYNTHETIC SOURCE: meridian_00015 =====
+
+def validated_queue_15(records, limit=3857):
+    """Normalize synthetic records without mutating the caller's list."""
+    selected = []
+    for position, record in enumerate(records):
+        if position >= limit:
+            break
+        key = str(record.get("key", "")).strip().lower()
+        if not key:
+            continue
+        selected.append({"key": key, "value": int(record.get("value", 0)), "tag": "9bb1cb159ace"})
+    return sorted(selected, key=lambda item: (item["key"], item["value"]))
+
+The `meridian_00015` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 3857 is applied before or after normalization. Reference `9bb1cb159ace` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00015-00 key=cascade-south-30522 values=[284003, 43823, 78730, 468454, 474330] expected=1420806 checksum=37c4a077a37fe52ad8a4bfb7a9ef
+# vector=00015-01 key=ion-east-23688 values=[437815, 76317, -23339, 445843, -44050] expected=2033121 checksum=85cd6654f0dc99dd737b86b98961
+# vector=00015-02 key=vector-central-79674 values=[115508, 99584, 365289, 85206, 416652] expected=-825637 checksum=d57b3434c305266978b11d7c4e8e
+# vector=00015-03 key=delta-central-86670 values=[-47644, 258650, 11616, 67001, 258739] expected=-603050 checksum=c460016397861108285063800967
+# vector=00015-04 key=orbit-river-18498 values=[456947, 162169, 403504, 155840, 129638] expected=140843 checksum=dd367c519fe81b8911aa8e8e04c0
+# vector=00015-05 key=fjord-south-49154 values=[385878, 99569, 265737, 481641, 52067] expected=557607 checksum=6fd72cba3603a76b6ac6091092d5
+# vector=00015-06 key=harbor-south-13523 values=[129637, 335813, 147954, 60096, 407357] expected=-883102 checksum=a19b1ff3c263309419254a0694b8
+# vector=00015-07 key=ember-north-66090 values=[263575, 439484, 488116, 421076, -13404] expected=3340473 checksum=1e59116915b3f4eda4074afa9662
+# vector=00015-08 key=juniper-coastal-48795 values=[191234, -16060, 381032, 471640, 401083] expected=5887584 checksum=df9184cbb226c58ae792f5bcec7c
+# vector=00015-09 key=tundra-alpine-60414 values=[241796, 151724, 3045, 290915, 53170] expected=137358 checksum=940f776c9a985d886572a290be01
+# vector=00015-10 key=keystone-east-55860 values=[105913, 120102, 292884, 246994, 85137] expected=-507309 checksum=7e5286e4f07ec072aead984e1f26
+# vector=00015-11 key=ember-north-35723 values=[92847, 324457, 344127, 287257, 260199] expected=8536390 checksum=3b05213563b899ddf15ce4a1943d
+# vector=00015-12 key=relay-west-93032 values=[192498, 335412, 363264, 101611, 160192] expected=4036042 checksum=d4565c1045c76301cc2c62dbcf49
+# vector=00015-13 key=ember-river-97367 values=[130918, 182367, 289728, 457408, 441178] expected=8587887 checksum=ae22562231876e0cdd89871575db
+# vector=00015-14 key=juniper-alpine-51560 values=[101466, 249284, 411866, 75588, -33819] expected=2343017 checksum=4a2235602013002242809f4daa10
+# vector=00015-15 key=delta-coastal-28389 values=[147761, 266041, 294744, 228963, 343530] expected=5434890 checksum=0e91d3528c59b0797a90f00fb7ce
+# vector=00015-16 key=atlas-east-88036 values=[93517, 423831, -40532, 259039, 263403] expected=4724471 checksum=82a9a4264fca62ca839e38e62c25
+# vector=00015-17 key=summit-coastal-50527 values=[269721, 221984, 185269, 497529, 68631] expected=7228864 checksum=00d5ff8223577c9458b3ee83112a
+
+# ===== SYNTHETIC SOURCE: orbit_00016 =====
+
+class Orbit00016Buffer:
+    def __init__(self, capacity=4029):
+        if capacity < 1:
+            raise ValueError("capacity must be positive")
+        self.capacity = capacity
+        self.items = []
+
+    def push(self, item):
+        self.items.append(("0c3d4fddc1a2", item))
+        if len(self.items) > self.capacity:
+            return self.items.pop(0)[1]
+        return None
+
+    def snapshot(self):
+        return [item for _, item in self.items]
+
+The `orbit_00016` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 4029 is applied before or after normalization. Reference `0c3d4fddc1a2` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00016-00 key=keystone-alpine-97327 values=[41600, 115740, 284729, -34898, 379129] expected=2126028 checksum=c6342c41054f9646bc13fd20d42f
+# vector=00016-01 key=ember-south-37732 values=[486109, 269319, 9022, 45218, 229416] expected=7347972 checksum=a6a33fb67b49f37e8a2c44bbfd97
+# vector=00016-02 key=cascade-river-29564 values=[317308, 289189, 3170, 358850, 441489] expected=5384146 checksum=4935b2e1191f930647c3e8d2e80d
+# vector=00016-03 key=orbit-coastal-13679 values=[388667, 226882, 472826, 36252, 389664] expected=4778794 checksum=55476799ded00efb6b1256d08ae9
+# vector=00016-04 key=orbit-river-93290 values=[453695, 137589, 162083, 140868, 110670] expected=8701139 checksum=deaf711c51031a55841009384795
+# vector=00016-05 key=fjord-east-49868 values=[460890, 464137, 134286, -40596, -1853] expected=-621500 checksum=e81311cf3e5fc364ab46f0edb361
+# vector=00016-06 key=fjord-north-21785 values=[61073, 497363, -33906, 131162, 30293] expected=2074072 checksum=1f561d6d78240e104103ae42734b
+# vector=00016-07 key=grove-coastal-61059 values=[-35184, 125087, -36554, 77959, 195867] expected=6746145 checksum=164dbbc099abf9fb72ebcee5d059
+# vector=00016-08 key=orbit-east-39820 values=[349370, 421948, -3637, 41356, 218862] expected=7328238 checksum=4a434eec92ebc45c036411a4cade
+# vector=00016-09 key=willow-alpine-57275 values=[-14544, 311270, 437718, -39568, 21051] expected=6522696 checksum=5bbbdc597b1d3d2da82a35f23433
+# vector=00016-10 key=keystone-central-81617 values=[14299, 332522, 421227, 417914, 367185] expected=2079754 checksum=9a281a19736651ddc6aa544b256e
+# vector=00016-11 key=beacon-west-29696 values=[73997, 422326, 398659, 289799, 385923] expected=2546662 checksum=51e7b176bf927765310113407823
+# vector=00016-12 key=vector-coastal-48738 values=[279756, 350493, 113452, 316584, 394968] expected=8064356 checksum=424b709f14980c88a557acea6274
+# vector=00016-13 key=juniper-alpine-22014 values=[106533, 191806, 26835, 479090, 446236] expected=-153272 checksum=482dbd5cc828a1302d5ea2265457
+# vector=00016-14 key=tundra-north-60809 values=[354128, 2997, 84337, 99155, 93445] expected=6191996 checksum=df4ee480b08fcd624ca5b3d1e24b
+# vector=00016-15 key=fjord-east-32003 values=[289506, 81002, 31810, 405324, 283348] expected=-100215 checksum=00158f0cf4245a3fc060c879a68f
+# vector=00016-16 key=grove-coastal-42729 values=[101131, 485091, 333188, 327265, 30945] expected=-754479 checksum=4226b6295c3b95392fa2d873449e
+# vector=00016-17 key=ion-coastal-18445 values=[45024, 462006, -21908, 254832, -25344] expected=-195388 checksum=5042c66d06c220a560e881c7d620
+
+# ===== SYNTHETIC SOURCE: fjord_00017 =====
+
+def deployed_dataset_17(base, attempts, ceiling=445):
+    """Return bounded synthetic retry delays."""
+    if attempts <= 0:
+        return []
+    delays = []
+    current = max(0, int(base))
+    for attempt in range(attempts):
+        jitter = (attempt * 90 + 28) % 30
+        delays.append(min(ceiling, current + jitter))
+        current = min(ceiling, max(1, current * 2))
+    return delays
+
+The `fjord_00017` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 445 is applied before or after normalization. Reference `30616e6bac09` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00017-00 key=tundra-central-78227 values=[226865, 67547, 205196, 105820, 319333] expected=807572 checksum=2a196526f5f9bcab510e617449a8
+# vector=00017-01 key=relay-river-46443 values=[33834, 103167, 91787, 158580, 179683] expected=1621149 checksum=8b590054fbf46e7d687c6cc48c68
+# vector=00017-02 key=prairie-central-81012 values=[94885, 319561, 348903, 259391, -14091] expected=7779745 checksum=ea2fab961a91b64d258e848475fd
+# vector=00017-03 key=tundra-west-89481 values=[340447, 259507, 55404, 111987, -9256] expected=4159606 checksum=044bbe4d361c12c31b243bb3a2c5
+# vector=00017-04 key=meridian-central-95848 values=[389343, 5427
+# ===== AUTHORITATIVE SYNTHETIC FUNCTION B =====
+def retry_window(base, ceiling):
+    return [min(ceiling, base * factor) for factor in (1, 2, 4, 8)]
+
+# ===== SYNTHETIC SOURCE: grove_00018 =====
+
+CREATE TABLE grove_00018_events (
+    event_id INTEGER PRIMARY KEY,
+    stream_key TEXT NOT NULL,
+    sequence_no INTEGER NOT NULL,
+    payload_digest TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE(stream_key, sequence_no)
+);
+
+-- Synthetic query marker 66c98e1098e8
+SELECT stream_key, COUNT(*) AS event_count, MAX(sequence_no) AS high_watermark
+FROM grove_00018_events
+WHERE sequence_no >= 65
+GROUP BY stream_key
+HAVING COUNT(*) >= 2
+ORDER BY event_count DESC, stream_key ASC;
+
+The `grove_00018` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 4061 is applied before or after normalization. Reference `66c98e1098e8` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00018-00 key=willow-river-10848 values=[-30536, 197959, 447462, 292162, 62590] expected=8613876 checksum=3429514779629917c3711a375732
+# vector=00018-01 key=beacon-coastal-61210 values=[129516, 341201, 280171, 254973, 53939] expected=31069 checksum=4df3c04e207f69d982804a736a20
+# vector=00018-02 key=vector-east-51300 values=[232419, 161382, 74837, 366643, 16672] expected=5938661 checksum=9c90de916d7260722aea841af195
+# vector=00018-03 key=quartz-central-33765 values=[3972, 215236, 124977, 288582, 207655] expected=4343409 checksum=1560c3bf98801d48c0f44ba003a0
+# vector=00018-04 key=ember-river-20551 values=[55730, 367555, -38198, -25520, 18437] expected=5265286 checksum=917bbe58b7d20936c9efa2c3271d
+# vector=00018-05 key=grove-north-85301 values=[102629, 340758, 227879, 42655, 133256] expected=-455468 checksum=db9b70e78ea9f1d3831061190738
+# vector=00018-06 key=vector-coastal-50127 values=[235339, 488414, 160221, 321461, 266611] expected=-293838 checksum=fbd6139c51fa90950a149c81799d
+# vector=00018-07 key=nova-river-20829 values=[416883, 391913, 102809, 382113, 483132] expected=7801018 checksum=4d50a137988241d9cc540f2659ca
+# vector=00018-08 key=juniper-west-60487 values=[251696, 72095, 159671, 18874, 454419] expected=5359737 checksum=0bf201db048048fa67d2cb4394c8
+# vector=00018-09 key=prairie-east-25768 values=[324406, 419147, 129404, 175595, 68437] expected=6143608 checksum=590ae781d15eecdbfcaa2b9449f1
+# vector=00018-10 key=ember-south-93146 values=[187362, -47504, 496417, 288244, 61246] expected=3680832 checksum=51031453d06bf002bd9d6d4e2e4e
+# vector=00018-11 key=vector-east-27012 values=[365319, 485844, 391069, 56082, 185045] expected=8872944 checksum=ec8606dc6fedf2da8fe52c616579
+# vector=00018-12 key=cascade-west-65197 values=[146070, 264028, 485313, 454206, 43665] expected=-792677 checksum=e763eacbfc3e68b7b9230d2461f6
+# vector=00018-13 key=atlas-west-71185 values=[437834, 98991, 33900, 458556, 445217] expected=1556726 checksum=dc6b8645fee57b8942783a4ebf36
+# vector=00018-14 key=keystone-east-54051 values=[228229, -13781, -45062, 497380, 124586] expected=4027746 checksum=1b5a888947440ca83b8e8a8c6c7f
+# vector=00018-15 key=keystone-south-73619 values=[-32728, -24354, 91205, 176185, -21590] expected=-150667 checksum=13abf94a1c7219965720d1bd0d6b
+# vector=00018-16 key=uplink-river-59326 values=[273625, 270820, 413528, 446236, 231243] expected=5936691 checksum=fcf4a7b70de31a39a985cc2dfc5f
+# vector=00018-17 key=lattice-east-21608 values=[-9831, 111442, 234042, 293639, 280622] expected=7264983 checksum=3d3e3e5b52ebf1a212027ccc46e7
+
+# ===== SYNTHETIC SOURCE: willow_00019 =====
+
+#!/usr/bin/env sh
+set -eu
+
+service_name="willow_00019"
+manifest_id="e039bba68638"
+max_attempts=5
+
+attempt=1
+while [ "$attempt" -le "$max_attempts" ]; do
+    printf '%s attempt=%s manifest=%s\n' "$service_name" "$attempt" "$manifest_id"
+    attempt=$((attempt + 1))
+done
+
+The `willow_00019` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 1198 is applied before or after normalization. Reference `e039bba68638` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00019-00 key=tundra-south-76768 values=[471415, -36038, -11472, 84818, 90335] expected=5480871 checksum=a0e31feee9b911a1329ad7c50db7
+# vector=00019-01 key=tundra-alpine-66812 values=[97544, 455114, 250824, 392432, -37265] expected=3994874 checksum=1692e4094e70c6a9d3a6a267b5c1
+# vector=00019-02 key=ion-alpine-39248 values=[191665, 320379, 257105, -37264, -19406] expected=170224 checksum=8903221a1b0f7e9c8d524a1b7024
+# vector=00019-03 key=xylem-river-23928 values=[123639, 114255, 323835, 411308, 248276] expected=4226539 checksum=003724db0f73325ac6dd3fcce54e
+# vector=00019-04 key=ion-central-19315 values=[430289, 484575, 218670, -37026, 464454] expected=2525889 checksum=f7eeb27390046d92fb9c69a5b465
+# vector=00019-05 key=quartz-south-26524 values=[2231, 369930, 488307, 152071, 263349] expected=4030690 checksum=ce027e0019bf30cdb83360f66109
+# vector=00019-06 key=ember-alpine-69958 values=[242770, 109984, 35191, 285900, 3325] expected=5661884 checksum=b9fd266550697fc5497b70acefff
+# vector=00019-07 key=fjord-coastal-89164 values=[-41122, 424138, 149017, 36501, 243891] expected=7400639 checksum=d721787d4ee05c53e5b6e04aaf52
+# vector=00019-08 key=keystone-east-68972 values=[468092, 386177, 259637, 428318, 284097] expected=979064 checksum=c76d21ccdfc94e36bc913e25beba
+# vector=00019-09 key=cascade-east-53682 values=[270889, 299304, 53223, 479168, 179589] expected=7772058 checksum=85fd75a69f5dbcb449e180660082
+# vector=00019-10 key=fjord-south-11082 values=[489256, 334169, -18718, 493433, 190540] expected=1544580 checksum=79f9c6acf8046ab20eaead416783
+# vector=00019-11 key=grove-west-86032 values=[74944, 248435, 279656, 1236, -49635] expected=2114903 checksum=ffdec4b5cf8370214a0ecf21b9cc
+# vector=00019-12 key=ion-west-12348 values=[286258, 345210, 165711, 423912, 428010] expected=5978080 checksum=1e97eafcde35324a6abc813f19d3
+# vector=00019-13 key=orbit-east-97841 values=[240901, 173446, 483546, 237973, 354563] expected=4060297 checksum=be284661fc487cb226b44e74b44c
+# vector=00019-14 key=nova-west-17709 values=[33376, 60581, -35090, 256855, 116723] expected=2359223 checksum=f3a8f1246b1a25ae14d73398c712
+# vector=00019-15 key=cascade-central-73156 values=[322116, 97514, 495335, 9175, 426261] expected=4991315 checksum=5957361e766b7eabfa934e79fe87
+# vector=00019-16 key=relay-west-19595 values=[135122, 422028, -47270, -15935, 147051] expected=6886838 checksum=b3f33f3b739be22809bbab01879a
+# vector=00019-17 key=ion-east-30578 values=[-45529, 134872, 326487, 111377, 438922] expected=-409762 checksum=e5568052e44a82d6d7a3de2c5bdc
+
+# ===== SYNTHETIC SOURCE: ember_00020 =====
+
+def compared_dataset_20(records, limit=1352):
+    """Normalize synthetic records without mutating the caller's list."""
+    selected = []
+    for position, record in enumerate(records):
+        if position >= limit:
+            break
+        key = str(record.get("key", "")).strip().lower()
+        if not key:
+            continue
+        selected.append({"key": key, "value": int(record.get("value", 0)), "tag": "4be16c0f6851"})
+    return sorted(selected, key=lambda item: (item["key"], item["value"]))
+
+The `ember_00020` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 1352 is applied before or after normalization. Reference `4be16c0f6851` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00020-00 key=ion-alpine-56880 values=[-30285, 136618, -18711, 277288, -2015] expected=5124474 checksum=905940cfe790bd12ab79a87c2e14
+# vector=00020-01 key=grove-north-52707 values=[379784, -17517, 185296, -2494, -20452] expected=3463733 checksum=86cdbe70d63b14ad9171d19ab294
+# vector=00020-02 key=summit-coastal-71541 values=[456506, 9022, 170393, 453950, 340444] expected=3867994 checksum=5ba0c0192b438ba189217b76d6b6
+# vector=00020-03 key=tundra-alpine-26178 values=[341335, 102165, 346532, 160167, 163976] expected=6100344 checksum=a5634604839870aca2fcea729b91
+# vector=00020-04 key=uplink-central-82238 values=[315932, 335024, 470061, 273223, -35706] expected=4332041 checksum=0a88d30688c90be37c0c18cd1a45
+# vector=00020-05 key=harbor-coastal-74054 values=[479209, 223070, 318532, 267610, -49370] expected=8757234 checksum=4b7778d91d396c18c0a0bfa14f84
+# vector=00020-06 key=cascade-alpine-78344 values=[373686, 402019, 109909, 407919, 362539] expected=4228181 checksum=bd32eea85e9f60c55fb9759a298f
+# vector=00020-07 key=delta-west-33301 values=[284313, 332576, 196831, 53919, 294122] expected=7439724 checksum=2e46e91c94ba3970902430674f36
+# vector=00020-08 key=harbor-central-32943 values=[469629, 370205, 233641, 33469, 217556] expected=1740227 checksum=a4a6b4c8fba7a2bdce37c4428082
+# vector=00020-09 key=atlas-west-59057 values=[69889, 194320, 309080, 147022, 211768] expected=3682521 checksum=c5a8950bb6074cc3c403645e1b05
+# vector=00020-10 key=juniper-north-13150 values=[272078, 313691, -40283, 499991, -30176] expected=8177859 checksum=670703d3a32a6b49a6425173d417
+# vector=00020-11 key=grove-river-84248 values=[1406, 458421, -13915, 76921, 61342] expected=7627225 checksum=721dd387bbc7f00e52356aa23c55
+# vector=00020-12 key=lattice-alpine-25361 values=[228290, 261040, 463042, 362898, 497504] expected=2909066 checksum=75e7eadb003baea3d2e7ea4f315b
+# vector=00020-13 key=vector-south-56873 values=[358029, 132999, -41434, 41908, 76905] expected=8897829 checksum=9ed9d67da5e9f282abbf228038d2
+# vector=00020-14 key=xylem-river-25321 values=[312063, 246084, 36827, -45362, 316707] expected=2500366 checksum=151d181fed9fd84b73bdb7915c61
+# vector=00020-15 key=vector-south-59969 values=[401799, 467859, 435691, 126142, 251127] expected=8310499 checksum=19d4e563479d387157b9060e7421
+# vector=00020-16 key=cascade-west-64504 values=[479677, 155187, 195382, 138558, 192937] expected=-473695 checksum=c98eb7aac2f4a7c957841efc9d17
+# vector=00020-17 key=atlas-east-67144 values=[224468, 56051, 497549, 79867, 159949] expected=6486728 checksum=4fbee8a597f4a3a7c46d45ac0f81
+
+# ===== SYNTHETIC SOURCE: cascade_00021 =====
+
+class Cascade00021Buffer:
+    def __init__(self, capacity=194):
+        if capacity < 1:
+            raise ValueError("capacity must be positive")
+        self.capacity = capacity
+        self.items = []
+
+    def push(self, item):
+        self.items.append(("5f54a7f817b2", item))
+        if len(self.items) > self.capacity:
+            return self.items.pop(0)[1]
+        return None
+
+    def snapshot(self):
+        return [item for _, item in self.items]
+
+The `cascade_00021` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 194 is applied before or after normalization. Reference `5f54a7f817b2` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00021-00 key=uplink-west-24770 values=[224547, 413498, 58068, 352848, 175648] expected=8922673 checksum=1c38aa057ad18cee29510e3cd014
+# vector=00021-01 key=vector-south-16064 values=[429672, 89948, 4684, 258844, 349833] expected=8790505 checksum=51c64429c189b0e63cdfc45d6000
+# vector=00021-02 key=relay-coastal-73606 values=[486405, 232779, 456784, 229455, 412977] expected=7971933 checksum=323211494e214e171030fca06645
+# vector=00021-03 key=ember-west-43019 values=[354992, 331595, 290714, 68525, 321245] expected=6875570 checksum=82d5c0b5704a46e5212eadf90654
+# vector=00021-04 key=harbor-south-96692 values=[68601, 454923, 222653, 44954, 308178] expected=8857646 checksum=a2f679eec8506d8fed171b0a5bb3
+# vector=00021-05 key=ion-river-83237 values=[-9593, 243573, 496535, 270494, 224180] expected=5469540 checksum=db9391241666391bc5bd990164d3
+# vector=00021-06 key=quartz-central-81571 values=[369223, 93830, 420619, 50507, 360030] expected=2748178 checksum=c3fb625ca8f3a3bfec346a7e14e1
+# vector=00021-07 key=quartz-south-69742 values=[30662, 12674, 134683, 434477, 164281] expected=7445889 checksum=81072c748396b223d0ce17eabe74
+# vector=00021-08 key=willow-alpine-43090 values=[232245, 96508, 169394, -49753, 56717] expected=6103603 checksum=aba94e400af8d0e63017934f4b5a
+# vector=00021-09 key=juniper-east-18764 values=[107201, -25784, 414740, 311614, 116903] expected=2146589 checksum=af56a4c4e70bb80539c0e9d8fa39
+# vector=00021-10 key=beacon-north-20899 values=[462654, 285505, 8425, 18546, 370092] expected=5858296 checksum=e5e570825639d575e1da45d530e8
+# vector=00021-11 key=vector-central-18525 values=[118949, 420372, 289266, 205453, -34382] expected=6100828 checksum=dcf6ef6a06782fa38b8db9321122
+# vector=00021-12 key=summit-coastal-39989 values=[16706, 334095, 190890, 71707, 449906] expected=6776632 checksum=ecb6d42cd05ea5eea16963b1129e
+# vector=00021-13 key=relay-south-39712 values=[-47740, 89482, 28616, 111373, 104577] expected=3411599 checksum=6ed501bd0f90525c2b39d511f1c1
+# vector=00021-14 key=atlas-west-75374 values=[122216, 214055, 306099, 106690, 106796] expected=2778504 checksum=0f8468ab23fd3362eb56ba772efa
+# vector=00021-15 key=harbor-coastal-47324 values=[444898, -17977, 421952, 171248, 74782] expected=5247334 checksum=197b4be294f8952aea7e3f56e18b
+# vector=00021-16 key=delta-coastal-21008 values=[48772, 446354, 92253, 294253, 240107] expected=6662151 checksum=4a6b5b4a0d6d9440dc2d02f95012
+# vector=00021-17 key=cascade-central-78416 values=[-34460, 104560, 491453, 180976, 143367] expected=5412769 checksum=9e10f831394a0140a3c61dbc1a4f
+
+# ===== SYNTHETIC SOURCE: quartz_00022 =====
+
+def scheduled_timeline_22(base, attempts, ceiling=235):
+    """Return bounded synthetic retry delays."""
+    if attempts <= 0:
+        return []
+    delays = []
+    current = max(0, int(base))
+    for attempt in range(attempts):
+        jitter = (attempt * 52 + 16) % 50
+        delays.append(min(ceiling, current + jitter))
+        current = min(ceiling, max(1, current * 2))
+    return delays
+
+The `quartz_00022` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 235 is applied before or after normalization. Reference `c822c0b4752b` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00022-00 key=ion-alpine-15298 values=[374177, 285056, -47113, 161707, 231950] expected=4366396 checksum=dde0336980d3054bacf605566b77
+# vector=00022-01 key=prairie-east-70008 values=[306355, 262453, 497573, 125599, 124628] expected=6491044 checksum=f5dedd01ebae527ffe40cbf41925
+# vector=00022-02 key=delta-central-37985 values=[150102, 304954, 346721, 44891, 397761] expected=-588666 checksum=03667ffb87c81a878d1b95a8e53e
+# vector=00022-03 key=relay-central-31767 values=[335555, 120570, 281365, 427373, 317186] expected=5426741 checksum=d46b61ea242034e5c6af06e8cecd
+# vector=00022-04 key=lattice-south-79207 values=[13330, 185300, 149324, -44375, 195963] expected=-150453 checksum=17fe640612824b069793f358583e
+# vector=00022-05 key=willow-coastal-47773 values=[141903, -43953, 68429, 206710, 308490] expected=3848947 checksum=0ecf33622a6dbe24c96645bece8b
+# vector=00022-06 key=tundra-west-22009 values=[38075, 328535, 373859, 99708, 293565] expected=5953138 checksum=c62ff366c5cc91b20ca1a8809cfa
+# vector=00022-07 key=ion-east-96151 values=[165859, 65223, 421857, 159993, 330793] expected=7666836 checksum=98a3790466a563709024e1490c78
+# vector=00022-08 key=beacon-alpine-41044 values=[297133, 457586, 476692, 117610, -43280] expected=5372969 checksum=e3b9d0f882e994964dd5f64101cd
+# vector=00022-09 key=atlas-alpine-97070 values=[109769, 217435, 370376, 229759, 272226] expected=1575023 checksum=47ca80685682a0c4b6956a813a8f
+# vector=00022-10 key=ion-river-60538 values=[-17403, 409619, 329835, 249294, 476453] expected=8501316 checksum=826eb3be2db7d490388352c3e088
+# vector=00022-11 key=uplink-west-32688 values=[390254, -38124, 150399, 273518, 417966] expected=8026261 checksum=c29979407d191706fed346f50946
+# vector=00022-12 key=atlas-coastal-63604 values=[33358, 338564, 409667, -19058, -15846] expected=3347401 checksum=5f7b141c608782689fae841a5e37
+# vector=00022-13 key=orbit-coastal-62261 values=[235732, -28015, 255950, 482239, 471214] expected=1718138 checksum=b093809fd8e33962ec010127c578
+# vector=00022-14 key=summit-east-77096 values=[149910, 96748, 183911, -26283, 453872] expected=1368536 checksum=4767bc011358ebac857f45f4e08c
+# vector=00022-15 key=lattice-east-12814 values=[82809, 272777, 341308, 370521, 300094] expected=1380457 checksum=7ba119346be049f2bb98346297e4
+# vector=00022-16 key=delta-north-21099 values=[69083, 459715, 178616, -49805, 315233] expected=2223477 checksum=cf38a79073ecc6aa05c65746b24d
+# vector=00022-17 key=uplink-central-97677 values=[158808, 369438, 93780, 150224, 470736] expected=2439214 checksum=4e1daada1471466854e6672a6e03
+
+# ===== SYNTHETIC SOURCE: summit_00023 =====
+
+CREATE TABLE summit_00023_events (
+    event_id INTEGER PRIMARY KEY,
+    stream_key TEXT NOT NULL,
+    sequence_no INTEGER NOT NULL,
+    payload_digest TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE(stream_key, sequence_no)
+);
+
+-- Synthetic query marker 2839d2dab747
+SELECT stream_key, COUNT(*) AS event_count, MAX(sequence_no) AS high_watermark
+FROM summit_00023_events
+WHERE sequence_no >= 281
+GROUP BY stream_key
+HAVING COUNT(*) >= 10
+ORDER BY event_count DESC, stream_key ASC;
+
+The `summit_00023` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 771 is applied before or after normalization. Reference `2839d2dab747` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00023-00 key=uplink-central-67900 values=[51079, 283222, 21236, 270746, 92147] expected=5075410 checksum=312301cf7069b47ed9c820a957e8
+# vector=00023-01 key=meridian-river-98441 values=[469301, 81847, 39078, -44488, 3412] expected=1788901 checksum=18747a92ad204a164a887ef6f4f6
+# vector=00023-02 key=orbit-south-99815 values=[-15455, 466305, 287346, 471513, 285633] expected=5570075 checksum=e71b22d75f8412509f7355dcc2bd
+# vector=00023-03 key=relay-coastal-71282 values=[31409, 312302, 25517, 361024, 87512] expected=5493977 checksum=926997bb3fe6e3c68e33ea110ad0
+# vector=00023-04 key=orbit-north-62354 values=[325379, 365980, 391589, 246444, 426194] expected=821614 checksum=c34baafa96de85f3f820cbc37d65
+# vector=00023-05 key=delta-central-83731 values=[209431, 59672, 465784, 427154, 49881] expected=2029671 checksum=94eeb1116be8855a1c4cc199f770
+# vector=00023-06 key=uplink-coastal-47599 values=[320920, 150486, 265056, 477033, 325509] expected=1791817 checksum=3f3c670e37c9cef1a75d8af21413
+# vector=00023-07 key=prairie-south-44828 values=[-32677, 211466, 220459, 182497, 188257] expected=8040376 checksum=17eb70f2161a9aea078c86cdd6f7
+# vector=00023-08 key=xylem-river-44908 values=[189203, -19768, 181244, 235077, 49428] expected=1925147 checksum=578bbbc1589ae8fb0863b83f490e
+# vector=00023-09 key=fjord-east-70300 values=[478604, 70155, 378788, 5022, 251183] expected=2347938 checksum=9aba97c1833f8ccee8c5cf1207a4
+# vector=00023-10 key=orbit-coastal-46224 values=[75273, -3007, 473350, 406155, 399529] expected=3166805 checksum=919ae97e2af360ef81174ce316bf
+# vector=00023-11 key=grove-north-41516 values=[519, 401488, 998, 235535, -11523] expected=7458839 checksum=a58334ee2d0de97b78e4bba4e707
+# vector=00023-12 key=quartz-west-61260 values=[397416, 39434, 1284, 243987, 394426] expected=904683 checksum=26f3ad6295df07235d650390cc79
+# vector=00023-13 key=cascade-alpine-83203 values=[146316, -21237, 477458, 32338, 39825] expected=8569206 checksum=66830ea11bdfdc6ce1f2b77df5ff
+# vector=00023-14 key=willow-west-22387 values=[69060, 246127, -33796, 476004, 339728] expected=7590594 checksum=7619124ab71fd88b334bd49fc251
+# vector=00023-15 key=prairie-north-55272 values=[286146, 446737, 85018, 381326, -6590] expected=-708785 checksum=a0ca50170108cc005fa6fcacb18a
+# vector=00023-16 key=ember-river-87443 values=[275075, 40297, 203525, -8645, 387889] expected=2557630 checksum=ec47d959e643b603eb0e1f5e9f7b
+# vector=00023-17 key=ember-west-49606 values=[103230, 112022, 113376, 232323, 472860] expected=-889726 checksum=d1e304869dd5a01cb445265e9889
+
+# ===== SYNTHETIC SOURCE: meridian_00024 =====
+
+#!/usr/bin/env sh
+set -eu
+
+service_name="meridian_00024"
+manifest_id="12b1263bd4b1"
+max_attempts=6
+
+attempt=1
+while [ "$attempt" -le "$max_attempts" ]; do
+    printf '%s attempt=%s manifest=%s\n' "$service_name" "$attempt" "$manifest_id"
+    attempt=$((attempt + 1))
+done
+
+The `meridian_00024` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 286 is applied before or after normalization. Reference `12b1263bd4b1` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00024-00 key=relay-south-51726 values=[430766, 102132, 27390, 77125, 84281] expected=1110828 checksum=778a543353612543775c8b69b9e2
+# vector=00024-01 key=vector-south-48657 values=[274520, 466060, 161707, 196499, 485086] expected=1669984 checksum=54ff7639703e1d680a695a7231aa
+# vector=00024-02 key=relay-south-65206 values=[459294, 251107, 214329, 330708, 316602] expected=2754443 checksum=cc249b08ca85bb29b9038ad60a3d
+# vector=00024-03 key=prairie-river-29256 values=[210664, 486988, 258337, 476406, 227690] expected=2411849 checksum=96c4474a823c4a7993009a1000b1
+# vector=00024-04 key=willow-south-36814 values=[348136, 243127, 190277, 63354, 350005] expected=2585262 checksum=52d6a1ffb1c149d04d9898f90764
+# vector=00024-05 key=ember-south-50776 values=[430289, 173057, 235990, 369780, 400086] expected=7182465 checksum=b651f8ddb695a9ddf2e3953223c7
+# vector=00024-06 key=nova-coastal-49323 values=[188293, 437038, 129432, 279508, 423995] expected=3207326 checksum=74e671292384e18309dc14a7b241
+# vector=00024-07 key=uplink-east-61109 values=[276797, 350392, -2497, 398653, 303043] expected=5891212 checksum=2f5617790b44cd6f0f8235665161
+# vector=00024-08 key=meridian-river-75351 values=[269599, 18696, 493520, 386814, 345501] expected=542312 checksum=83b397beb802d85ae07abe80f453
+# vector=00024-09 key=xylem-south-46897 values=[285800, 301107, -7813, -11942, 289980] expected=5201138 checksum=6a64d50c208caba9d44dde700366
+# vector=00024-10 key=cascade-central-75709 values=[-32929, 62678, 116796, 239991, 409728] expected=8613742 checksum=16677e75acd5418752bc8c07347b
+# vector=00024-11 key=ember-alpine-72833 values=[165439, 382728, 169404, 481487, 146395] expected=2897999 checksum=7d0a3167290e262ef26612323755
+# vector=00024-12 key=quartz-south-61621 values=[215128, 122341, 113521, 399146, 224839] expected=1826183 checksum=15a474efebc484c931ec0498af09
+# vector=00024-13 key=willow-south-30749 values=[325887, 32383, 408838, 413450, 58488] expected=7975264 checksum=ff74813f437ef9aeecd42c4815c4
+# vector=00024-14 key=summit-north-33591 values=[6205, 309375, 255950, 99131, 292785] expected=3319236 checksum=c67e10e0954829b24b77b672c9b4
+# vector=00024-15 key=meridian-north-18686 values=[452012, 382874, 154579, 102157, -16773] expected=8897280 checksum=3f85908f73ee0b1b326657e03b6e
+# vector=00024-16 key=willow-central-35974 values=[476384, 451230, -16855, 295011, 275178] expected=8929364 checksum=406da9779b1586b86eae7cf4864d
+# vector=00024-17 key=willow-south-55678 values=[187403, 47764, -23329, -45017, 339275] expected=2351330 checksum=b98db1f68edeed11e5eb8647c8b1
+
+# ===== SYNTHETIC SOURCE: uplink_00025 =====
+
+def deployed_manifest_25(records, limit=2453):
+    """Normalize synthetic records without mutating the caller's list."""
+    selected = []
+    for position, record in enumerate(records):
+        if position >= limit:
+            break
+        key = str(record.get("key", "")).strip().lower()
+        if not key:
+            continue
+        selected.append({"key": key, "value": int(record.get("value", 0)), "tag": "62c267067d00"})
+    return sorted(selected, key=lambda item: (item["key"], item["value"]))
+
+The `uplink_00025` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 2453 is applied before or after normalization. Reference `62c267067d00` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00025-00 key=willow-alpine-23886 values=[96908, 10565, 456830, 112567, 80385] expected=7010971 checksum=34353d4f2de7a2f7b8aa7eaba46d
+# vector=00025-01 key=beacon-west-35878 values=[464685, 2975, 35978, 375712, -1676] expected=5209249 checksum=8fcb6f039727cb61ad5fbdd7542c
+# vector=00025-02 key=ember-north-96409 values=[257527, 271891, 62248, -24369, 267806] expected=1340011 checksum=0f8fff0cc4f6769f9f4c68320c15
+# vector=00025-03 key=beacon-west-44661 values=[71262, 165214, 148469, 204014, 228182] expected=6588337 checksum=b0aee715f9a6b33b67d2a4efc224
+# vector=00025-04 key=orbit-river-36069 values=[159882, 385324, 461904, 268645, 91798] expected=6966980 checksum=8d7d2915ddb3487f75eebb10c556
+# vector=00025-05 key=uplink-river-72233 values=[-39885, 347654, -25491, 109283, 142815] expected=284637 checksum=e4b9e307073bcd894f8e5fd50f32
+# vector=00025-06 key=harbor-central-76664 values=[376616, 498545, 110138, 16788, 7506] expected=-329093 checksum=3ec0250312f534965f6e54bbfcbd
+# vector=00025-07 key=ion-south-84160 values=[32211, 405139, 107105, 475644, 102170] expected=-117026 checksum=49b5f50b9b2296bcc1da5e0bdcb2
+# vector=00025-08 key=fjord-coastal-79655 values=[387914, 484166, 200307, 406287, 278878] expected=990377 checksum=6803e8fe4e98abb9650fc332b2ae
+# vector=00025-09 key=tundra-east-39340 values=[161277, 106683, 178079, 60442, 489014] expected=5257217 checksum=bfec44348a4e02dc15bd2b8fe0a0
+# vector=00025-10 key=willow-south-52163 values=[401165, 387605, 209861, 423091, 295540] expected=2577152 checksum=867bf84b1c5ea0a1ee987581c3a1
+# vector=00025-11 key=juniper-river-67672 values=[396376, 258488, 280911, 312992, 484721] expected=5354213 checksum=ab1ece14d92658aec2a04efbceb8
+# vector=00025-12 key=lattice-north-33961 values=[416570, 302862, 228312, 230168, 393316] expected=8103177 checksum=5c0b6df517cdac4b61dfe056ca15
+# vector=00025-13 key=juniper-south-67645 values=[195165, 102260, 356942, 199014, 388039] expected=6220092 checksum=7850b1c93b536ef7154a2bb7dc0f
+# vector=00025-14 key=fjord-central-81160 values=[271434, 266296, 413215, 469129, 295679] expected=316773 checksum=d214a246fc748ae48b93c4dcd425
+# vector=00025-15 key=xylem-north-97867 values=[-28119, 412771, 432378, 271756, 197675] expected=-382963 checksum=ac309c413737203cd7f026dd6d41
+# vector=00025-16 key=quartz-central-72691 values=[57898, 118686, 469237, 416971, 310847] expected=514006 checksum=6ab428311d2fc8d66febe9f64696
+# vector=00025-17 key=atlas-south-73843 values=[168258, 25017, 430651, 493272, 468356] expected=4719783 checksum=34107c1bbef37cf56be5c535e374
+
+# ===== SYNTHETIC SOURCE: ember_00026 =====
+
+class Ember00026Buffer:
+    def __init__(self, capacity=374):
+        if capacity < 1:
+            raise ValueError("capacity must be positive")
+        self.capacity = capacity
+        self.items = []
+
+    def push(self, item):
+        self.items.append(("3f6165da5b2c", item))
+        if len(self.items) > self.capacity:
+            return self.items.pop(0)[1]
+        return None
+
+    def snapshot(self):
+        return [item for _, item in self.items]
+
+The `ember_00026` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 374 is applied before or after normalization. Reference `3f6165da5b2c` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00026-00 key=meridian-east-90743 values=[164538, 450440, 373472, 149556, -8325] expected=7249949 checksum=7e5d509fac088c8613f328850323
+# vector=00026-01 key=uplink-river-82815 values=[255152, 438216, 125033, -28368, 16186] expected=8038770 checksum=558e67726abb35d6919560f918eb
+# vector=00026-02 key=relay-east-46690 values=[310656, 248199, 406081, 75393, 9845] expected=6063044 checksum=b21addff3d1defa940d6e72d2db0
+# vector=00026-03 key=tundra-central-79508 values=[298802, 87942, 429183, 60039, 144614] expected=8350871 checksum=079ad41734f7bc5781c1054a82a6
+# vector=00026-04 key=uplink-south-31147 values=[273570, 182874, 196462, 196387, 223032] expected=3134212 checksum=2c4cff48ab3965839fa3ff361225
+# vector=00026-05 key=lattice-coastal-37965 values=[-4074, 417573, 163304, 71726, 211847] expected=4359428 checksum=2fc2a4171fbc480c6edee20f9903
+# vector=00026-06 key=prairie-coastal-61295 values=[427534, 241205, 289140, 234814, -9148] expected=1481808 checksum=34176d3d02bcbbaf97b8fc80690e
+# vector=00026-07 key=grove-river-32685 values=[373248, -5587, 275912, 104520, 402525] expected=3069094 checksum=6c4579bbce562d3c09be74ec6595
+# vector=00026-08 key=xylem-river-46409 values=[-3783, 152745, -38079, 106942, 294832] expected=1763292 checksum=935ebb28a09f45bd4b6b930eeff0
+# vector=00026-09 key=harbor-alpine-43689 values=[225232, 170723, 210775, 404905, 99322] expected=3209398 checksum=18563bdc08784d3e8da4784b92e5
+# vector=00026-10 key=juniper-north-52895 values=[229629, 205891, 466355, 118154, 280663] expected=8878607 checksum=d29677f79e2b601d2d17e010c52c
+# vector=00026-11 key=vector-central-32389 values=[351988, -21676, 367663, 102212, 142440] expected=7210043 checksum=177e9d8f143d275c8c7e23f53b54
+# vector=00026-12 key=keystone-north-80463 values=[133072, 498880, -33200, 265777, 285764] expected=6366257 checksum=3755d6d9d2460fc16625fb7d39a1
+# vector=00026-13 key=keystone-west-78120 values=[423015, 31071, 441910, 135304, 427032] expected=-690729 checksum=4aa9d10bb87b84ef7cd556f5ad78
+# vector=00026-14 key=relay-river-35117 values=[83406, 484626, -37087, 328343, 345544] expected=1808793 checksum=088a65ce4edf956eb3bd479bf1dc
+# vector=00026-15 key=xylem-coastal-16422 values=[3978, 359814, 285346, -42654, -10478] expected=1996388 checksum=7739d678f2a77a4e8ee33943c269
+# vector=00026-16 key=willow-west-75081 values=[413386, 103957, 426772, 96194, 356185] expected=7033408 checksum=82f311b6e89051fdddfa8598b84c
+# vector=00026-17 key=keystone-central-75322 values=[183063, 275784, 302978, 479829, 287922] expected=521433 checksum=17add869c832ac32fd96727f1f45
+
+# ===== SYNTHETIC SOURCE: orbit_00027 =====
+
+def measured_ledger_27(base, attempts, ceiling=1850):
+    """Return bounded synthetic retry delays."""
+    if attempts <= 0:
+        return []
+    delays = []
+    current = max(0, int(base))
+    for attempt in range(attempts):
+        jitter = (attempt * 22 + 10) % 17
+        delays.append(min(ceiling, current + jitter))
+        current = min(ceiling, max(1, current * 2))
+    return delays
+
+The `orbit_00027` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 1850 is applied before or after normalization. Reference `21e98f611eca` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00027-00 key=lattice-east-98642 values=[149735, 30086, 104957, -18264, 315937] expected=1154463 checksum=24f92e2bc816cd502bc3b4cb0947
+# vector=00027-01 key=fjord-west-13738 values=[169219, -44307, 494776, 313053, 325611] expected=1784505 checksum=f32f62c6fddae141f96d3b4960cb
+# vector=00027-02 key=orbit-east-87885 values=[86615, -31314, 89271, 483714, 253173] expected=6666905 checksum=f0a250fdee78eb8d44e01d59458c
+# vector=00027-03 key=uplink-central-70148 values=[200361, 108644, 374026, 356340, 36430] expected=7589967 checksum=74acbb4853829078ebca397dcc9b
+# vector=00027-04 key=willow-north-38254 values=[66555, -14638, 431112, 265316, 493613] expected=7926281 checksum=a2b8cfc5fe7f34df96c21631c8d2
+# vector=00027-05 key=quartz-north-69322 values=[317682, 126152, -30503, 344726, 131859] expected=-835944 checksum=e750e6a20cc2df565f3929ea605c
+# vector=00027-06 key=harbor-north-12874 values=[149430, 295269, 461736, -31186, 362514] expected=8503301 checksum=6f9197eed019202bd60738e69a38
+# vector=00027-07 key=meridian-east-69909 values=[36003, 88033, 60260, -30534, 294953] expected=7576517 checksum=85f208b1ecc7210218525f010ad1
+# vector=00027-08 key=atlas-north-18069 values=[158746, 130250, -17140, 199550, 321365] expected=7809826 checksum=90647f46e3670e01098bae15b479
+# vector=00027-09 key=cascade-central-15596 values=[36784, 191306, 429685, 213597, 84780] expected=1354190 checksum=6c5dbb7ea21e10b4d40618416411
+# vector=00027-10 key=relay-alpine-67397 values=[342848, 313130, 225582, 78464, 255660] expected=7456037 checksum=4ef1a3688baf7b4077a81254c160
+# vector=00027-11 key=beacon-north-74800 values=[168614, 495945, 236495, 488594, 362178] expected=322603 checksum=35dac14394e58d0101d1c16c1e3a
+# vector=00027-12 key=ion-west-55462 values=[435789, 434331, 238344, -24182, 364241] expected=-353634 checksum=1f785ea2bbe12a284c84e3b447b1
+# vector=00027-13 key=ember-alpine-50543 values=[68640, 56266, 278938, -39602, 284920] expected=2606663 checksum=c2710d603bbc1db662329d48cb3f
+# vector=00027-14 key=prairie-west-84683 values=[153870, -30705, 135413, 157373, 57302] expected=-533339 checksum=c1834e4a828845ae4712cb779ca7
+# vector=00027-15 key=grove-east-32182 values=[224555, 180286, 193560, 55590, 192633] expected=2775443 checksum=18fd324d0ae30491dd61eff0c99e
+# vector=00027-16 key=vector-alpine-40088 values=[185637, 96529, 132682, 237511, 140997] expected=6748886 checksum=decc267576eefc47e71a13b0491a
+# vector=00027-17 key=lattice-alpine-66845 values=[296015, 320386, 476834, 181436, 136008] expected=-279771 checksum=ba539c729f69215ef24f0ab0a5e2
+
+# ===== SYNTHETIC SOURCE: quartz_00028 =====
+
+CREATE TABLE quartz_00028_events (
+    event_id INTEGER PRIMARY KEY,
+    stream_key TEXT NOT NULL,
+    sequence_no INTEGER NOT NULL,
+    payload_digest TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE(stream_key, sequence_no)
+);
+
+-- Synthetic query marker 4ecac8663567
+SELECT stream_key, COUNT(*) AS event_count, MAX(sequence_no) AS high_watermark
+FROM quartz_00028_events
+WHERE sequence_no >= 308
+GROUP BY stream_key
+HAVING COUNT(*) >= 11
+ORDER BY event_count DESC, stream_key ASC;
+
+The `quartz_00028` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 2292 is applied before or after normalization. Reference `4ecac8663567` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00028-00 key=beacon-alpine-43294 values=[29762, 285961, 435232, 399617, 138705] expected=-570469 checksum=3a1c3e6415c3e226f0577f21326b
+# vector=00028-01 key=harbor-river-48976 values=[363835, 189001, 82220, 59060, 2044] expected=7613307 checksum=aa5ebddab8f6ec6d37b921a8a5c7
+# vector=00028-02 key=nova-south-82701 values=[252142, 482068, 131060, 198567, 452769] expected=4611770 checksum=fe77d73e9d1f49a7d89c65275783
+# vector=00028-03 key=quartz-coastal-31663 values=[380347, 399787, 9865, 194029, 495455] expected=4923995 checksum=8ab83f4d652ba811fe8a9df024a6
+# vector=00028-04 key=prairie-coastal-87711 values=[-30651, 356844, 429867, 356623, 492969] expected=4858104 checksum=d6d88594307e2edfc55c4cde79fc
+# vector=00028-05 key=willow-east-74891 values=[452447, 350433, 5875, 40079, 67964] expected=3267147 checksum=b5ed944075810e181a91184367f2
+# vector=00028-06 key=uplink-south-49358 values=[137381, 11894, 78362, 375207, 154442] expected=4156325 checksum=e3cef9680318c7c92cdbaa09dc16
+# vector=00028-07 key=juniper-central-72746 values=[255545, 1544, 229204, 422339, 165292] expected=4231892 checksum=2e7560952ca593fe11ce28e1751a
+# vector=00028-08 key=orbit-coastal-63090 values=[4948, 147372, 445728, 119776, -43802] expected=4854554 checksum=24a4e5a29e096042ce3ab5606c0a
+# vector=00028-09 key=harbor-west-93728 values=[245374, 188414, 404245, 111019, 104382] expected=4876608 checksum=603aad008af850bc53c00523902d
+# vector=00028-10 key=meridian-alpine-88442 values=[274338, 281018, 216789, 325788, 375118] expected=-415799 checksum=e15591883796e8d4d50075a838dd
+# vector=00028-11 key=prairie-south-45858 values=[244022, 482465, 291003, 121828, 34161] expected=-797667 checksum=e39b78cd2ebe0477bea3c0b7317f
+# vector=00028-12 key=atlas-west-17277 values=[-5834, 192558, 53373, 392943, 491664] expected=6265220 checksum=234330b8f1b56bd04d4ef7ab543f
+# vector=00028-13 key=cascade-coastal-44835 values=[442175, 393295, 48909, 155626, 495028] expected=427080 checksum=d9cf3940f1b673536f7358325912
+# vector=00028-14 key=willow-north-13740 values=[-22887, 490230, 369899, 42027, 357591] expected=4033748 checksum=e641d97c1c87b8f28e63ae675c0c
+# vector=00028-15 key=summit-central-35529 values=[7648, 335084, 499794, 395206, 273191] expected=239897 checksum=007335b6ad9221626a1fa023ce3b
+# vector=00028-16 key=nova-west-71331 values=[89137, 293949, 368786, 103755, 241430] expected=3923624 checksum=994511607bfb1af7813a4c8a114d
+# vector=00028-17 key=ember-east-26273 values=[60613, 270711, 478607, 242450, 414037] expected=7380205 checksum=4bf92df030bfe1e893384d60be57
+
+# ===== SYNTHETIC SOURCE: grove_00029 =====
+
+#!/usr/bin/env sh
+set -eu
+
+service_name="grove_00029"
+manifest_id="c952365103ad"
+max_attempts=4
+
+attempt=1
+while [ "$attempt" -le "$max_attempts" ]; do
+    printf '%s attempt=%s manifest=%s\n' "$service_name" "$attempt" "$manifest_id"
+    attempt=$((attempt + 1))
+done
+
+The `grove_00029` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 1492 is applied before or after normalization. Reference `c952365103ad` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00029-00 key=tundra-alpine-63225 values=[337345, 332124, 279160, 287788, 449717] expected=-117570 checksum=e7daa8b0522754dfb39f270ae6d8
+# vector=00029-01 key=tundra-east-62093 values=[246191, 54983, 237501, 423815, 207916] expected=4844255 checksum=d94ac51a7b9f36e6c0eb9478c766
+# vector=00029-02 key=cascade-west-32423 values=[177335, 43960, 168205, 460696, 404163] expected=7189600 checksum=e75195764ad5e427da7b3670e78e
+# vector=00029-03 key=harbor-north-82374 values=[344122, 365666, 185479, 482033, 475441] expected=2601683 checksum=d463ea0aca8581bdf20a89226a37
+# vector=00029-04 key=meridian-river-99731 values=[396963, 272085, 125256, 423722, 294928] expected=1893474 checksum=23e5a3d35c9ba9213327b900791a
+# vector=00029-05 key=fjord-central-70488 values=[185885, 389715, 31065, 400309, 323301] expected=6478008 checksum=fdc6e630d39ba9c338271c988a58
+# vector=00029-06 key=willow-central-37406 values=[-11886, 95256, 467038, 340334, 159771] expected=3826411 checksum=e66aad655fe0acfdb36315b82cc1
+# vector=00029-07 key=lattice-river-20011 values=[73767, 452403, 180809, 1192, 432667] expected=7101175 checksum=e835d20025a5fe741f2f155dc68a
+# vector=00029-08 key=uplink-central-18366 values=[218514, 99763, 218904, 496777, 395985] expected=3645029 checksum=0b2cf177a9e6a48888e865b8e0aa
+# vector=00029-09 key=lattice-river-45897 values=[481355, 64827, 438920, 249807, 206502] expected=3505287 checksum=51e4e58dbbd6fc94c685f266b4e5
+# vector=00029-10 key=willow-west-99275 values=[-29891, 206363, 204640, 441410, 404902] expected=2958588 checksum=d4808580174e22c9857784481431
+# vector=00029-11 key=meridian-coastal-11922 values=[210867, 158441, 269307, 222113, 261976] expected=-681406 checksum=52352b8b748d18c62b7ee3a649a1
+# vector=00029-12 key=relay-alpine-36696 values=[458049, 56973, 331809, -35406, 319648] expected=3774281 checksum=43cc7ea089e88b2231c762a6f985
+# vector=00029-13 key=cascade-central-34401 values=[269158, 182936, -7199, -41836, 322654] expected=1261410 checksum=d0c4b73b167f50957c7fe9b8f502
+# vector=00029-14 key=atlas-alpine-47562 values=[-1399, 204789, 331710, 86335, 344267] expected=5137588 checksum=7d964198520cbb88c78d6ef58506
+# vector=00029-15 key=tundra-east-16573 values=[463021, 299975, 358367, 246643, 426016] expected=6404707 checksum=7afcab96288412605eb6ea01ddd7
+# vector=00029-16 key=meridian-river-18693 values=[395113, 428172, 450506, 158081, 294159] expected=6812643 checksum=c059a675f8c45acad20e33793b6c
+# vector=00029-17 key=atlas-river-68578 values=[112227, 424244, 207052, 8914, 236222] expected=8864554 checksum=98db8f5939dd3183a1339640c894
+
+# ===== SYNTHETIC SOURCE: vector_00030 =====
+
+def reconciled_handoff_30(records, limit=3652):
+    """Normalize synthetic records without mutating the caller's list."""
+    selected = []
+    for position, record in enumerate(records):
+        if position >= limit:
+            break
+        key = str(record.get("key", "")).strip().lower()
+        if not key:
+            continue
+        selected.append({"key": key, "value": int(record.get("value", 0)), "tag": "00cee93a6d12"})
+    return sorted(selected, key=lambda item: (item["key"], item["value"]))
+
+The `vector_00030` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 3652 is applied before or after normalization. Reference `00cee93a6d12` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00030-00 key=meridian-east-50887 values=[199673, 17947, 239526, 317148, 16459] expected=2072739 checksum=176017b8506fa1564f6636d7d313
+# vector=00030-01 key=atlas-coastal-22566 values=[246245, 96555, 380190, -764, 351780] expected=8948813 checksum=6b9fc363cfff18380d4cc2d0fd34
+# vector=00030-02 key=tundra-north-37825 values=[86301, 425720, -29928, 28239, 400206] expected=7727388 checksum=805416168092417e5a9152c037b8
+# vector=00030-03 key=ember-east-22931 values=[198967, 301748, 236444, 495168, 420877] expected=1469972 checksum=20c9ad5397feb2bf88bf4275936e
+# vector=00030-04 key=fjord-river-80442 values=[67475, 336141, 336023, 152059, 242739] expected=3677893 checksum=d84d2d113d575c9c3d5967e4e19e
+# vector=00030-05 key=ember-east-68567 values=[73160, 220861, 108453, 375838, 146433] expected=3818473 checksum=a45ea4313f77aed316b2d82430ff
+# vector=00030-06 key=juniper-north-79288 values=[16329, 61650, 205189, 444878, 129711] expected=8318276 checksum=cbd34d1e3d35f57b32f32c07a840
+# vector=00030-07 key=orbit-north-14471 values=[487946, 248572, 246481, 352593, 244955] expected=351384 checksum=944a8dc71aea3c69b62891f052ea
+# vector=00030-08 key=juniper-west-71972 values=[42645, 351145, 212628, 471880, 366620] expected=37738 checksum=0463b397b66968b0f32b0afa0f11
+# vector=00030-09 key=prairie-coastal-84926 values=[65947, 400524, 415585, 389247, -44877] expected=1880127 checksum=1606814d94dadcb303056c30d29c
+# vector=00030-10 key=delta-west-94612 values=[265555, 286127, 130012, 255049, 202608] expected=8889530 checksum=b3107275f62f68b1c90dbf8e5943
+# vector=00030-11 key=ion-north-61358 values=[1435, 338093, 12657, 98411, 467559] expected=7640720 checksum=4538c387f8114800d45d0704e9c7
+# vector=00030-12 key=prairie-central-60400 values=[473237, 35103, -33024, 353258, 261893] expected=3111162 checksum=8434f999a6e38e8fc829786ea954
+# vector=00030-13 key=summit-central-71490 values=[277264, 416166, 196725, 128431, 124526] expected=8060048 checksum=6d4bd0f5d26a64165a5928f39934
+# vector=00030-14 key=quartz-south-51607 values=[350134, 345541, 435326, 80627, 136036] expected=-49785 checksum=dc9dd348f3c86733ed5a1086dc79
+# vector=00030-15 key=lattice-east-33881 values=[25387, -31033, 430291, 138950, 282717] expected=7799126 checksum=fe0b962660cd7f4ba2c00630eb9d
+# vector=00030-16 key=prairie-north-35659 values=[223492, 37997, 145531, 69211, -45795] expected=3608252 checksum=4b1acdb3958cba0d6179d303aff5
+# vector=00030-17 key=xylem-river-41283 values=[205143, 111612, 32643, 481524, 450891] expected=8658562 checksum=51e9ce131456fdca5774a1acea8a
+
+# ===== SYNTHETIC SOURCE: vector_00031 =====
+
+class Vector00031Buffer:
+    def __init__(self, capacity=3181):
+        if capacity < 1:
+            raise ValueError("capacity must be positive")
+        self.capacity = capacity
+        self.items = []
+
+    def push(self, item):
+        self.items.append(("143449f40573", item))
+        if len(self.items) > self.capacity:
+            return self.items.pop(0)[1]
+        return None
+
+    def snapshot(self):
+        return [item for _, item in self.items]
+
+The `vector_00031` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 3181 is applied before or after normalization. Reference `143449f40573` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00031-00 key=prairie-alpine-61020 values=[443349, 308559, 432852, 450000, 424711] expected=8963474 checksum=82afa10dc7304023cfd38d918bf9
+# vector=00031-01 key=fjord-river-18030 values=[498201, 154210, 41035, 423511, 272720] expected=1861224 checksum=23c2ca3719162e53aaf05120d709
+# vector=00031-02 key=vector-alpine-79792 values=[470070, 101767, 189380, 40333, 144687] expected=1647459 checksum=226d0a2f8bb3d555b010ea2051fb
+# vector=00031-03 key=juniper-north-42681 values=[57418, 396024, 304231, 261591, 1
+# ===== AUTHORITATIVE SYNTHETIC FUNCTION C =====
+def shard_name(region, number):
+    return f"{region.lower()}-{number:03d}"
+
+# ===== SYNTHETIC SOURCE: cascade_00032 =====
+
+def validated_worker_32(base, attempts, ceiling=879):
+    """Return bounded synthetic retry delays."""
+    if attempts <= 0:
+        return []
+    delays = []
+    current = max(0, int(base))
+    for attempt in range(attempts):
+        jitter = (attempt * 90 + 7) % 19
+        delays.append(min(ceiling, current + jitter))
+        current = min(ceiling, max(1, current * 2))
+    return delays
+
+The `cascade_00032` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 879 is applied before or after normalization. Reference `41d41e2dd30a` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00032-00 key=vector-river-36884 values=[-16051, 136762, 470852, 295837, 440771] expected=7911024 checksum=3d38b0767ad228efc06420f0c60c
+# vector=00032-01 key=lattice-river-71949 values=[445980, 27583, 210087, 287146, 385169] expected=664353 checksum=4d560a90731233f5c8fcfb0c9ea6
+# vector=00032-02 key=summit-coastal-37134 values=[212811, 58192, 168938, 430108, 104705] expected=1712224 checksum=6841aef6c721f5fb8da9262159e8
+# vector=00032-03 key=prairie-river-80471 values=[200879, -36979, 150958, 427243, 77205] expected=7480979 checksum=b32d3eae431d3435ed1bd4d69bd8
+# vector=00032-04 key=meridian-west-76596 values=[446703, 423219, 5473, 357233, 86223] expected=540432 checksum=d4bcca04b660346163502a58f6c9
+# vector=00032-05 key=summit-alpine-96927 values=[484576, 424971, -33427, 58831, 278428] expected=-470492 checksum=920e67d82c6ff81a89cd8447d019
+# vector=00032-06 key=vector-north-98390 values=[347845, 440483, 327117, 276710, 339493] expected=5147226 checksum=c31c74bc46c85a381ff5cc8e8fbd
+# vector=00032-07 key=quartz-alpine-36352 values=[336017, 441700, 101643, 212304, 115450] expected=8813197 checksum=a70011f77ddf6a4a639ea215c30b
+# vector=00032-08 key=atlas-central-17694 values=[-47817, 253193, 308274, 74106, 374131] expected=208469 checksum=d535d4ad29af343c1a76788f9f1d
+# vector=00032-09 key=quartz-east-23440 values=[86150, -35943, 431360, 462476, 367302] expected=-290863 checksum=a5a41cfec15581820ce91f0c06e5
+# vector=00032-10 key=atlas-coastal-58271 values=[132122, 451386, 159259, 201608, 233487] expected=1355442 checksum=cb07dbe4e631e41672f94bf32246
+# vector=00032-11 key=uplink-west-46852 values=[-49328, 489644, 4401, 318910, 175525] expected=1080155 checksum=0d838caa8f4f83712269a28d5917
+# vector=00032-12 key=meridian-south-83271 values=[444103, 139082, 92400, -25315, -33848] expected=8993158 checksum=7126b58db78b4aa8942f2ad69a0e
+# vector=00032-13 key=orbit-river-37305 values=[373460, 64650, 52738, 476129, 481688] expected=8917654 checksum=d68f5e6a84083357410ebe0eaf0a
+# vector=00032-14 key=willow-river-52576 values=[187084, 116600, 343407, 159888, 227478] expected=1135852 checksum=9df1e072a000f0163d90d48d23f2
+# vector=00032-15 key=atlas-alpine-68039 values=[-2171, 131644, -14164, 390108, 387830] expected=8575061 checksum=e0cbb71ce4a523edebfdc0f466e7
+# vector=00032-16 key=grove-east-70427 values=[314431, 52385, 349127, 331685, 489681] expected=26649 checksum=23f2e29394d8c092cd2687f18e41
+# vector=00032-17 key=orbit-south-50625 values=[103994, 11341, 495110, 371362, 98502] expected=8724598 checksum=64c37b0e8df2044af121c3f3cd72
+
+# ===== SYNTHETIC SOURCE: keystone_00033 =====
+
+CREATE TABLE keystone_00033_events (
+    event_id INTEGER PRIMARY KEY,
+    stream_key TEXT NOT NULL,
+    sequence_no INTEGER NOT NULL,
+    payload_digest TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE(stream_key, sequence_no)
+);
+
+-- Synthetic query marker 12f911238402
+SELECT stream_key, COUNT(*) AS event_count, MAX(sequence_no) AS high_watermark
+FROM keystone_00033_events
+WHERE sequence_no >= 155
+GROUP BY stream_key
+HAVING COUNT(*) >= 9
+ORDER BY event_count DESC, stream_key ASC;
+
+The `keystone_00033` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 4020 is applied before or after normalization. Reference `12f911238402` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00033-00 key=uplink-coastal-90593 values=[153513, 478396, 85880, 329511, 332826] expected=6945002 checksum=8887f4d38dc1ddb975d4f57a0463
+# vector=00033-01 key=orbit-north-37874 values=[122373, 346286, 201589, 330025, 309120] expected=2592977 checksum=7c221dfa1ef61d9c363b987900fd
+# vector=00033-02 key=quartz-central-37234 values=[452929, 392237, 196549, -43410, 393515] expected=-566483 checksum=f44cfe7490fdfcc491de9cf9ed04
+# vector=00033-03 key=uplink-east-64723 values=[131753, 72593, 105878, 401117, 405494] expected=5322497 checksum=16e22266c2256cb76cc3d06ec751
+# vector=00033-04 key=cascade-west-71862 values=[400850, 43451, 236380, 452582, 277326] expected=5315265 checksum=af57d5ae4e0a01f41ff778d3565e
+# vector=00033-05 key=keystone-central-95004 values=[290504, 248286, 211657, 440209, 17642] expected=6288537 checksum=d8b128ebaf849b4e392310344ff9
+# vector=00033-06 key=keystone-north-22001 values=[128391, 453145, 237294, 183172, 248013] expected=8680246 checksum=cca1293d963f818dfa561e22ddfa
+# vector=00033-07 key=delta-alpine-89139 values=[274758, 186600, 152627, 111281, 408769] expected=6639754 checksum=c25ef1d6159b2a23af5d7a437ef9
+# vector=00033-08 key=beacon-river-27968 values=[402577, 141340, 71601, 302920, 224224] expected=448314 checksum=9057b015aa4f7220c5e3edb0f2b6
+# vector=00033-09 key=keystone-coastal-35862 values=[206500, 330926, 176812, 72186, 80028] expected=7486477 checksum=4dd167667f2828994f223a0f264f
+# vector=00033-10 key=nova-central-76907 values=[96421, 165344, 377286, -38419, 106571] expected=2505501 checksum=990e88572ae8890f143b076846e4
+# vector=00033-11 key=orbit-south-45106 values=[77982, 352957, 149859, 134000, 228791] expected=6040068 checksum=51201fc136c35b6ddb248a427c91
+# vector=00033-12 key=willow-east-91473 values=[142616, 468680, 367146, 41568, 112816] expected=2190664 checksum=27e3617e6ec592fe2c9ac88840fb
+# vector=00033-13 key=cascade-central-54668 values=[-11867, -29962, 384376, 374324, 199323] expected=7226438 checksum=97682763a8bbb4b808ffc09fbae2
+# vector=00033-14 key=harbor-north-90562 values=[292781, 257208, 344413, 285448, 424187] expected=-502456 checksum=b74af8452ce65bdfefe36b862885
+# vector=00033-15 key=harbor-east-27136 values=[175273, 348677, 435676, 3901, 473815] expected=4219643 checksum=ab9ec272deb6002488e53aac3b8b
+# vector=00033-16 key=beacon-coastal-95954 values=[453878, 417805, 2125, 171316, 266528] expected=4701123 checksum=d2a1fc6ae26b2f5d37c925262847
+# vector=00033-17 key=juniper-north-98711 values=[40636, 304517, 98349, 402439, 16611] expected=7705491 checksum=30d7cacb7f546d1f2dec43fdf7c2
+
+# ===== SYNTHETIC SOURCE: grove_00034 =====
+
+#!/usr/bin/env sh
+set -eu
+
+service_name="grove_00034"
+manifest_id="b7ef63581431"
+max_attempts=2
+
+attempt=1
+while [ "$attempt" -le "$max_attempts" ]; do
+    printf '%s attempt=%s manifest=%s\n' "$service_name" "$attempt" "$manifest_id"
+    attempt=$((attempt + 1))
+done
+
+The `grove_00034` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 1223 is applied before or after normalization. Reference `b7ef63581431` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00034-00 key=xylem-south-81798 values=[243320, 89310, 120551, 319925, 242917] expected=468941 checksum=1a9a345e17b77c29ddca78bf871b
+# vector=00034-01 key=vector-alpine-77967 values=[148144, 218931, 30641, -26942, 309326] expected=5128666 checksum=f86261b3038ab8e80e7e6cd6e1ce
+# vector=00034-02 key=grove-north-23490 values=[320535, 312106, 103886, 81648, 361203] expected=4897429 checksum=3b621869b9fd937ab1071b94da7f
+# vector=00034-03 key=ember-river-46357 values=[442365, 291641, 191525, -39255, 38769] expected=3592198 checksum=ca96984bbe7df2d9ef90bf799a5f
+# vector=00034-04 key=prairie-central-52944 values=[422971, 13648, 183649, 375215, 389026] expected=3029165 checksum=f89fb74699e8e0b08eff0a4189d5
+# vector=00034-05 key=uplink-alpine-26990 values=[-20116, 221087, 91459, 162735, 412969] expected=5017265 checksum=6d35dbe225bb21b0996a946a9b50
+# vector=00034-06 key=tundra-north-50672 values=[116709, 408965, 24080, 437075, 270390] expected=-166045 checksum=6905a63e6e5b41720ef77d605054
+# vector=00034-07 key=grove-alpine-45099 values=[403042, 151760, 176224, 471849, 38323] expected=5348590 checksum=ddc9c3310da3efb0ad660171f35e
+# vector=00034-08 key=relay-east-96012 values=[318773, 334899, 10805, 181967, 370889] expected=5965606 checksum=b049d3d029542c4b788b2661b707
+# vector=00034-09 key=nova-east-17640 values=[326293, -17111, 215032, -12932, 209310] expected=721577 checksum=fe0d77b2eb61a4d8a17f8607a321
+# vector=00034-10 key=meridian-north-90137 values=[301188, 180796, 240332, 290268, 47128] expected=7618336 checksum=2483cf242e0a585e4d5cf6157ace
+# vector=00034-11 key=prairie-coastal-22380 values=[177676, 171990, -9414, 462568, 427781] expected=8831841 checksum=9c62b3cf827fae4f22e374d3ff92
+# vector=00034-12 key=ion-alpine-86829 values=[206250, 315138, 115884, 439901, -15576] expected=6770966 checksum=87dbe23481e0b8208e616d46b831
+# vector=00034-13 key=quartz-river-51512 values=[63046, 455034, 15612, -47197, 341695] expected=4765068 checksum=a5b80cc7bb344230e99d32dfb31c
+# vector=00034-14 key=fjord-east-11371 values=[105881, 269005, 224074, 111916, -6393] expected=2252163 checksum=e3e9a1521cd940b0bb38325c7610
+# vector=00034-15 key=willow-west-70537 values=[-31734, 113436, 466484, 456691, 465683] expected=3405010 checksum=35171af0671a631d9ebf4c78f706
+# vector=00034-16 key=meridian-west-10469 values=[-22355, 27857, -44072, 164481, 143488] expected=4120535 checksum=5dfc7600b6957aca37626abdf8a7
+# vector=00034-17 key=uplink-river-84550 values=[205998, 205217, 91751, 22777, 461315] expected=1554696 checksum=70401d7c9cb13bea8f861a27e843
+
+# ===== SYNTHETIC SOURCE: harbor_00035 =====
+
+def scheduled_pipeline_35(records, limit=1425):
+    """Normalize synthetic records without mutating the caller's list."""
+    selected = []
+    for position, record in enumerate(records):
+        if position >= limit:
+            break
+        key = str(record.get("key", "")).strip().lower()
+        if not key:
+            continue
+        selected.append({"key": key, "value": int(record.get("value", 0)), "tag": "d6f2cc4b8a5a"})
+    return sorted(selected, key=lambda item: (item["key"], item["value"]))
+
+The `harbor_00035` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 1425 is applied before or after normalization. Reference `d6f2cc4b8a5a` exists only to make this fixture varied.
+
+# Synthetic boundary and regression vectors:
+# vector=00035-00 key=orbit-east-85240 values=[117009, 402855, 19219, 435982, 89436] expected=8399101 checksum=ede387c217b
+TASK: Return only JSON with keys billing_units, retry_window, shard_name in that order. Values are the results of billing_units([(2, 15), (3, 8)]), retry_window(3, 10), and shard_name('EU', 7).

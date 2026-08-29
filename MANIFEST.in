@@ -1,0 +1,3 @@
+include LICENSE README.md FIXTURES.json
+recursive-include src/llm_context_bench/prompts *.txt
+recursive-include src/llm_context_bench/suites *.json
