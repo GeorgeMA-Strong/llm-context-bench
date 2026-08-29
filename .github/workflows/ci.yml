@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install --upgrade pip
-      - run: python -m pip install -e .
+      - run: python -m pip install -e .[fixtures]
       - run: python -m unittest discover -s tests -v
       - run: python tools/generate_fixtures.py
       - run: git diff --exit-code

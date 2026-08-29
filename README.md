@@ -151,7 +151,7 @@ only trials that satisfy every performance validity rule.
 ## Rebuild and verify fixtures
 
 ```bash
-python3 -m pip install tokenizers
+python3 -m pip install -e ".[fixtures]"       # runtime is dependency-free
 python3 tools/generate_fixtures.py           # verify committed fixtures
 python3 tools/generate_fixtures.py --write   # rebuild + refresh hashes
 python3 -m unittest discover -s tests -v

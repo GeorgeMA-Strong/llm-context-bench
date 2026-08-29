@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llm-context-bench"
-version = "0.1.0"
+version = "0.2.0"
 description = "Reproducible 16K-128K quality and performance benchmarks for llama.cpp servers"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -23,6 +23,10 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = []
+
+[project.optional-dependencies]
+# Build-time dependency for tools/generate_fixtures.py (fixture rebuild/verify).
+fixtures = ["tokenizers>=0.21"]
 
 [project.scripts]
 llm-context-bench = "llm_context_bench.runner:main"
