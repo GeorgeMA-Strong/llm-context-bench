@@ -3,8 +3,8 @@
   "suite_id": "standard-coding-v2",
   "description": "Locked coding quality and non-degenerate performance benchmark over deterministic synthetic source context.",
   "system_prompt": "You are completing a reproducible coding benchmark. Follow the requested output format exactly. Do not add commentary. When asked for code or SQL, return only the requested artifact without Markdown fences.",
-  "performance_system_prompt": "Follow the final PERFORMANCE TASK in the user message. Produce varied, coherent technical writing and realistic code examples. Do not use repetitive filler, repeated punctuation, or artificial token patterns. Use the server's normal reasoning behavior.",
-  "performance_instruction": "Write around 4k words of realistic, non-repetitive source code and technical explanation based on the code bundle. Implement a substantial coherent example, explain its design and failure handling, and continue naturally without repeated filler until the response limit is reached.",
+  "performance_system_prompt": "Follow the final PERFORMANCE TASK in the user message. Produce realistic TypeScript source code in the style of the bundled files, with design and failure handling expressed in comments. Do not use repetitive filler, repeated punctuation, or artificial token patterns. Use the server's normal reasoning behavior.",
+  "performance_instruction": "Write realistic, non-repetitive source code grounded in the code bundle. Produce one substantial, coherent TypeScript module in the style of the bundled files: type declarations, interfaces, and functions, with design notes and failure handling expressed in JSDoc or line comments. Output source code exclusively: no prose paragraphs, no markdown headings, no bullet lists, no explanations outside comments. Continue naturally without repeated filler until the response limit is reached.",
   "sampling": {
     "temperature": 0.0,
     "top_p": 1.0,
@@ -273,7 +273,7 @@
       "performance_max_tokens": 1024,
       "nominal_input_tokens": 16384,
       "prompt_file": "prompts/coding-16k.txt",
-      "prompt_sha256": "5c45f157d6176a046a53621eb4c753df68528ce7064ba4530ac97270c476cbdf",
+      "prompt_sha256": "f930ee8bd152966e150c439a693d3a3cfd97a807f1f0edc9b5c8d1f3042928b5",
       "checker": {
         "type": "exact_json",
         "expected": {
@@ -294,7 +294,7 @@
       "performance_max_tokens": 1024,
       "nominal_input_tokens": 32768,
       "prompt_file": "prompts/coding-32k.txt",
-      "prompt_sha256": "6a6968bf32875763aec9322508e14d36ffcdbea370204235905d3a45daba5df4",
+      "prompt_sha256": "6e5ab525d15f477fc2c45e7b3205ec8514aa1eed60692c9ca3e546a32b1419d2",
       "checker": {
         "type": "exact_json",
         "expected": {
@@ -315,7 +315,7 @@
       "performance_max_tokens": 1024,
       "nominal_input_tokens": 65536,
       "prompt_file": "prompts/coding-64k.txt",
-      "prompt_sha256": "18a0f97abe65d46ec344286d917d9a7d5424148b640469a7dfa1b86a29bd6c4f",
+      "prompt_sha256": "526f6ed383a1625ba75774064d5bd4646b70888cc964a9f1a96c0eb81d538ed8",
       "checker": {
         "type": "exact_json",
         "expected": {
@@ -336,7 +336,7 @@
       "performance_max_tokens": 1024,
       "nominal_input_tokens": 131072,
       "prompt_file": "prompts/coding-128k.txt",
-      "prompt_sha256": "08d2a8c5dc7aa66cead8bfef9b80138b4f53b4c07ab52b728a40bfd194c1b31e",
+      "prompt_sha256": "b5fc4323151ccaada98b0eae081d4536248b9185cfa7d7c7fe52d520b0d9d0ac",
       "checker": {
         "type": "exact_json",
         "expected": {

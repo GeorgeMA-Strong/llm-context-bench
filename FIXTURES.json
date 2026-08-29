@@ -3,7 +3,7 @@
   "license": "MIT",
   "generator": "tools/generate_fixtures.py",
   "seed": 3407,
-  "description": "Deterministic synthetic fixtures; no private or third-party corpus data.",
+  "description": "Deterministic long-context fixtures assembled from public-domain documents (Project Gutenberg) and permissively-licensed source (microsoft/vscode, MIT/Apache-2.0); sources are named inside each fixture; no private data.",
   "reference_tokenizer": {
     "repository": "Qwen/Qwen3-8B",
     "revision": "b968826d9c46dd6066d109eabc6255188de91218",
@@ -13,59 +13,59 @@
   "prompts": {
     "regular-16k": {
       "path": "src/llm_context_bench/prompts/regular-16k.txt",
-      "chars": 33100,
-      "bytes": 33100,
+      "chars": 67186,
+      "bytes": 68148,
       "nominal_tokens": 16384,
-      "sha256": "5db0db377809603709dd2ae8d2c2c8481ba8d569c3e2fd690d12c7bd4afddc53"
+      "sha256": "4ad4e096d6434dbfff3cfb1aa7a4e7eac6dfc28e649176c4bce6162c10ff27e1"
     },
     "regular-32k": {
       "path": "src/llm_context_bench/prompts/regular-32k.txt",
-      "chars": 65800,
-      "bytes": 65800,
+      "chars": 133787,
+      "bytes": 135765,
       "nominal_tokens": 32768,
-      "sha256": "076aded0dccf107b57046071ad1aaa7876454ad6dd21a0c598e58d253aba69c1"
+      "sha256": "eb9fb062eb92822f1eb4026e0b57e9c10e487ca4738a231356e04c14cda72889"
     },
     "regular-64k": {
       "path": "src/llm_context_bench/prompts/regular-64k.txt",
-      "chars": 131500,
-      "bytes": 131500,
+      "chars": 267670,
+      "bytes": 272200,
       "nominal_tokens": 65536,
-      "sha256": "e1227b4d82ad4ff03eaa43e2b0bf751eed455c0acc0ea74412eaa056b2702bcb"
+      "sha256": "13ed8a43317f76bdecf68e3b74c5fa0135fdbbb5e420917b481635479403de76"
     },
     "regular-128k": {
       "path": "src/llm_context_bench/prompts/regular-128k.txt",
-      "chars": 262000,
-      "bytes": 262000,
+      "chars": 533994,
+      "bytes": 543378,
       "nominal_tokens": 131072,
-      "sha256": "fcec30ae98e7c9b077aa655e43b2b02df9a0944c8b9f83ad189b5c78289a6261"
+      "sha256": "291c1f041ee57ec3000ee05f85ab8ae2d8a4f4fcb841233dc0c6f5c153ad99a8"
     },
     "coding-16k": {
       "path": "src/llm_context_bench/prompts/coding-16k.txt",
-      "chars": 28500,
-      "bytes": 28500,
+      "chars": 62258,
+      "bytes": 62264,
       "nominal_tokens": 16384,
-      "sha256": "5c45f157d6176a046a53621eb4c753df68528ce7064ba4530ac97270c476cbdf"
+      "sha256": "f930ee8bd152966e150c439a693d3a3cfd97a807f1f0edc9b5c8d1f3042928b5"
     },
     "coding-32k": {
       "path": "src/llm_context_bench/prompts/coding-32k.txt",
-      "chars": 56700,
-      "bytes": 56700,
+      "chars": 124856,
+      "bytes": 124907,
       "nominal_tokens": 32768,
-      "sha256": "6a6968bf32875763aec9322508e14d36ffcdbea370204235905d3a45daba5df4"
+      "sha256": "6e5ab525d15f477fc2c45e7b3205ec8514aa1eed60692c9ca3e546a32b1419d2"
     },
     "coding-64k": {
       "path": "src/llm_context_bench/prompts/coding-64k.txt",
-      "chars": 112500,
-      "bytes": 112500,
+      "chars": 251403,
+      "bytes": 251481,
       "nominal_tokens": 65536,
-      "sha256": "18a0f97abe65d46ec344286d917d9a7d5424148b640469a7dfa1b86a29bd6c4f"
+      "sha256": "526f6ed383a1625ba75774064d5bd4646b70888cc964a9f1a96c0eb81d538ed8"
     },
     "coding-128k": {
       "path": "src/llm_context_bench/prompts/coding-128k.txt",
-      "chars": 223500,
-      "bytes": 223500,
+      "chars": 494878,
+      "bytes": 495222,
       "nominal_tokens": 131072,
-      "sha256": "08d2a8c5dc7aa66cead8bfef9b80138b4f53b4c07ab52b728a40bfd194c1b31e"
+      "sha256": "b5fc4323151ccaada98b0eae081d4536248b9185cfa7d7c7fe52d520b0d9d0ac"
     }
   }
 }

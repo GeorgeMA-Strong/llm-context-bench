@@ -1,355 +1,1798 @@
-BENCHMARK PROFILE: SYNTHETIC CODE ANALYSIS
-All modules, identifiers, and examples in this fixture are generated and fictional.
+BENCHMARK PROFILE: CODE ANALYSIS
+This fixture bundles source files from the open-source project
+microsoft/vscode (dual-licensed MIT/Apache-2.0), pinned at commit
+08d4889f9ec4a1685d257b9b95de036c8e1ce1e5 (tag 1.135.0).
+All text is original project source, except the three blocks marked
+AUTHORITATIVE, which are benchmark reference functions.
 
-# ===== SYNTHETIC SOURCE: quartz_00000 =====
+# ===== SOURCE FILE: extensions/configuration-editing/src/configurationEditingMain.ts (microsoft/vscode@08d4889f9) =====
 
-def compared_replica_0(records, limit=1125):
-    """Normalize synthetic records without mutating the caller's list."""
-    selected = []
-    for position, record in enumerate(records):
-        if position >= limit:
-            break
-        key = str(record.get("key", "")).strip().lower()
-        if not key:
-            continue
-        selected.append({"key": key, "value": int(record.get("value", 0)), "tag": "13fd7617525e"})
-    return sorted(selected, key=lambda item: (item["key"], item["value"]))
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 
-The `quartz_00000` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 1125 is applied before or after normalization. Reference `13fd7617525e` exists only to make this fixture varied.
+import { getLocation, JSONPath, parse, visit, Location } from 'jsonc-parser';
+import * as vscode from 'vscode';
+import { SettingsDocument } from './settingsDocumentHelper';
+import { provideInstalledExtensionProposals } from './extensionsProposals';
+import './importExportProfiles';
 
-# Synthetic boundary and regression vectors:
-# vector=00000-00 key=summit-river-89576 values=[224390, 399406, 420105, 142849, 457752] expected=1749627 checksum=03287c23e40368482e77e03423da
-# vector=00000-01 key=atlas-south-93274 values=[372590, 71579, 67686, 239648, 407648] expected=1363069 checksum=429f9486f009f13277f2708367a0
-# vector=00000-02 key=delta-east-84968 values=[82457, -29792, -42320, 62409, 225915] expected=292344 checksum=6876d4aa1eb3d1d1d273dec94640
-# vector=00000-03 key=beacon-river-87307 values=[19729, 259431, 299440, 321026, 36740] expected=4697890 checksum=6c8fc0b99a5f4748ee9455f5afab
-# vector=00000-04 key=juniper-west-81432 values=[490580, 82268, 491932, 237364, 86859] expected=3528922 checksum=175b7c2d14bbdd433bdfe784067b
-# vector=00000-05 key=relay-alpine-44054 values=[299324, 430145, 52940, 368792, -25675] expected=-827878 checksum=6f1c00d9384bff7a630605dac8a0
-# vector=00000-06 key=willow-east-67913 values=[239178, 300517, 478979, 317501, 185903] expected=6025488 checksum=157e9464e201dbff32f9071b9ab8
-# vector=00000-07 key=ion-coastal-41327 values=[428680, -30509, 206093, 204070, 494317] expected=7889168 checksum=263a3ff7f703b62c44d5b5e8b288
-# vector=00000-08 key=ion-coastal-71298 values=[493983, 420365, 346964, 386886, 190234] expected=7259823 checksum=91eaf9a076fbd2498ff8029bea0e
-# vector=00000-09 key=vector-central-81245 values=[410008, 3321, -28287, 260065, -24984] expected=4264025 checksum=c2b0014a2b229271847ba9fea15a
-# vector=00000-10 key=relay-north-96892 values=[284879, 272003, 90661, 164987, 145260] expected=2921145 checksum=b600c481837e7cb2f8464e157c55
-# vector=00000-11 key=ion-central-38362 values=[19192, 488378, 458121, 120482, 83072] expected=1630914 checksum=c1de0f89d301aa21858e5f7e6b1a
-# vector=00000-12 key=juniper-west-33535 values=[133521, 445672, 484022, 493919, 310038] expected=7334474 checksum=338c3efab7023c730febdf777948
-# vector=00000-
+export function activate(context: vscode.ExtensionContext): void {
+	//settings.json suggestions
+	context.subscriptions.push(registerSettingsCompletions());
+
+	//extensions suggestions
+	context.subscriptions.push(...registerExtensionsCompletions());
+
+	// launch.json variable suggestions
+	context.subscriptions.push(registerVariableCompletions('**/launch.json'));
+
+	// task.json variable suggestions
+	context.subscriptions.push(registerVariableCompletions('**/tasks.json'));
+
+	// Workspace file launch/tasks variable completions
+	context.subscriptions.push(registerVariableCompletions('**/*.code-workspace'));
+
+	// keybindings.json/package.json context key suggestions
+	context.subscriptions.push(registerContextKeyCompletions());
+}
+
+function registerSettingsCompletions(): vscode.Disposable {
+	return vscode.languages.registerCompletionItemProvider({ language: 'jsonc', pattern: '**/settings.json' }, {
+		provideCompletionItems(document, position, token) {
+			return new SettingsDocument(document).provideCompletionItems(position, token);
+		}
+	});
+}
+
+function registerVariableCompletions(pattern: string): vscode.Disposable {
+	return vscode.languages.registerCompletionItemProvider({ language: 'jsonc', pattern }, {
+		provideCompletionItems(document, position, _token) {
+			const location = getLocation(document.getText(), document.offsetAt(position));
+			if (isCompletingInsidePropertyStringValue(document, location, position)) {
+				if (document.fileName.endsWith('.code-workspace') && !isLocationInsideTopLevelProperty(location, ['launch', 'tasks'])) {
+					return [];
+				}
+
+				let range = document.getWordRangeAtPosition(position, /\$\{[^"\}]*\}?/);
+				if (!range || range.start.isEqual(position) || range.end.isEqual(position) && document.getText(range).endsWith('}')) {
+					range = new vscode.Range(position, position);
+				}
+
+				return [
+					{ label: 'workspaceFolder', detail: vscode.l10n.t("The path of the folder opened in VS Code") },
+					{ label: 'workspaceFolderBasename', detail: vscode.l10n.t("The name of the folder opened in VS Code without any slashes (/)") },
+					{ label: 'fileWorkspaceFolderBasename', detail: vscode.l10n.t("The current opened file workspace folder name without any slashes (/)") },
+					{ label: 'relativeFile', detail: vscode.l10n.t("The current opened file relative to ${workspaceFolder}") },
+					{ label: 'relativeFileDirname', detail: vscode.l10n.t("The current opened file's dirname relative to ${workspaceFolder}") },
+					{ label: 'file', detail: vscode.l10n.t("The current opened file") },
+					{ label: 'cwd', detail: vscode.l10n.t("The task runner's current working directory on startup") },
+					{ label: 'lineNumber', detail: vscode.l10n.t("The current selected line number in the active file") },
+					{ label: 'selectedText', detail: vscode.l10n.t("The current selected text in the active file") },
+					{ label: 'fileDirname', detail: vscode.l10n.t("The current opened file's dirname") },
+					{ label: 'fileDirnameBasename', detail: vscode.l10n.t("The current opened file's folder name") },
+					{ label: 'fileExtname', detail: vscode.l10n.t("The current opened file's extension") },
+					{ label: 'fileBasename', detail: vscode.l10n.t("The current opened file's basename") },
+					{ label: 'fileBasenameNoExtension', detail: vscode.l10n.t("The current opened file's basename with no file extension") },
+					{ label: 'defaultBuildTask', detail: vscode.l10n.t("The name of the default build task. If there is not a single default build task then a quick pick is shown to choose the build task.") },
+					{ label: 'pathSeparator', detail: vscode.l10n.t("The character used by the operating system to separate components in file paths. Is also aliased to '/'.") },
+					{ label: 'extensionInstallFolder', detail: vscode.l10n.t("The path where an extension is installed."), param: 'publisher.extension' },
+				].map(variable => ({
+					label: `\${${variable.label}}`,
+					range,
+					insertText: variable.param ? new vscode.SnippetString(`\${${variable.label}:`).appendPlaceholder(variable.param).appendText('}') : (`\${${variable.label}}`),
+					detail: variable.detail
+				}));
+			}
+
+			return [];
+		}
+	});
+}
+
+function isCompletingInsidePropertyStringValue(document: vscode.TextDocument, location: Location, pos: vscode.Position) {
+	if (location.isAtPropertyKey) {
+		return false;
+	}
+	const previousNode = location.previousNode;
+	if (previousNode && previousNode.type === 'string') {
+		const offset = document.offsetAt(pos);
+		return offset > previousNode.offset && offset < previousNode.offset + previousNode.length;
+	}
+	return false;
+}
+
+function isLocationInsideTopLevelProperty(location: Location, values: string[]) {
+	return values.includes(location.path[0] as string);
+}
+
+interface IExtensionsContent {
+	recommendations: string[];
+}
+
+function registerExtensionsCompletions(): vscode.Disposable[] {
+	return [registerExtensionsCompletionsInExtensionsDocument(), registerExtensionsCompletionsInWorkspaceConfigurationDocument()];
+}
+
+function registerExtensionsCompletionsInExtensionsDocument(): vscode.Disposable {
+	return vscode.languages.registerCompletionItemProvider({ pattern: '**/extensions.json' }, {
+		provideCompletionItems(document, position, _token) {
+			const location = getLocation(document.getText(), document.offsetAt(position));
+			if (location.path[0] === 'recommendations') {
+				const range = getReplaceRange(document, location, position);
+				const extensionsContent = <IExtensionsContent>parse(document.getText());
+				return provideInstalledExtensionProposals(extensionsContent && extensionsContent.recommendations || [], '', range, false);
+			}
+			return [];
+		}
+	});
+}
+
+function registerExtensionsCompletionsInWorkspaceConfigurationDocument(): vscode.Disposable {
+	return vscode.languages.registerCompletionItemProvider({ pattern: '**/*.code-workspace' }, {
+		provideCompletionItems(document, position, _token) {
+			const location = getLocation(document.getText(), document.offsetAt(position));
+			if (location.path[0] === 'extensions' && location.path[1] === 'recommendations') {
+				const range = getReplaceRange(document, location, position);
+				const extensionsContent = 
 # ===== AUTHORITATIVE SYNTHETIC FUNCTION A =====
 def billing_units(items):
     return sum(quantity * price for quantity, price in items) + 7
+<IExtensionsContent>parse(document.getText())['extensions'];
+				return provideInstalledExtensionProposals(extensionsContent && extensionsContent.recommendations || [], '', range, false);
+			}
+			return [];
+		}
+	});
+}
 
-# ===== SYNTHETIC SOURCE: summit_00001 =====
+function getReplaceRange(document: vscode.TextDocument, location: Location, position: vscode.Position) {
+	const node = location.previousNode;
+	if (node) {
+		const nodeStart = document.positionAt(node.offset), nodeEnd = document.positionAt(node.offset + node.length);
+		if (nodeStart.isBeforeOrEqual(position) && nodeEnd.isAfterOrEqual(position)) {
+			return new vscode.Range(nodeStart, nodeEnd);
+		}
+	}
+	return new vscode.Range(position, position);
+}
 
-class Summit00001Buffer:
-    def __init__(self, capacity=914):
-        if capacity < 1:
-            raise ValueError("capacity must be positive")
-        self.capacity = capacity
-        self.items = []
+vscode.languages.registerDocumentSymbolProvider({ pattern: '**/launch.json', language: 'jsonc' }, {
+	provideDocumentSymbols(document: vscode.TextDocument, _token: vscode.CancellationToken): vscode.ProviderResult<vscode.SymbolInformation[]> {
+		const result: vscode.SymbolInformation[] = [];
+		let name: string = '';
+		let lastProperty = '';
+		let startOffset = 0;
+		let depthInObjects = 0;
 
-    def push(self, item):
-        self.items.append(("29f48fd0823e", item))
-        if len(self.items) > self.capacity:
-            return self.items.pop(0)[1]
-        return None
+		visit(document.getText(), {
+			onObjectProperty: (property, _offset, _length) => {
+				lastProperty = property;
+			},
+			onLiteralValue: (value: any, _offset: number, _length: number) => {
+				if (lastProperty === 'name') {
+					name = value;
+				}
+			},
+			onObjectBegin: (offset: number, _length: number) => {
+				depthInObjects++;
+				if (depthInObjects === 2) {
+					startOffset = offset;
+				}
+			},
+			onObjectEnd: (offset: number, _length: number) => {
+				if (name && depthInObjects === 2) {
+					result.push(new vscode.SymbolInformation(name, vscode.SymbolKind.Object, new vscode.Range(document.positionAt(startOffset), document.positionAt(offset))));
+				}
+				depthInObjects--;
+			},
+		});
 
-    def snapshot(self):
-        return [item for _, item in self.items]
+		return result;
+	}
+}, { label: 'Launch Targets' });
 
-The `summit_00001` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 914 is applied before or after normalization. Reference `29f48fd0823e` exists only to make this fixture varied.
+function registerContextKeyCompletions(): vscode.Disposable {
+	type ContextKeyInfo = { key: string; type?: string; description?: string };
 
-# Synthetic boundary and regression vectors:
-# vector=00001-00 key=relay-east-45288 values=[118333, 312454, 29063, 311666, 235526] expected=664396 checksum=509681e8f925ac099d4bd19fcf67
-# vector=00001-01 key=ember-south-10997 values=[-3437, 11082, 16226, 223299, 374130] expected=2070394 checksum=86ce413a348fd4f38126493b9b2b
-# vector=00001-02 key=meridian-south-67761 values=[169320, 200415, 213401, 228589, 447975] expected=1958049 checksum=9da5dcf4117810471d463e348b12
-# vector=00001-03 key=keystone-alpine-98725 values=[353735, 391384, 349702, 318154, 106854] expected=7287842 checksum=bb362cf5f5804ead47dc01697251
-# vector=00001-04 key=fjord-east-72546 values=[-42401, 162915, 16321, 9658, 148340] expected=5747449 checksum=fe2f060ac474bfd6f75d50f7b1a2
-# vector=00001-05 key=willow-north-31891 values=[309637, 328106, 142752, 343220, 251859] expected=694774 checksum=ae43d8298c8140252e1dba63056e
-# vector=00001-06 key=lattice-south-92735 values=[233302, 401780, 234628, -25921, 359906] expected=5270133 checksum=cad252662db62ae64de0ca2f16c3
-# vector=00001-07 key=relay-alpine-99431 values=[105514, -33606, 196255, 84575, -14365] expected=869061 checksum=9c592d34f0906f32453099bf775c
-# vector=00001-08 key=fjord-north-60083 values=[6321, 324837, 160576, 412037, 476321] expected=300091 checksum=d0f6d56ab9e993d8357808a23842
-# vector=00001-09 key=vector-alpine-30536 values=[193236, 453673, 473092, 389884, 145087] expected=8360640 checksum=e0171c2207af3f62dc7e3d6487b4
-# vector=00001-10 key=fjord-coastal-92951 values=[247384, 347165, 297800, -8380, 7118] expected=2592847 checksum=c36d49089a09b4926d62902c80f0
-# vector=00001-11 key=relay-south-58656 values=[431574, 427473, 12292, 442860, 157775] expected=8150596 checksum=c375121a7a31761135516bf6b53f
-# vector=00001-12 key=quartz-east-89025 values=[320662, 442764, 454172, 403634, -13381] expected=441570 checksum=5763af1ffbdb340749f4e750f6f5
-# vector=00001-13 key=orbit-west-41490 values=[5402, 2292, 456077, -15198, 167085] expected=5694531 checksum=3e2e3ff73d9b793d6143cc390658
-# vector=00001-14 key=keystone-central-20412 values=[439762, 250476, 347533, 42791, 192237] expected=7237300 checksum=a15353b836cbd3c70de3c8a041cb
-# vector=00001-15 key=delta-north-27492 values=[250192, 57862, 445882, -35172, 279704] expected=1875520 checksum=39eb243350607b56618b9d16988e
-# vector=00001-16 key=tundra-north-91304 values=[295391, 409747, 436803, 164890, 475047] expected=5139307 checksum=4e5661cea406ed0404a54c9f0273
-# vector=00001-17 key=cascade-west-88986 values=[72199, 394207, 468397, -2767, -43448] expected=7336592 checksum=616344b8b2a197c33a01238e3573
+	const paths = new Map<vscode.DocumentFilter, JSONPath[]>([
+		[{ language: 'jsonc', pattern: '**/keybindings.json' }, [
+			['*', 'when']
+		]],
+		[{ language: 'json', pattern: '**/package.json' }, [
+			['contributes', 'menus', '*', '*', 'when'],
+			['contributes', 'views', '*', '*', 'when'],
+			['contributes', 'viewsWelcome', '*', 'when'],
+			['contributes', 'keybindings', '*', 'when'],
+			['contributes', 'keybindings', 'when'],
+		]]
+	]);
 
-# ===== SYNTHETIC SOURCE: delta_00002 =====
+	return vscode.languages.registerCompletionItemProvider(
+		[...paths.keys()],
+		{
+			async provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken) {
 
-def isolated_dataset_2(base, attempts, ceiling=2213):
-    """Return bounded synthetic retry delays."""
-    if attempts <= 0:
-        return []
-    delays = []
-    current = max(0, int(base))
-    for attempt in range(attempts):
-        jitter = (attempt * 41 + 21) % 32
-        delays.append(min(ceiling, current + jitter))
-        current = min(ceiling, max(1, current * 2))
-    return delays
+				const location = getLocation(document.getText(), document.offsetAt(position));
 
-The `delta_00002` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 2213 is applied before or after normalization. Reference `981cbfe71f1b` exists only to make this fixture varied.
+				if (location.isAtPropertyKey) {
+					return;
+				}
 
-# Synthetic boundary and regression vectors:
-# vector=00002-00 key=atlas-north-29839 values=[367917, 158959, 342580, 407760, 392511] expected=1745552 checksum=99e0522c34a4ee027e4220251420
-# vector=00002-01 key=vector-west-74702 values=[38639, 359908, 129442, 448565, 244604] expected=2252959 checksum=7d5aff70b79e7f9cc5c426b7301e
-# vector=00002-02 key=harbor-coastal-82599 values=[182536, 261761, 416285, 11818, 88337] expected=2817693 checksum=65e97bd98d329dfdbf3d47a556cd
-# vector=00002-03 key=fjord-south-96355 values=[265640, 123933, 115167, 311985, 318473] expected=5692645 checksum=cab5f7618bf64cd3eacb66858255
-# vector=00002-04 key=ember-coastal-78884 values=[424033, 25757, 467165, 286936, -3625] expected=6971378 checksum=74ea4e0187c756c71d5ad35ded01
-# vector=00002-05 key=vector-river-43187 values=[352857, 13976, -46427, 336548, 12383] expected=7355300 checksum=89d3628e7989673a132a50ac68f2
-# vector=00002-06 key=willow-coastal-59275 values=[124106, 164227, 98896, 144068, 391283] expected=5246964 checksum=c50fc062e6ceb4b17edd58035443
-# vector=00002-07 key=atlas-north-69454 values=[35552, 116606, 340960, 193434, 264122] expected=2630214 checksum=b66afa0a56ede5e677e064e25d91
-# vector=00002-08 key=quartz-south-99593 values=[137791, 418010, 256821, 158983, 307684] expected=4117075 checksum=90a35c5b51f2fc628cd6dd742912
-# vector=00002-09 key=beacon-alpine-35733 values=[91149, 6795, 224023, 175848, 471407] expected=-632632 checksum=9daedabf6506ceae63a19b5a8d87
-# vector=00002-10 key=fjord-east-93173 values=[282801, 161860, 336617, 271625, 420252] expected=440561 checksum=551e7b56b24f76186a515885bd0b
-# vector=00002-11 key=lattice-central-90766 values=[62485, 28743, 311539, 287883, 436690] expected=7341510 checksum=4ba50d8f3e88b9afdf0840e86a32
-# vector=00002-12 key=prairie-south-18531 values=[352282, 60690, 264437, -23146, 140530] expected=453582 checksum=da121fca435e7d4222d9f83732e3
-# vector=00002-13 key=atlas-alpine-91027 values=[377577, -41756, 397716, 291744, 376530] expected=4658562 checksum=d12d554b5cbf8d8c80cce138acf2
-# vector=00002-14 key=vector-south-70110 values=[81906, 202242, 398127, 25532, 134092] expected=1129537 checksum=28bf05a25e347d5f57b08c46ca3c
-# vector=00002-15 key=orbit-north-65105 values=[137489, 78795, 495838, 221078, 392035] expected=4669688 checksum=e1945013774a58859579acad38a3
-# vector=00002-16 key=lattice-alpine-75974 values=[272808, 52215, 124479, 212509, 317058] expected=5753423 checksum=81fa045d0aed82280f1e40b4b67f
-# vector=00002-17 key=cascade-east-18779 values=[318777, 175879, 486753, 71053, 238323] expected=-649649 checksum=226ab9b4accf5cf3842ebd776c11
+				let isValidLocation = false;
+				for (const [key, value] of paths) {
+					if (vscode.languages.match(key, document)) {
+						if (value.some(location.matches.bind(location))) {
+							isValidLocation = true;
+							break;
+						}
+					}
+				}
 
-# ===== SYNTHETIC SOURCE: prairie_00003 =====
+				if (!isValidLocation || !isCompletingInsidePropertyStringValue(document, location, position)) {
+					return;
+				}
 
-CREATE TABLE prairie_00003_events (
-    event_id INTEGER PRIMARY KEY,
-    stream_key TEXT NOT NULL,
-    sequence_no INTEGER NOT NULL,
-    payload_digest TEXT NOT NULL,
-    created_at TEXT NOT NULL,
-    UNIQUE(stream_key, sequence_no)
-);
+				const replacing = document.getWordRangeAtPosition(position, /[a-zA-Z.]+/) || new vscode.Range(position, position);
+				const inserting = replacing.with(undefined, position);
 
--- Synthetic query marker 2d563800d451
-SELECT stream_key, COUNT(*) AS event_count, MAX(sequence_no) AS high_watermark
-FROM prairie_00003_events
-WHERE sequence_no >= 60
-GROUP BY stream_key
-HAVING COUNT(*) >= 7
-ORDER BY event_count DESC, stream_key ASC;
+				const data = await vscode.commands.executeCommand<ContextKeyInfo[]>('getContextKeyInfo');
+				if (token.isCancellationRequested || !data) {
+					return;
+				}
 
-The `prairie_00003` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 3627 is applied before or after normalization. Reference `2d563800d451` exists only to make this fixture varied.
+				const result = new vscode.CompletionList();
+				for (const item of data) {
+					const completion = new vscode.CompletionItem(item.key, vscode.CompletionItemKind.Constant);
+					completion.detail = item.type;
+					completion.range = { replacing, inserting };
+					completion.documentation = item.description;
+					result.items.push(completion);
+				}
+				return result;
+			}
+		}
+	);
+}
 
-# Synthetic boundary and regression vectors:
-# vector=00003-00 key=cascade-coastal-45129 values=[411428, 308171, 448955, 415525, 22847] expected=3135740 checksum=d16d97c0326bf86efbf650c957f2
-# vector=00003-01 key=meridian-north-75631 values=[336598, 118464, 135707, 374371, 299805] expected=1537480 checksum=24c925ab2ffbf7750349bc17f420
-# vector=00003-02 key=vector-north-64996 values=[-24759, 191468, 125720, 285563, 392926] expected=80502 checksum=ea9e740ab53eecca75b301f81569
-# vector=00003-03 key=vector-alpine-79672 values=[286789, 252418, 1453, 351825, 481666] expected=704661 checksum=d24ab464f77463bd18e538a0a3bb
-# vector=00003-04 key=nova-central-68238 values=[-7367, 324628, 465027, 61697, 478790] expected=729312 checksum=3afe94e7a2fb5bf0e89c7da5bb45
-# vector=00003-05 key=fjord-central-68170 values=[-29292, 262435, 102707, 97785, 174499] expected=6761257 checksum=63b7936fb020360a2e08d6dc364f
-# vector=00003-06 key=xylem-south-18313 values=[38924, 139732, 36315, 284527, 303931] expected=8064885 checksum=ab5f9b17f871ff90abad38250ae5
-# vector=00003-07 key=lattice-central-89580 values=[440279, 163353, 70305, 297629, 374175] expected=3425680 checksum=c79ce918b256339ad42fbf35b80b
-# vector=00003-08 key=willow-coastal-42543 values=[247325, 352873, 35373, -38207, 130560] expected=2486767 checksum=b39cd2f6b0f6bb338654104dd3ed
-# vector=00003-09 key=orbit-coastal-54302 values=[302145, 22760, 209571, 363016, 355423] expected=2084520 checksum=3e33af5908e8668d65117ef61b2d
-# vector=00003-10 key=tundra-west-77823 values=[314166, 204087, 310510, -31373, -42872] expected=438510 checksum=8bbd22623080ac294a03b44c7ed6
-# vector=00003-11 key=meridian-alpine-75334 values=[434070, -45889, 268738, 106730, 371870] expected=3712367 checksum=ffc801933410e5cea0d7b935663d
-# vector=00003-12 key=xylem-south-27571 values=[480232, 415919, 325148, 236419, 385431] expected=2644693 checksum=2ecf2dc4d13443708c7b19f5d5a4
-# vector=00003-13 key=delta-east-88492 values=[474915, 14486, 287249, 250027, 248945] expected=855075 checksum=0830d1319faa15732e79904bd1ac
-# vector=00003-14 key=harbor-east-67581 values=[62769, -17849, 407351, 62502, 104469] expected=624423 checksum=81da40e28c3dd8cbd3f27c45ff82
-# vector=00003-15 key=willow-east-55670 values=[343347, 199960, 379150, 355594, 391898] expected=5722236 checksum=91e3e9b726794950800814d0052d
-# vector=00003-16 key=summit-south-82375 values=[89280, 3393, 497560, 470985, 59939] expected=4320338 checksum=ad439fd7aa3d3fcdc71988c289f4
-# vector=00003-17 key=grove-north-56392 values=[-7790, -37871, 298936, 392300, 157469] expected=1700244 checksum=36b9f129c6e570bae1e9cd7bde7f
+# ===== SOURCE FILE: extensions/copilot/script/electron/simulationWorkbenchMain.js (microsoft/vscode@08d4889f9) =====
 
-# ===== SYNTHETIC SOURCE: atlas_00004 =====
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 
-#!/usr/bin/env sh
-set -eu
+//@ts-check
 
-service_name="atlas_00004"
-manifest_id="af7aa7c0ff8f"
-max_attempts=6
+const electron = require('electron');
+const child_process = require('child_process');
+const path = require('path');
 
-attempt=1
-while [ "$attempt" -le "$max_attempts" ]; do
-    printf '%s attempt=%s manifest=%s\n' "$service_name" "$attempt" "$manifest_id"
-    attempt=$((attempt + 1))
-done
+const app = electron.app;
 
-The `atlas_00004` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 2222 is applied before or after normalization. Reference `af7aa7c0ff8f` exists only to make this fixture varied.
+/**
+ * @type {Electron.BrowserWindow | null}
+ * The main window of the Electron application.
+ */
+let mainWindow = null;
 
-# Synthetic boundary and regression vectors:
-# vector=00004-00 key=orbit-coastal-90360 values=[101523, -44551, 307115, 3679, 396753] expected=514599 checksum=671beedc0dcb5a1c1b48cb5d0d4e
-# vector=00004-01 key=relay-coastal-26666 values=[340640, 113200, 212786, -38477, 310704] expected=8169523 checksum=e6adeff197a7f4f9ff6e7a9e350a
-# vector=00004-02 key=ion-east-27013 values=[58798, -27147, 103107, 226905, 14488] expected=3287051 checksum=e4de6bb4af8b5fa6baea8df9c62e
-# vector=00004-03 key=delta-alpine-46837 values=[324141, 437062, 484941, 109980, 110247] expected=394411
+function createWindow() {
+	const { width, height } = electron.screen.getPrimaryDisplay().workAreaSize;
+	mainWindow = new electron.BrowserWindow({
+		width: width * 0.75,
+		height: height,
+		webPreferences: {
+			nodeIntegration: true,
+			contextIsolation: false
+		}
+	});
+	mainWindow.loadURL(`file://${__dirname}/simulationWorkbench.html`);
+	mainWindow.on('closed', function () {
+		mainWindow = null;
+	});
+}
+
+/**
+ * Installs a standard application menu. This is required for the clipboard
+ * keyboard shortcuts (Cmd/Ctrl+C/V/X) to be delivered to the web contents -
+ * without an Edit menu containing the paste role, pasting into editors (e.g.
+ * the Monaco editors in the "Adhoc request sender" mode) does not work,
+ * especially on macOS.
+ */
+function setupApplicationMenu() {
+	/** @type {Electron.MenuItemConstructorOptions[]} */
+	const template = [];
+	if (process.platform === 'darwin') {
+		template.push({ role: 'appMenu' });
+	}
+	template.push({ role: 'fileMenu' });
+	template.push({ role: 'editMenu' });
+	template.push({ role: 'viewMenu' });
+	template.push({ role: 'windowMenu' });
+
+	electron.Menu.setApplicationMenu(electron.Menu.buildFromTemplate(template));
+}
+
+app.on('ready', () => {
+	if (process.argv.includes('--help')) {
+		console.log(`Options:
+  --run-dir=DIRNAME  Provide the run output directory name, e.g., 'out-20231201-151346'.
+  --grep=STRING      Pre-populates simulation workbench 'grep' input box.`);
+		app.quit();
+	}
+	setupApplicationMenu();
+	registerListeners();
+	createWindow();
+});
+
+app.on('window-all-closed', function () {
+	if (process.platform !== 'darwin') {
+		app.quit();
+	}
+});
+
+app.on('activate', function () {
+	if (mainWindow === null) {
+		createWindow();
+	}
+});
+
+// change to configure logging, e.g., to `console.debug`
+const log = {
+	debug: (..._args) => { }
+};
+
+function registerListeners() {
+
+	/** @type {Map<string, child_process.ChildProcess>} */
+	const spawnedProcesses = new Map();
+
+	/**
+	 * Spawns a new child process and sets up listeners for its stdout, stderr, and exit events.
+	 *
+	 * @param {Object} event - The event object from the Electron IPC.
+	 * @param {Object} options - The options for the child process.
+	 * @param {string} options.id - The unique identifier for the child process created by the renderer process.
+	 * @param {Array<string>} options.processArgs - The arguments to pass to the child process.
+	 */
+	function spawnProcess(event, { id, processArgs }) {
+
+		log.debug(`main process: spawn-process (id: ${id}, processArgs: ${JSON.stringify(processArgs)})`);
+
+		const child = child_process.spawn(
+			'node',
+			[path.join(__dirname, '../../dist', 'simulationMain.js'), ...processArgs],
+			{ stdio: 'pipe' }
+		);
+		if (child.pid) {
+			child.stdout.setEncoding('utf8');
+			child.stdout.on('data', (data) => {
+				log.debug(`main process: stdout: ${data.toString()}`);
+				event.sender.send('stdout-data', { id, data });
+			});
+			child.stderr.setEncoding('utf8');
+			child.stderr.on('data', (data) => {
+				log.debug(`main process: stderr: ${data.toString()}`);
+				event.sender.send('stderr-data', { id, data });
+			});
+			child.on('exit', (code) => {
+				log.debug('main process: ' + JSON.stringify(code, null, '\t'));
+				spawnedProcesses.delete(id);
+				event.sender.send('process-exit', { id, code });
+			});
+			spawnedProcesses.set(id, child);
+		}
+	}
+
+	electron.ipcMain.on('spawn-process', spawnProcess);
+
+	electron.ipcMain.on('kill-process', (_event, { id }) => {
+		spawnedProcesses.get(id)?.kill('SIGTERM');
+		spawnedProcesses.delete(id);
+	});
+
+	electron.ipcMain.on('open-link', (_event, url) => {
+		electron.shell.openExternal(url);
+	});
+
+	electron.ipcMain.handle('processArgv', () => {
+		return process.argv;
+	});
+}
+
+# ===== SOURCE FILE: extensions/copilot/src/platform/parser/test/node/fixtures/test.cpp.getStructure.html (microsoft/vscode@08d4889f9) =====
+
+<PREPROC_INCLUDE>#include <iostream>
+
+</PREPROC_INCLUDE><COMMENT>/** */
+</COMMENT><COMMENT-1>
+// Namespace declaration
+</COMMENT-1><NAMESPACE_DEFINITION>namespace MyNamespace {
+<COMMENT-2>
+	// Enum declaration
+</COMMENT-2><ENUM_SPECIFIER>	enum MyEnum {
+		FIRST_VALUE,
+		SECOND_VALUE
+	};
+</ENUM_SPECIFIER><COMMENT-3>
+	// Struct declaration
+</COMMENT-3><STRUCT_SPECIFIER>	struct MyStruct {
+		int x;
+		double y;
+	};
+</STRUCT_SPECIFIER><COMMENT-4>
+	// Template declaration
+</COMMENT-4><TEMPLATE_DECLARATION>	template <typename T>
+<FUNCTION_DEFINITION>	T add(T a, T b) {
+<RETURN_STATEMENT>		return a + b;
+</RETURN_STATEMENT>	}</FUNCTION_DEFINITION>
+</TEMPLATE_DECLARATION><COMMENT-5>
+	// Exception class
+</COMMENT-5><CLASS_SPECIFIER>	class MyException : public std::exception {
+	public:
+<FUNCTION_DEFINITION-1>		const char* what() const throw() {
+<RETURN_STATEMENT-1>			return "MyException occurred";
+</RETURN_STATEMENT-1>		}
+</FUNCTION_DEFINITION-1>	};
+</CLASS_SPECIFIER><COMMENT-6>
+	// Base class
+</COMMENT-6><CLASS_SPECIFIER-1>	class MyBaseClass {
+	public:
+<FUNCTION_DEFINITION-2>		virtual void print() const {
+<EXPRESSION_STATEMENT>			std::cout << "Base class" << std::endl;
+</EXPRESSION_STATEMENT>		}
+</FUNCTION_DEFINITION-2>	};
+</CLASS_SPECIFIER-1><COMMENT-7>
+	// Derived class
+</COMMENT-7><CLASS_SPECIFIER-2>	class MyDerivedClass : public MyBaseClass {
+	public:
+<FUNCTION_DEFINITION-3>		void print() const override {
+<EXPRESSION_STATEMENT-1>			std::cout << "Derived class" << std::endl;
+</EXPRESSION_STATEMENT-1>		}
+</FUNCTION_DEFINITION-3>	};
+</CLASS_SPECIFIER-2>
+} // namespace MyNamespace
+</NAMESPACE_DEFINITION><FUNCTION_DEFINITION-4>
+int main() {
+<COMMENT-8>	// Using enum
+</COMMENT-8><DECLARATION>	MyNamespace::MyEnum myEnum = MyNamespace::FIRST_VALUE;
+</DECLARATION><COMMENT-9>
+	// Using struct
+</COMMENT-9><DECLARATION-1>	MyNamespace::MyStruct myStruct = {10, 20.5};
+</DECLARATION-1><COMMENT-10>
+	// Using template
+</COMMENT-10><DECLARATION-2>	int sum = MyNamespace::add(10, 20);
+</DECLARATION-2><COMMENT-11>
+	// Using exception
+</COMMENT-11><TRY_STATEMENT>	try {
+<THROW_STATEMENT>		throw MyNamespace::MyException();
+</THROW_STATEMENT>	} catch (const MyNamespace::MyException& e) {
+<EXPRESSION_STATEMENT-2>		std::cout << e.what() << std::endl;
+</EXPRESSION_STATEMENT-2>	}
+</TRY_STATEMENT><COMMENT-12>
+	// Using inheritance and polymorphism
+</COMMENT-12><DECLARATION-3>	MyNamespace::MyBaseClass* myBaseClass = new MyNamespace::MyDerivedClass();
+</DECLARATION-3><EXPRESSION_STATEMENT-3>	myBaseClass->print();
+</EXPRESSION_STATEMENT-3><EXPRESSION_STATEMENT-4>	delete myBaseClass;
+</EXPRESSION_STATEMENT-4><COMMENT-13>
+	// Using lambda function
+</COMMENT-13><DECLARATION-4>	auto myLambda = [](int x, int y) {<RETURN_STATEMENT-2> return x + y;</RETURN_STATEMENT-2> };
+</DECLARATION-4><DECLARATION-5>	int lambdaSum = myLambda(10, 20);
+</DECLARATION-5><COMMENT-14>
+	// Using pointers and references
+</COMMENT-14><DECLARATION-6>	int x = 10;
+</DECLARATION-6><DECLARATION-7>	int* ptr = &x;
+</DECLARATION-7><DECLARATION-8>	int& ref = x;
+</DECLARATION-8><COMMENT-15>
+	// If statement
+</COMMENT-15><IF_STATEMENT>	if (x == 9) {
+<EXPRESSION_STATEMENT-5>		x++;
+</EXPRESSION_STATEMENT-5>	}
+</IF_STATEMENT><COMMENT-16>
+	// If-else statement
+</COMMENT-16><IF_STATEMENT-1>	if (x == 10) {
+<EXPRESSION_STATEMENT-6>		x += 1;
+</EXPRESSION_STATEMENT-6>	} else {
+<EXPRESSION_STATEMENT-7>		--x;
+</EXPRESSION_STATEMENT-7>	}
+</IF_STATEMENT-1><COMMENT-17>
+	// Traditional for loop
+</COMMENT-17><FOR_STATEMENT>	for (int i = 0; i < 10; ++i) {
+<EXPRESSION_STATEMENT-8>		std::cout << "Traditional for loop, iteration: " << i << std::endl;
+</EXPRESSION_STATEMENT-8>	}
+</FOR_STATEMENT><COMMENT-18>
+	// Range-based for loop
+</COMMENT-18><DECLARATION-9>	std::vector<int> numbers = {1, 2, 3, 4, 5};
+</DECLARATION-9><FOR_RANGE_LOOP>	for (const auto& number : numbers) {
+<EXPRESSION_STATEMENT-9>		std::cout << "Range-based for loop, number: " << number << std::endl;
+</EXPRESSION_STATEMENT-9>	}
+</FOR_RANGE_LOOP><COMMENT-19>
+	// For loop with multiple initialization
+</COMMENT-19><FOR_STATEMENT-1>	for (int i = 0, j = 10; i < 10; ++i, --j) {
+<EXPRESSION_STATEMENT-10>		std::cout << "For loop with multiple initialization, i: " << i << ", j: " << j << std::endl;
+</EXPRESSION_STATEMENT-10>	}
+</FOR_STATEMENT-1><COMMENT-20>
+	// While loop example
+</COMMENT-20><DECLARATION-10>	int counter = 0;
+</DECLARATION-10><WHILE_STATEMENT>	while (counter < 5) {
+<EXPRESSION_STATEMENT-11>		std::cout << "While loop iteration: " << counter << std::endl;
+</EXPRESSION_STATEMENT-11><EXPRESSION_STATEMENT-12>		++counter;
+</EXPRESSION_STATEMENT-12>	}
+</WHILE_STATEMENT><COMMENT-21>
+	// Do-while loop example
+</COMMENT-21><DECLARATION-11>	int doCounter = 0;
+</DECLARATION-11><DO_STATEMENT>	do {
+<EXPRESSION_STATEMENT-13>		std::cout << "Do-while loop iteration: " << doCounter << std::endl;
+</EXPRESSION_STATEMENT-13><EXPRESSION_STATEMENT-14>		++doCounter;
+</EXPRESSION_STATEMENT-14>	} while (doCounter < 3);
+</DO_STATEMENT><COMMENT-22>
+	// Using goto statement
+</COMMENT-22><DECLARATION-12>	int i = 0;
+</DECLARATION-12><LABELED_STATEMENT>	start:
+<IF_STATEMENT-2>	if (i >= 5) {
+<EXPRESSION_STATEMENT-15>		std::cout << "Done with goto loop" << std::endl;
+</EXPRESSION_STATEMENT-15>	} else {
+<EXPRESSION_STATEMENT-16>		std::cout << "Using goto, iteration: " << i << std::endl;
+</EXPRESSION_STATEMENT-16><EXPRESSION_STATEMENT-17>		i++;
+</EXPRESSION_STATEMENT-17><GOTO_STATEMENT>		goto start;
+</GOTO_STATEMENT>	}</IF_STATEMENT-2>
+</LABELED_STATEMENT><RETURN_STATEMENT-3>
+	return 0;
+</RETURN_STATEMENT-3>}</FUNCTION_DEFINITION-4>
+
+# ===== SOURCE FILE: extensions/copilot/test/simulation/fixtures/multiFileEdit/two-edits/generate-command-ts.js (microsoft/vscode@08d4889f9) =====
+
+/*---------------------------------------------------------
+ * Copyright (C) Microsoft Corporation. All rights reserved.
+ *--------------------------------------------------------*/
+import Generator from 'yeoman-generator';
+import * as prompts from './prompts.js';
+
+/**
+ * @typedef {import('./index.js').ExtensionConfig} ExtensionConfig
+ */
+
+
+const chalk = new Chalk();
+
+/**
+ * @type {import('./index.js').ExtensionGenerator}
+ */
+export default {
+    id: 'ext-command-ts',
+    aliases: ['ts', 'command-ts'],
+    name: 'New Extension (TypeScript)',
+    insidersName: 'New Extension with Proposed API (TypeScript)',
+    /**
+     * @param {Generator} generator
+     * @param {ExtensionConfig} extensionConfig
+     */
+    prompting: async (generator, extensionConfig) => {
+        await prompts.askForExtensionDisplayName(generator, extensionConfig);
+        await prompts.askForExtensionId(generator, extensionConfig);
+        await prompts.askForExtensionDescription(generator, extensionConfig);
+
+        await prompts.askForGit(generator, extensionConfig);
+        await prompts.askForBundler(generator, extensionConfig);
+        await prompts.askForPackageManager(generator, extensionConfig);
+    },
+    /**
+     * @param {Generator} generator
+     * @param {ExtensionConfig} extensionConfig
+     */
+    writing: (generator, extensionConfig) => {
+        const bundler = extensionConfig.bundler;
+        if (bundler && (bundler === 'webpack' || bundler === 'esbuild')) {
+            const bundlerPath = bundler === 'esbuild' ? 'vscode-esbuild' : 'vscode-webpack';
+            const bundlerFile = bundler === 'esbuild' ? 'esbuild.js' : 'webpack.config.js';
+            generator.fs.copy(generator.templatePath(bundlerPath, 'vscode'), generator.destinationPath('.vscode'));
+            generator.fs.copyTpl(generator.templatePath(bundlerPath, 'package.json'), generator.destinationPath('package.json'), extensionConfig);
+            generator.fs.copyTpl(generator.templatePath(bundlerPath, 'tsconfig.json'), generator.destinationPath('tsconfig.json'), extensionConfig);
+            generator.fs.copyTpl(generator.templatePath(bundlerPath, '.vscodeignore'), generator.destinationPath('.vscodeignore'), extensionConfig);
+            generator.fs.copyTpl(generator.templatePath(bundlerPath, bundlerFile), generator.destinationPath(bundlerFile), extensionConfig);
+            generator.fs.copyTpl(generator.templatePath(bundlerPath, 'vsc-extension-quickstart.md'), generator.destinationPath('vsc-extension-quickstart.md'), extensionConfig);
+        } else {
+            generator.fs.copy(generator.templatePath('vscode'), generator.destinationPath('.vscode'));
+            generator.fs.copyTpl(generator.templatePath('package.json'), generator.destinationPath('package.json'), extensionConfig);
+            generator.fs.copyTpl(generator.templatePath('tsconfig.json'), generator.destinationPath('tsconfig.json'), extensionConfig);
+            generator.fs.copyTpl(generator.templatePath('.vscodeignore'), generator.destinationPath('.vscodeignore'), extensionConfig);
+            generator.fs.copyTpl(generator.templatePath('vsc-extension-quickstart.md'), generator.destinationPath('vsc-extension-quickstart.md'), extensionConfig);
+        }
+
+        if (extensionConfig.gitInit) {
+            generator.fs.copy(generator.templatePath('gitignore'), generator.destinationPath('.gitignore'));
+        }
+        generator.fs.copyTpl(generator.templatePath('README.md'), generator.destinationPath('README.md'), extensionConfig);
+        generator.fs.copyTpl(generator.templatePath('CHANGELOG.md'), generator.destinationPath('CHANGELOG.md'), extensionConfig);
+        generator.fs.copyTpl(generator.templatePath('src/extension.ts'), generator.destinationPath('src/extension.ts'), extensionConfig);
+        generator.fs.copy(generator.templatePath('src/test'), generator.destinationPath('src/test'));
+        generator.fs.copy(generator.templatePath('.vscode-test.mjs'), generator.destinationPath('.vscode-test.mjs'));
+        generator.fs.copy(generator.templatePath('eslint.config.mjs'), generator.destinationPath('eslint.config.mjs'));
+
+        if (extensionConfig.pkgManager === 'yarn') {
+            generator.fs.copyTpl(generator.templatePath('.yarnrc'), generator.destinationPath('.yarnrc'), extensionConfig);
+        } else if (extensionConfig.pkgManager === 'pnpm') {
+            generator.fs.copyTpl(generator.templatePath('.npmrc-pnpm'), generator.destinationPath('.npmrc'), extensionConfig);
+        }
+
+        extensionConfig.installDependencies = true;
+        extensionConfig.proposedAPI = extensionConfig.insiders;
+    },
+
+    /**
+     * @param {Generator} generator
+     * @param {ExtensionConfig} extensionConfig
+     */
+    endMessage: (generator, extensionConfig) => {
+        if (extensionConfig.bundler === 'webpack') {
+            generator.log(chalk.yellow(`To run the extension you need to install the recommended extension 'amodio.tsl-problem-matcher'.`));
+            generator.log('');
+        } else if (extensionConfig.bundler === 'esbuild') {
+            generator.log(chalk.yellow(`To run the extension you need to install the recommended extension 'connor4312.esbuild-problem-matchers'.`));
+            generator.log('');
+        }
+    }
+}
+
+# ===== SOURCE FILE: scripts/mock-policy-server/public/index.html (microsoft/vscode@08d4889f9) =====
+
+<!--
+	Copyright (c) Microsoft Corporation. All rights reserved.
+	Licensed under the MIT License. See License.txt in the project root for license information.
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Mock Policy Server</title>
+	<link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+	<header>
+		<div class="header-content">
+			<div class="brand">
+				<h1>Mock Policy Server</h1>
+				<p>Test Copilot policy responses against a local server.</p>
+			</div>
+			<div class="header-actions">
+				<nav class="page-nav" aria-label="Mock policy server">
+					<div class="setup-status-group">
+						<button id="setup-nav" type="button" class="setup-trigger" aria-haspopup="dialog"
+							aria-controls="setup-dialog" aria-expanded="false">Setup</button>
+						<div id="global-connection-status" class="global-status" data-state="checking" role="status" aria-live="polite">
+							<span class="status-indicator" aria-hidden="true"></span>
+							<span id="global-connection-label">Checking connection…</span>
+						</div>
+					</div>
+					<a id="policies-nav" href="#policies" aria-current="page">Policies</a>
+				</nav>
+				<button id="clear-cache" type="button" class="btn-header">Clear Policy Cache</button>
+			</div>
+		</div>
+	</header>
+
+	<main class="app-main">
+		<dialog id="setup-dialog" class="setup-dialog" aria-labelledby="setup-title">
+			<div class="dialog-actions">
+				<button id="close-setup" type="button" class="btn-secondary">Close Setup</button>
+			</div>
+			<section id="setup-page" class="setup-page" aria-labelledby="setup-title">
+			<div class="setup-intro">
+				<div>
+					<p class="eyebrow">Connect a client</p>
+					<h2 id="setup-title">Route policy requests to this server</h2>
+					<p class="setup-lede">Select a connection method below to enable its steps. You can switch methods at any time.</p>
+				</div>
+			</div>
+
+			<fieldset class="setup-method-picker">
+				<legend class="sr-only">Connection method</legend>
+				<div class="setup-methods">
+				<article id="proxy-method" class="setup-method recommended" data-selected="true">
+					<div class="method-heading">
+						<div class="method-choice">
+							<input id="setup-method-proxy" type="radio" name="setup-method" value="proxy" checked>
+							<label class="method-label" for="setup-method-proxy">
+								<span class="method-badge">Recommended</span>
+								<h3>System Proxy</h3>
+								<span class="method-recommendation">Recommended on macOS: Proxyman</span>
+								<p>Routes policy requests from Code OSS, Stable, Insiders, Copilot CLI, and SDK/runtime clients.</p>
+							</label>
+						</div>
+						<div class="method-status">
+							<div id="proxy-status" class="status-pill" data-state="checking" role="status" aria-live="polite">Checking…</div>
+							<p id="proxy-check-detail">Waiting for the automatic connection check.</p>
+						</div>
+					</div>
+
+					<ol id="proxy-method-steps" class="setup-steps">
+						<li>
+							<div class="step-number" aria-hidden="true">1</div>
+							<div class="step-content">
+								<h4>Configure the system proxy</h4>
+								<p>Redirect the managed settings URL to this local server. In Proxyman, create a Map Remote rule using these values.</p>
+								<div class="mapping-grid">
+									<div class="code-field">
+										<span class="label-small">Map from</span>
+										<code id="map-from" class="block"></code>
+									</div>
+									<div class="mapping-arrow" aria-hidden="true">→</div>
+									<div class="code-field">
+										<span class="label-small">Map to</span>
+										<code id="map-to" class="block"></code>
+									</div>
+								</div>
+								<button id="copy-map" type="button" class="btn-secondary">Copy Mapping</button>
+								<details>
+									<summary>Proxyman tips</summary>
+									<ul>
+										<li>Turn on macOS Proxy in Proxyman before checking the connection.</li>
+										<li>If HTTPS requests do not appear, install and trust Proxyman's certificate.</li>
+										<li>Keep the source and destination paths identical.</li>
+									</ul>
+								</details>
+								<details>
+									<summary>Optional: configure VS Code explicitly</summary>
+									<p>VS Code normally uses the system proxy. If it does not in your environment, add this to the client's <code>settings.json</code>.</p>
+									<div class="code-field">
+										<span class="label-small">VS Code settings.json</span>
+										<code id="proxy-settings" class="block settings-json"></code>
+									</div>
+									<button id="copy-proxy-settings" type="button" class="btn-secondary">Copy VS Code Setting</button>
+								</details>
+							</div>
+						</li>
+						<li>
+							<div class="step-number" aria-hidden="true">2</div>
+							<div class="step-content">
+								<h4>Request fresh policy in VS Code</h4>
+								<p>Open the Command Palette and run <code>&gt; Developer: Sync Account Policy</code>.</p>
+								<p>To refresh the policy used by Local Agent Host, also run <code>&gt; Developer: Restart Local Agent Host</code>.</p>
+								<p class="helper-text">If no request appears under Live Requests on the Policies page, clear the policy cache from the header and run the commands again.</p>
+							</div>
+						</li>
+					</ol>
+				</article>
+
+				<article id="overrides-method" class="setup-method alternative" data-selected="false">
+					<div class="method-heading">
+						<div class="method-choice">
+							<input id="setup-method-overrides" type="radio" name="setup-method" value="overrides">
+							<label class="method-label" for="setup-method-overrides">
+								<span class="method-badge secondary">Code OSS only</span>
+								<h3>Product overrides</h3>
+								<p>The fastest option for Code OSS built from this checkout. It does not route SDK/runtime requests.</p>
+							</label>
+						</div>
+						<div id="override-status" class="status-pill" data-state="pending" role="status" aria-live="polite">Not applied</div>
+					</div>
+
+					<ol id="overrides-method-steps" 
 # ===== AUTHORITATIVE SYNTHETIC FUNCTION B =====
 def retry_window(base, ceiling):
     return [min(ceiling, base * factor) for factor in (1, 2, 4, 8)]
+class="setup-steps compact" inert>
+						<li>
+							<div class="step-number" aria-hidden="true">1</div>
+							<div class="step-content">
+								<h4>Apply the local endpoint URLs</h4>
+								<p>The server updates <code>product.overrides.json</code> and preserves any other top-level overrides.</p>
+								<button id="overrides-action" type="button" class="btn-primary">Apply Overrides</button>
+							</div>
+						</li>
+						<li>
+							<div class="step-number" aria-hidden="true">2</div>
+							<div class="step-content">
+								<h4>Reload and request policy</h4>
+								<p>Reload Code OSS, sign in, open the Command Palette, and run <code>&gt; Developer: Sync Account Policy</code>.</p>
+								<p class="helper-text">If no request appears under Live Requests on the Policies page, clear the policy cache from the header and run the command again.</p>
+							</div>
+						</li>
+					</ol>
+				</article>
+				</div>
+			</fieldset>
 
-# ===== SYNTHETIC SOURCE: fjord_00005 =====
+			</section>
+		</dialog>
 
-def reviewed_replica_5(records, limit=3226):
-    """Normalize synthetic records without mutating the caller's list."""
-    selected = []
-    for position, record in enumerate(records):
-        if position >= limit:
-            break
-        key = str(record.get("key", "")).strip().lower()
-        if not key:
-            continue
-        selected.append({"key": key, "value": int(record.get("value", 0)), "tag": "7e358c8844c5"})
-    return sorted(selected, key=lambda item: (item["key"], item["value"]))
+		<section id="policies-page" class="policies-page" aria-labelledby="policies-title">
+			<h2 id="policies-title" class="sr-only" tabindex="-1">Policy Editor</h2>
+			<div class="policies-layout">
+				<section class="editor-panel">
+					<div class="tabs-header">
+						<nav id="tabs" class="tabs" aria-label="Policy endpoints"></nav>
+					</div>
 
-The `fjord_00005` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 3226 is applied before or after normalization. Reference `7e358c8844c5` exists only to make this fixture varied.
+					<div class="content-section">
+						<p id="endpoint-meta" class="endpoint-meta"></p>
 
-# Synthetic boundary and regression vectors:
-# vector=00005-00 key=beacon-north-38017 values=[49141, 97312, 210349, -31028, 90780] expected=3009118 checksum=152e8b5e9efdcf416da826ca0d4b
-# vector=00005-01 key=willow-west-99659 values=[19677, -4641, 61136, 212991, 450756] expected=-137684 checksum=cdccae170e8fb8131098c80e7387
-# vector=00005-02 key=prairie-coastal-16194 values=[-37494, 167980, 337099, 209967, 41398] expected=2078601 checksum=5823d17545482f4657119346d809
-# vector=00005-03 key=beacon-east-54853 values=[95445, 160693, 493278, 404569, 6975] expected=2968804 checksum=74ea0b06c78016e4e532b4bb1116
-# vector=00005-04 key=willow-east-23636 values=[57177, 311803, 406825, 385003, -48967] expected=2303664 checksum=80333f944c7676492cb07fe4a6ef
-# vector=00005-05 key=juniper-south-15025 values=[304338, 199271, -9912, 80719, 465237] expected=7231095 checksum=87c874dd826be2c53ae456fe059d
-# vector=00005-06 key=vector-west-32692 values=[29863, 482790, 376050, 346023, 286360] expected=7305053 checksum=26887f68b19e3d2c4773861b9279
-# vector=00005-07 key=vector-east-24793 values=[201575, 368660, 426280, 248655, 255512] expected=7454686 checksum=bda281e347cb9a0a1b7bbc108e42
-# vector=00005-08 key=harbor-river-89146 values=[244747, -38025, 24518, -4240, 324034] expected=2886764 checksum=18aa66c762481e7ec3605eb99eda
-# vector=00005-09 key=grove-river-62290 values=[161869, 494043, 356807, 422853, 185631] expected=8114915 checksum=be5312507a0330878b381cf95447
-# vector=00005-10 key=atlas-coastal-77677 values=[303196, -11515, 83103, 431352, 348759] expected=6201814 checksum=c1ff8f640cf3021689c92c8338a4
-# vector=00005-11 key=relay-coastal-54252 values=[22927, -24366, 460040, 199282, 109601] expected=6011239 checksum=b7b1cc2a414515464279f24a2e2d
-# vector=00005-12 key=ion-central-30090 values=[140774, 16668, 291501, 378989, 78829] expected=7366649 checksum=d421c4c1975b2854c62982f0a923
-# vector=00005-13 key=keystone-east-82600 values=[86280, 29853, -20419, 384910, 422503] expected=1998827 checksum=4cb2ea904c1aad49d7a5dabe8b74
-# vector=00005-14 key=ember-east-21710 values=[452728, -19475, 73899, 201294, 158280] expected=3277078 checksum=99ceb7c09295db71fa7d2135e648
-# vector=00005-15 key=meridian-alpine-97574 values=[476727, 361162, 38095, 272661, 471267] expected=3335137 checksum=5de97afe688c9f2cce5ab9affd82
-# vector=00005-16 key=beacon-west-74161 values=[179010, 370548, 76225, 237519, 409517] expected=3383474 checksum=a7b9dc7af727960b676d80a886fa
-# vector=00005-17 key=ember-central-81128 values=[15602, 403995, 49669, 156978, 409234] expected=524394 checksum=1a81d6c9f89ef6840fc8d7859101
+						<div class="form-group">
+							<label for="preset">Preset</label>
+							<select id="preset"></select>
+						</div>
 
-# ===== SYNTHETIC SOURCE: relay_00006 =====
+						<div class="form-group">
+							<label for="response-status">HTTP status code</label>
+							<input id="response-status" class="status-code-input" type="number" min="200" max="599" step="1"
+								inputmode="numeric" aria-describedby="response-status-validation">
+							<p id="response-status-validation" class="status" aria-live="polite"></p>
+						</div>
 
-class Relay00006Buffer:
-    def __init__(self, capacity=3190):
-        if capacity < 1:
-            raise ValueError("capacity must be positive")
-        self.capacity = capacity
-        self.items = []
+						<div id="schema-section" class="section-block" hidden>
+							<h2 class="schema-heading">
+								<button type="button" class="section-header section-header-toggle" id="schema-toggle"
+									aria-expanded="false" aria-controls="schema-details">
+									<span class="chevron" id="schema-chevron" aria-hidden="true">&#9654;</span>
+									<span>Schema</span>
+									<span id="schema-badge" class="schema-badge" data-tooltip="">&hellip;</span>
+								</button>
+							</h2>
+							<div id="schema-details" class="schema-details" hidden>
+								<span class="label-small">Schema source</span>
+								<code id="schema-source" class="block"></code>
+								<button id="hydrate-schema" type="button" class="btn-secondary">Generate Example</button>
+							</div>
+						</div>
 
-    def push(self, item):
-        self.items.append(("3ff347045b9d", item))
-        if len(self.items) > self.capacity:
-            return self.items.pop(0)[1]
-        return None
+						<div class="form-group">
+							<div class="label-row">
+								<label for="editor">Response body (JSON)</label>
+								<span id="save-state" class="save-state" aria-live="polite"></span>
+							</div>
+							<textarea id="editor" spellcheck="false" autocomplete="off"
+								aria-describedby="editor-status"></textarea>
+							<p id="editor-status" class="status" aria-live="polite"></p>
+							<div id="validation-results" hidden></div>
+						</div>
+					</div>
+				</section>
 
-    def snapshot(self):
-        return [item for _, item in self.items]
+				<aside class="sidebar-panel">
+					<div class="section-block">
+						<div class="section-header">
+							<h2>Live Requests</h2>
+							<button id="clear-log" type="button" class="btn-link">Clear</button>
+						</div>
+						<p id="log-empty" class="helper-text">No requests yet.</p>
+						<ul id="log" class="log"></ul>
+					</div>
+				</aside>
+			</div>
+		</section>
+	</main>
 
-The `relay_00006` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 3190 is applied before or after normalization. Reference `3ff347045b9d` exists only to make this fixture varied.
+	<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-# Synthetic boundary and regression vectors:
-# vector=00006-00 key=ion-west-50549 values=[485123, 355627, 34899, 10966, 32721] expected=7990099 checksum=8e6741332f5aa5e6e08b12783e09
-# vector=00006-01 key=keystone-south-28369 values=[85734, 177970, 145820, 88241, -432] expected=7817686 checksum=fe790aafa253422395ddf902f1e6
-# vector=00006-02 key=tundra-north-47441 values=[300059, 191230, 389279, 405867, 334855] expected=1908910 checksum=1f1fdaa158ac5e0a5b7f29d4ef2f
-# vector=00006-03 key=fjord-west-29988 values=[156488, 46897, 498183, 244290, 20802] expected=-558231 checksum=f5262afa1a55decedb9f536da9cc
-# vector=00006-04 key=ion-east-52698 values=[369386, 240208, 175715, 201963, -40470] expected=5819358 checksum=c1315c270c2c72cb6f6a8a828711
-# vector=00006-05 key=delta-north-12054 values=[311245, 165340, 474849, 410013, 306505] expected=6852257 checksum=8863076fa6632d7980dec4188f05
-# vector=00006-06 key=vector-south-96489 values=[172195, 371907, 97630, 490752, -33389] expected=6632099 checksum=27b014813fae6512613ab7c1cbd8
-# vector=00006-07 key=tundra-south-80218 values=[483528, 482581, 453769, 498197, 405586] expected=5337180 checksum=e3a6814aa7db0743682c9018b491
-# vector=00006-08 key=meridian-north-32490 values=[88585, 406002, 207022, -41495, 232875] expected=7335259 checksum=1eeebe88237e475c3bef3b306285
-# vector=00006-09 key=prairie-south-61058 values=[242408, 340998, -35447, 14402, 480904] expected=581744 checksum=ac6584165599d0a29b460bfa7ea5
-# vector=00006-10 key=fjord-south-84718 values=[136333, 232112, 194188, 372845, 44343] expected=8997620 checksum=011c114c67fadd748ffd260c4471
-# vector=00006-11 key=fjord-central-75063 values=[438633, 321294, 475199, -26215, 412274] expected=1082465 checksum=deea9a5c2790cd67f851fd13c03d
-# vector=00006-12 key=cascade-west-87623 values=[381613, 278335, 206676, 153160, -44781] expected=1943563 checksum=774bd6d7980379cca66f791d6fd9
-# vector=00006-13 key=harbor-alpine-32854 values=[470397, 106265, 44750, 105218, 86852] expected=6893918 checksum=27037d4e99a7fb9ab35092f74506
-# vector=00006-14 key=nova-coastal-19363 values=[33970, -29340, 121405, 209089, 273522] expected=1328057 checksum=f3bfdd4c1b27b1ba0af572bdbef0
-# vector=00006-15 key=ember-west-90208 values=[414516, 467177, 80727, -44396, -33060] expected=6733757 checksum=284d2e3d3b7abb703031b280d5fc
-# vector=00006-16 key=vector-south-22333 values=[292146, 37133, 261962, 415204, 105378] expected=6453705 checksum=de6c60e135be902e7dccfbc7c4fe
-# vector=00006-17 key=fjord-east-32257 values=[223610, 84583, 3401, 404410, 219376] expected=6746477 checksum=b9bb0923a284fedb2e7aa080bd47
+	<script src="./endpoints.js"></script>
+	<script src="./app.js"></script>
+</body>
 
-# ===== SYNTHETIC SOURCE: meridian_00007 =====
+</html>
 
-def replayed_snapshot_7(base, attempts, ceiling=916):
-    """Return bounded synthetic retry delays."""
-    if attempts <= 0:
-        return []
-    delays = []
-    current = max(0, int(base))
-    for attempt in range(attempts):
-        jitter = (attempt * 42 + 8) % 52
-        delays.append(min(ceiling, current + jitter))
-        current = min(ceiling, max(1, current * 2))
-    return delays
+# ===== SOURCE FILE: extensions/configuration-editing/src/test/completion.test.ts (microsoft/vscode@08d4889f9) =====
 
-The `meridian_00007` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 916 is applied before or after normalization. Reference `8c964b4a37e5` exists only to make this fixture varied.
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 
-# Synthetic boundary and regression vectors:
-# vector=00007-00 key=quartz-river-45281 values=[462711, 466127, 234825, 306677, 382383] expected=1094691 checksum=bb49feb2228c614e43835f600d9d
-# vector=00007-01 key=delta-east-46553 values=[-39446, 254036, 414315, 284055, 371903] expected=13467 checksum=65f1562ec64dc860f1a0f9bd6716
-# vector=00007-02 key=ember-north-15400 values=[361123, 199172, 53127, 366587, 295199] expected=5140443 checksum=65a8c260686b51828baf9ad48741
-# vector=00007-03 key=beacon-south-52627 values=[83515, 341872, 276611, 442873, 146516] expected=5449692 checksum=2ac72588e4c69654a165fa5c3f85
-# vector=00007-04 key=lattice-east-33855 values=[-15496, 280709, 191036, 64166, 158216] expected=7157470 checksum=fbb6d4b4b92890fb671981cac0e6
-# vector=00007-05 key=ember-south-54649 values=[43117, 22506, 59540, 387109, 458896] expected=668950 checksum=ad3e6f11ffc139fe044b05b7fbc2
-# vector=00007-06 key=summit-west-69129 values=[244710, 334962, 130031, 36557, 1027] expected=4391901 checksum=dde35ca349c57f58919e0dc19c98
-# vector=00007-07 key=lattice-south-15568 values=[52006, 246858, 176814, 6197, 221234] expected=2828349 checksum=adf05332f3e67bad034c3d4ee9d6
-# vector=00007-08 key=uplink-west-82360 values=[476728, 420563, 9123, 232080, 421711] expected=6959669 checksum=51841d6509d253f675bd7466060e
-# vector=00007-09 key=keystone-north-23176 values=[105709, 298260, 130815, 47857, 412683] expected=926535 checksum=3866a505c8e88d3fd8074caad9af
-# vector=00007-10 key=willow-north-70408 values=[90570, 272897, 338997, 351047, 208612] expected=5556877 checksum=c782f1b0078140df44bbe1eed816
-# vector=00007-11 key=vector-north-61598 values=[172354, 181108, 435206, 381084, 274664] expected=1722768 checksum=d7c95115a8c58c91bcca4fd9670a
-# vector=00007-12 key=prairie-west-70921 values=[376391, 284827, -32188, 193464, 55434] expected=4045969 checksum=73424697d8b3c15800d3ad744f36
-# vector=00007-13 key=uplink-river-93866 values=[76987, 164565, 205452, 97159, 121657] expected=848178 checksum=0aecf1f019d1e65c78f9ab34c6d5
-# vector=00007-14 key=quartz-west-64736 values=[94712, 260932, 25283, 281639, 335807] expected=-308336 checksum=c4c4c6211f86f1dda04fb6c836a9
-# vector=00007-15 key=tundra-coastal-24354 values=[332775, -42150, -20489, 371158, 225121] expected=7312310 checksum=643c48097ee744a1caf32712e561
-# vector=00007-16 key=keystone-north-13381 values=[75275, -30228, 384862, 318127, 394133] expected=2997126 checksum=95273792c98e14b36df9aad86505
-# vector=00007-17 key=fjord-central-29762 values=[-43430, 182497, 135878, 415218, 258171] expected=7176842 checksum=05e70a2f12c398976e9b9ed1dad1
+import * as vscode from 'vscode';
+import * as assert from 'assert';
+import { promises as fs } from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+import 'mocha';
 
-# ===== SYNTHETIC SOURCE: ember_00008 =====
 
-CREATE TABLE ember_00008_events (
-    event_id INTEGER PRIMARY KEY,
-    stream_key TEXT NOT NULL,
-    sequence_no INTEGER NOT NULL,
-    payload_digest TEXT NOT NULL,
-    created_at TEXT NOT NULL,
-    UNIQUE(stream_key, sequence_no)
-);
+const testFolder = fs.mkdtemp(path.join(os.tmpdir(), 'conf-editing-'));
 
--- Synthetic query marker e838d62de57f
-SELECT stream_key, COUNT(*) AS event_count, MAX(sequence_no) AS high_watermark
-FROM ember_00008_events
-WHERE sequence_no >= 265
-GROUP BY stream_key
-HAVING COUNT(*) >= 3
-ORDER BY event_count DESC, stream_key ASC;
+suite('Completions in settings.json', () => {
+	const testFile = 'settings.json';
 
-The `ember_00008` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 1513 is applied before or after normalization. Reference `e838d62de57f` exists only to make this fixture varied.
+	test('window.title', async () => {
+		{ // inserting after text
+			const content = [
+				'{',
+				'  "window.title": "custom|"',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "window.title": "custom${activeEditorShort}"',
+				'}',
+			].join('\n');
+			const expected = { label: '${activeEditorShort}', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+		{	// inserting before a variable
+			const content = [
+				'{',
+				'  "window.title": "|${activeEditorShort}"',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "window.title": "${folderPath}${activeEditorShort}"',
+				'}',
+			].join('\n');
+			const expected = { label: '${folderPath}', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+		{	// inserting after a variable
+			const content = [
+				'{',
+				'  "window.title": "${activeEditorShort}|"',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "window.title": "${activeEditorShort}${folderPath}"',
+				'}',
+			].join('\n');
+			const expected = { label: '${folderPath}', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+		{ // replacing an variable
+			const content = [
+				'{',
+				'  "window.title": "${a|ctiveEditorShort}"',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "window.title": "${activeEditorMedium}"',
+				'}',
+			].join('\n');
+			const expected = { label: '${activeEditorMedium}', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+		{ // replacing a partial variable
+			const content = [
+				'{',
+				'  "window.title": "${a|"',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "window.title": "${dirty}"',
+				'}',
+			].join('\n');
+			const expected = { label: '${dirty}', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+		{ // inserting a literal
+			const content = [
+				'{',
+				'  "window.title": |',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "window.title": "${activeEditorMedium}"',
+				'}',
+			].join('\n');
+			const expected = { label: '"${activeEditorMedium}"', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+		{ // no proposals after literal
+			const content = [
+				'{',
+				'  "window.title": "${activeEditorShort}"   |',
+				'}',
+			].join('\n');
+			const expected = { label: '${activeEditorMedium}', notAvailable: true };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+	});
 
-# Synthetic boundary and regression vectors:
-# vector=00008-00 key=nova-central-40687 values=[429180, 250631, 254761, 357866, 128642] expected=385471 checksum=4ced22064ebbf99f3639151612c2
-# vector=00008-01 key=quartz-coastal-52453 values=[184561, 406450, 275375, 355523, 403253] expected=3494897 checksum=02c77e4e1bc01ea9343af362763e
-# vector=00008-02 key=
+	test('files.associations', async () => {
+		{
+			const content = [
+				'{',
+				'  "files.associations": {',
+				'    |',
+				'  }',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "files.associations": {',
+				'    "*.${1:extension}": "${2:language}"',
+				'  }',
+				'}',
+			].join('\n');
+			const expected = { label: 'Files with Extension', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+		{
+			const content = [
+				'{',
+				'  "files.associations": {',
+				'    |',
+				'  }',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "files.associations": {',
+				'    "/${1:path to file}/*.${2:extension}": "${3:language}"',
+				'  }',
+				'}',
+			].join('\n');
+			const expected = { label: 'Files with Path', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+		{
+			const content = [
+				'{',
+				'  "files.associations": {',
+				'    "*.extension": "|bat"',
+				'  }',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "files.associations": {',
+				'    "*.extension": "json"',
+				'  }',
+				'}',
+			].join('\n');
+			const expected = { label: '"json"', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+		{
+			const content = [
+				'{',
+				'  "files.associations": {',
+				'    "*.extension": "bat"|',
+				'  }',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "files.associations": {',
+				'    "*.extension": "json"',
+				'  }',
+				'}',
+			].join('\n');
+			const expected = { label: '"json"', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+		{
+			const content = [
+				'{',
+				'  "files.associations": {',
+				'    "*.extension": "bat"  |',
+				'  }',
+				'}',
+			].join('\n');
+			const expected = { label: '"json"', notAvailable: true };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+	});
+	test('files.exclude', async () => {
+		{
+			const content = [
+				'{',
+				'  "files.exclude": {',
+				'    |',
+				'  }',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "files.exclude": {',
+				'    "**/*.${1:extension}": true',
+				'  }',
+				'}',
+			].join('\n');
+			const expected = { label: 'Files by Extension', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+		{
+			const content = [
+				'{',
+				'  "files.exclude": {',
+				'    "**/*.extension": |true',
+				'  }',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "files.exclude": {',
+				'    "**/*.extension": { "when": "$(basename).${1:extension}" }',
+				'  }',
+				'}',
+			].join('\n');
+			const expected = { label: 'Files with Siblings by Name', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+	});
+	test('files.defaultLanguage', async () => {
+		{
+			const content = [
+				'{',
+				'  "files.defaultLanguage": "json|"',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "files.defaultLanguage": "jsonc"',
+				'}',
+			].join('\n');
+			const expected = { label: '"jsonc"', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+		{
+			const content = [
+				'{',
+				'  "files.defaultLanguage": |',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "files.defaultLanguage": "jsonc"',
+				'}',
+			].join('\n');
+			const expected = { label: '"jsonc"', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+	});
+	test('remote.extensionKind', async () => {
+		{
+			const content = [
+				'{',
+				'\t"remote.extensionKind": {',
+				'\t\t|',
+				'\t}',
+				'}',
+			].join('\n');
+			const expected = { label: 'vscode.npm' };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+	});
+	test('remote.portsAttributes', async () => {
+		{
+			const content = [
+				'{',
+				'  "remote.portsAttributes": {',
+				'    |',
+				'  }',
+				'}',
+			].join('\n');
+			const expected = { label: '"3000"' };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+	});
+});
+
+suite('Completions in extensions.json', () => {
+	const testFile = 'extensions.json';
+	test('change recommendation', async () => {
+		{
+			const content = [
+				'{',
+				'  "recommendations": [',
+				'    "|a.b"',
+				'  ]',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "recommendations": [',
+				'    "ms-vscode.js-debug"',
+				'  ]',
+				'}',
+			].join('\n');
+			const expected = { label: 'ms-vscode.js-debug', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+	});
+	test('add recommendation', async () => {
+		{
+			const content = [
+				'{',
+				'  "recommendations": [',
+				'    |',
+				'  ]',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "recommendations": [',
+				'    "ms-vscode.js-debug"',
+				'  ]',
+				'}',
+			].join('\n');
+			const expected = { label: 'ms-vscode.js-debug', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+	});
+});
+
+suite('Completions in launch.json', () => {
+	const testFile = 'launch.json';
+	test('variable completions', async () => {
+		{
+			const content = [
+				'{',
+				'  "version": "0.2.0",',
+				'  "configurations": [',
+				'    {',
+				'      "name": "Run Extension",',
+				'      "type": "extensionHost",',
+				'      "preLaunchTask": "${|defaultBuildTask}"',
+				'    }',
+				'  ]',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "version": "0.2.0",',
+				'  "configurations": [',
+				'    {',
+				'      "name": "Run Extension",',
+				'      "type": "extensionHost",',
+				'      "preLaunchTask": "${cwd}"',
+				'    }',
+				'  ]',
+				'}',
+			].join('\n');
+			const expected = { label: '${cwd}', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+		{
+			const content = [
+				'{',
+				'  "version": "0.2.0",',
+				'  "configurations": [',
+				'    {',
+				'      "name": "Run Extension",',
+				'      "type": "extensionHost",',
+				'      "preLaunchTask": "|${defaultBuildTask}"',
+				'    }',
+				'  ]',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "version": "0.2.0",',
+				'  "configurations": [',
+				'    {',
+				'      "name": "Run Extension",',
+				'      "type": "extensionHost",',
+				'      "preLaunchTask": "${cwd}${defaultBuildTask}"',
+				'    }',
+				'  ]',
+				'}',
+			].join('\n');
+			const expected = { label: '${cwd}', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+		{
+			const content = [
+				'{',
+				'  "version": "0.2.0",',
+				'  "configurations": [',
+				'    {',
+				'      "name": "Do It",',
+				'      "program": "${workspace|"',
+				'    }',
+				'  ]',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "version": "0.2.0",',
+				'  "configurations": [',
+				'    {',
+				'      "name": "Do It",',
+				'      "program": "${cwd}"',
+				'    }',
+				'  ]',
+				'}',
+			].join('\n');
+			const expected = { label: '${cwd}', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+	});
+});
+
+suite('Completions in tasks.json', () => {
+	const testFile = 'tasks.json';
+	test('variable completions', async () => {
+		{
+			const content = [
+				'{',
+				'  "version": "0.2.0",',
+				'  "tasks": [',
+				'    {',
+				'      "type": "shell",',
+				'      "command": "${|defaultBuildTask}"',
+				'    }',
+				'  ]',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "version": "0.2.0",',
+				'  "tasks": [',
+				'    {',
+				'      "type": "shell",',
+				'      "command": "${cwd}"',
+				'    }',
+				'  ]',
+				'}',
+			].join('\n');
+			const expected = { label: '${cwd}', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+		{
+			const content = [
+				'{',
+				'  "version": "0.2.0",',
+				'  "tasks": [',
+				'    {',
+				'      "type": "shell",',
+				'      "command": "${defaultBuildTask}|"',
+				'    }',
+				'  ]',
+				'}',
+			].join('\n');
+			const resultText = [
+				'{',
+				'  "version": "0.2.0",',
+				'  "tasks": [',
+				'    {',
+				'      "type": "shell",',
+				'      "command": "${defaultBuildTask}${cwd}"',
+				'    }',
+				'  ]',
+				'}',
+			].join('\n');
+			const expected = { label: '${cwd}', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+	});
+});
+
+suite('Completions in keybindings.json', () => {
+	const testFile = 'keybindings.json';
+	test('context key insertion', async () => {
+		{
+			const content = [
+				'[',
+				'  {',
+				'    "key": "ctrl+k ctrl+,",',
+				'    "command": "editor.jumpToNextFold",',
+				'    "when": "|"',
+				'  }',
+				']',
+			].join('\n');
+			const resultText = [
+				'[',
+				'  {',
+				'    "key": "ctrl+k ctrl+,",',
+				'    "command": "editor.jumpToNextFold",',
+				'    "when": "resourcePath"',
+				'  }',
+				']',
+			].join('\n');
+			const expected = { label: 'resourcePath', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+	});
+
+	test('context key replace', async () => {
+		{
+			const content = [
+				'[',
+				'  {',
+				'    "key": "ctrl+k ctrl+,",',
+				'    "command": "editor.jumpToNextFold",',
+				'    "when": "resou|rcePath"',
+				'  }',
+				']',
+			].join('\n');
+			const resultText = [
+				'[',
+				'  {',
+				'    "key": "ctrl+k ctrl+,",',
+				'    "command": "editor.jumpToNextFold",',
+				'    "when": "resource"',
+				'  }',
+				']',
+			].join('\n');
+			const expected = { label: 'resource', resultText };
+			await testCompletion(testFile, 'jsonc', content, expected);
+		}
+	});
+});
+
+interface ItemDescription {
+	label: string;
+	resultText?: string;
+	notAvailable?: boolean;
+}
+
+async function testCompletion(testFileName: string, languageId: string, content: string, expected: ItemDescription) {
+
+	const offset = content.indexOf('|');
+	content = content.substring(0, offset) + content.substring(offset + 1);
+
+	const docUri = vscode.Uri.file(path.join(await testFolder, testFileName));
+	await fs.writeFile(docUri.fsPath, content);
+
+	const editor = await setTestContent(docUri, languageId, content);
+	const position = editor.document.positionAt(offset);
+
+	// Executing the command `vscode.executeCompletionItemProvider` to simulate triggering completion
+	const actualCompletions = (await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', docUri, position)) as vscode.CompletionList;
+
+	const matches = actualCompletions.items.filter(completion => {
+		return completion.label === expected.label;
+	});
+	if (expected.notAvailable) {
+		assert.strictEqual(matches.length, 0, `${expected.label} should not existing is results`);
+	} else {
+		assert.strictEqual(matches.length, 1, `${expected.label} should only existing once: Actual: ${actualCompletions.items.map(c => c.label).join(', ')}`);
+
+		if (expected.resultText) {
+			const match = matches[0];
+			if (match.range && match.insertText) {
+				const range = match.range instanceof vscode.Range ? match.range : match.range.replacing;
+				const text = typeof match.insertText === 'string' ? match.insertText : match.insertText.value;
+
+				await editor.edit(eb => eb.replace(range, text));
+				assert.strictEqual(editor.document.getText(), expected.resultText);
+			} else {
+				assert.fail(`Range or insertText missing`);
+			}
+		}
+	}
+}
+
+async function setTestContent(docUri: vscode.Uri, languageId: string, content: string): Promise<vscode.TextEditor> {
+	const ext = vscode.extensions.getExtension('vscode.configuration-editing')!;
+	await ext.activate();
+
+	const doc = await vscode.workspace.openTextDocument(docUri);
+	await vscode.languages.setTextDocumentLanguage(doc, languageId);
+	const editor = await vscode.window.showTextDocument(doc);
+
+	const fullRange = new vscode.Range(new vscode.Position(0, 0), doc.positionAt(doc.getText().length));
+	await editor.edit(eb => eb.replace(fullRange, content));
+	return editor;
+
+}
+
+# ===== SOURCE FILE: extensions/html-language-features/build/bundleTypeScriptLibraries.js (microsoft/vscode@08d4889f9) =====
+
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+const path = require('path');
+const fs = require('fs');
+const child_process = require('child_process');
+
+const generatedNote = `//
+// **NOTE**: Do not edit directly! This file is generated using \`npm run import-typescript\`
+//
+`;
+
+const TYPESCRIPT_LIB_SOURCE = path.join(__dirname, '../../node_modules/typescript/lib');
+const TYPESCRIPT_LIB_DESTINATION = path.join(__dirname, '../server/build');
+
+(function () {
+	try {
+		fs.statSync(TYPESCRIPT_LIB_DESTINATION);
+	} catch (err) {
+		fs.mkdirSync(TYPESCRIPT_LIB_DESTINATION);
+	}
+	importLibs('es6');
+})();
+
+
+function importLibs(startLib) {
+	function getFileName(name) {
+		return (name === '' ? 'lib.d.ts' : `lib.${name}.d.ts`);
+	}
+	function getVariableName(name) {
+		return (name === '' ? 'lib_dts' : `lib_${name.replace(/\./g, '_')}_dts`);
+	}
+	function readLibFile(name) {
+		var srcPath = path.join(TYPESCRIPT_LIB_SOURCE, getFileName(name));
+		return fs.readFileSync(srcPath).toString();
+	}
+
+	var queue = [];
+	var in_queue = {};
+
+	var enqueue = function (name) {
+		if (in_queue[name]) {
+			return;
+		}
+		in_queue[name] = true;
+		queue.push(name);
+	};
+
+	enqueue(startLib);
+
+	var result = [];
+	while (queue.length > 0) {
+		var name = queue.shift();
+		var contents = readLibFile(name);
+		var lines = contents.split(/\r\n|\r|\n/);
+
+		var output = '';
+		var writeOutput = function (text) {
+			if (output.length === 0) {
+				output = text;
+			} else {
+				output += ` + ${text}`;
+			}
+		};
+		var outputLines = [];
+		var flushOutputLines = function () {
+			writeOutput(`"${escapeText(outputLines.join('\n'))}"`);
+			outputLines = [];
+		};
+		var deps = [];
+		for (let i = 0; i < lines.length; i++) {
+			let m = lines[i].match(/\/\/\/\s*<reference\s*lib="([^"]+)"/);
+			if (m) {
+				flushOutputLines();
+				writeOutput(getVariableName(m[1]));
+				deps.push(getVariableName(m[1]));
+				enqueue(m[1]);
+				continue;
+			}
+			outputLines.push(lines[i]);
+		}
+		flushOutputLines();
+
+		result.push({
+			name: getVariableName(name),
+			deps: deps,
+			output: output
+		});
+	}
+
+	var strResult = `/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+${generatedNote}`;
+	// Do a topological sort
+	while (result.length > 0) {
+		for (let i = result.length - 1; i >= 0; i--) {
+			if (result[i].deps.length === 0) {
+				// emit this node
+				strResult += `\nexport const ${result[i].name}: string = ${result[i].output};\n`;
+
+				// mark dep as resolved
+				for (let j = 0; j < result.length; j++) {
+					for (let k = 0; k < result[j].deps.length; k++) {
+						if (result[j].deps[k] === result[i].name) {
+							result[j].deps.splice(k, 1);
+							break;
+						}
+					}
+				}
+
+				// remove from result
+				result.splice(i, 1);
+				break;
+			}
+		}
+	}
+
+	var dstPath = path.join(TYPESCRIPT_LIB_DESTINATION, 
 # ===== AUTHORITATIVE SYNTHETIC FUNCTION C =====
 def shard_name(region, number):
     return f"{region.lower()}-{number:03d}"
+'lib.ts');
+	fs.writeFileSync(dstPath, strResult);
+}
 
-# ===== SYNTHETIC SOURCE: lattice_00009 =====
+/**
+ * Escape text such that it can be used in a javascript string enclosed by double quotes (")
+ */
+function escapeText(text) {
+	// See http://www.javascriptkit.com/jsref/escapesequence.shtml
+	var _backspace = '\b'.charCodeAt(0);
+	var _formFeed = '\f'.charCodeAt(0);
+	var _newLine = '\n'.charCodeAt(0);
+	var _nullChar = 0;
+	var _carriageReturn = '\r'.charCodeAt(0);
+	var _tab = '\t'.charCodeAt(0);
+	var _verticalTab = '\v'.charCodeAt(0);
+	var _backslash = '\\'.charCodeAt(0);
+	var _doubleQuote = '"'.charCodeAt(0);
 
-#!/usr/bin/env sh
-set -eu
+	var startPos = 0, chrCode, replaceWith = null, resultPieces = [];
 
-service_name="lattice_00009"
-manifest_id="f41a89472c53"
-max_attempts=4
+	for (var i = 0, len = text.length; i < len; i++) {
+		chrCode = text.charCodeAt(i);
+		switch (chrCode) {
+			case _backspace:
+				replaceWith = '\\b';
+				break;
+			case _formFeed:
+				replaceWith = '\\f';
+				break;
+			case _newLine:
+				replaceWith = '\\n';
+				break;
+			case _nullChar:
+				replaceWith = '\\0';
+				break;
+			case _carriageReturn:
+				replaceWith = '\\r';
+				break;
+			case _tab:
+				replaceWith = '\\t';
+				break;
+			case _verticalTab:
+				replaceWith = '\\v';
+				break;
+			case _backslash:
+				replaceWith = '\\\\';
+				break;
+			case _doubleQuote:
+				replaceWith = '\\"';
+				break;
+		}
+		if (replaceWith !== null) {
+			resultPieces.push(text.substring(startPos, i));
+			resultPieces.push(replaceWith);
+			startPos = i + 1;
+			replaceWith = null;
+		}
+	}
+	resultPieces.push(text.substring(startPos, len));
+	return resultPieces.join('');
+}
 
-attempt=1
-while [ "$attempt" -le "$max_attempts" ]; do
-    printf '%s attempt=%s manifest=%s\n' "$service_name" "$attempt" "$manifest_id"
-    attempt=$((attempt + 1))
-done
+# ===== SOURCE FILE: src/vs/base/test/node/pfs/fixtures/index.html (microsoft/vscode@08d4889f9) =====
 
-The `lattice_00009` excerpt is synthetic. Reviewers should check boundary conditions, stable ordering, explicit error behavior, and whether limit 392 is applied before or after normalization. Reference `f41a89472c53` exists only to make this fixture varied.
+<!DOCTYPE html>
+<html>
+<head id='headID'>
+    <title>Strada </title>
+    <link href="site.css" rel="stylesheet" type="text/css" />
+    <script src="jquery-1.4.1.js"></script>
+    <script src="../compiler/dtree.js" type="text/javascript"></script>
+    <script src="../compiler/typescript.js" type="text/javascript"></script>
+    <script type="text/javascript">
 
-# Synthetic boundary and regression vectors:
-# vector=00009-00 key=keystone-north-41159 values=[169437, 142335, 93454, 170616, 28944] expected=4366471 checksum=dcf56e19d07b2cb013c722819068
-# vector=00009-01 key=summit-river-42443 values=[494197, 293846, 462177, 320417, 419425] expected=-47960 checksum=1bfbd311340df3d66549c1426a08
-# vector=00009-02 key=cascade-river-99485 values=[279454, 146473, 335362, 83136, 413272] expected=-372265 checksum=a219a0fae7423c347b6ec9bdaaaf
-# vector=00009-03 key=willow-north-63459 values=[278703, 74627, 1324, 174473, 73857] expected=2125518 checksum=123f5fad26a33a4b4b7821b0e329
-# vector=00009-04 key=atlas-alpine-84075 values=[-4763, 277147, 16581, 457071, 334972] expected=1438736 checksum=67168570cba21cb6502bfff856e8
-# vector=00009-05 key=quartz-alpine-40061 values=[206658, 159981, 479112, 493348, 323173] expected=1219869 checksum=10ae0c9b04fea0c7141481ca171c
-# vector=00009-06 key=grove-south-17125 values=[329001, 182216, 304429, 376872, 491643] expected=7139521 checksum=df901f7fb16aa4abb0da488c7def
-# vector=00009-07 key=lattice-south-89610 values=[370591, -33597, 457381, 13163, 444617] expected=4815152 checksum=d36e8f22a8abf5ad959097b08e0d
-# vector=00009-08 key=grove-river-56471 values=[-43411, -15930, -12078, 176479, 345511] expected=1055010 checksum=0915094f3f9dbd293feb980927b5
-# vector=00009-09 key=beacon-coastal-60981 values=[341701, 415751, 458012, 409533, 415184] expected=6475132 checksum=8387015d1ea33c3f8d1ea26a4655
-# vector=00009-10 key=ember-river-56844 values=[321339, 414016, 344893, 62222, 58567] expected=4067677 checksum=ffb766cae72a27ae2099b730c998
-# vector=00009-11 key=delta-river-46887 values=[-21634, 104350, 438438, 301923, 409828] expected=6962205 checksum=4f61067d1aa09edd2ab1aa85b335
-# vector=00009-12 key=prairie-south-76422 values=[487487, 161107, 239837, 292541, 198612] expected=5136965 checksum=347c60e42946f472301163b2c7a6
-# vector=00009-13 key=ember-east-73396 val
+    // Compile strada source into resulting javascript
+    function compile(prog, libText) {
+        var outfile = {
+          source: "",
+          Write: function (s) { this.source += s; },
+          WriteLine: function (s) { this.source += s + "\r"; },
+        }
+
+        var parseErrors = []
+
+        var compiler=new Tools.TypeScriptCompiler(outfile,true);
+        compiler.setErrorCallback(function(start,len, message) { parseErrors.push({start:start, len:len, message:message}); });
+        compiler.addUnit(libText,"lib.ts");
+        compiler.addUnit(prog,"input.ts");
+        compiler.typeCheck();
+        compiler.emit();
+
+        if(parseErrors.length > 0 ) {
+          //throw new Error(parseErrors);
+        }
+
+	while(outfile.source[0] == '/' && outfile.source[1] == '/' && outfile.source[2] == ' ') {
+            outfile.source = outfile.source.slice(outfile.source.indexOf('\r')+1);
+        }
+        var errorPrefix = "";
+	for(var i = 0;i<parseErrors.length;i++) {
+          errorPrefix += "// Error: (" + parseErrors[i].start + "," + parseErrors[i].len + ") " + parseErrors[i].message + "\r";
+        }
+
+        return errorPrefix + outfile.source;
+    }
+    </script>
+    <script type="text/javascript">
+
+        var libText = "";
+        $.get("../compiler/lib.ts", function(newLibText) {
+            libText = newLibText;
+        });
+
+
+        // execute the javascript in the compiledOutput pane
+        function execute() {
+          $('#compilation').text("Running...");
+          var txt = $('#compiledOutput').val();
+          var res;
+          try {
+             var ret = eval(txt); // CodeQL [SM01632] This code is only used for tests
+             res = "Ran successfully!";
+          } catch(e) {
+             res = "Exception thrown: " + e;
+          }
+          $('#compilation').text(String(res));
+        }
+
+        // recompile the stradaSrc and populate the compiledOutput pane
+        function srcUpdated() {
+            var newText = $('#stradaSrc').val();
+            var compiledSource;
+            try {
+                compiledSource = compile(newText, libText);
+            } catch (e) {
+                compiledSource = "//Parse error"
+                for(var i in e)
+                  compiledSource += "\r// " + e[i];
+            }
+            $('#compiledOutput').val(compiledSource);
+        }
+
+        // Populate the stradaSrc pane with one of the built in samples
+        function exampleSelectionChanged() {
+            var examples = document.getElementById('examples');
+            var selectedExample = examples.options[examples.selectedIndex].value;
+            if (selectedExample != "") {
+                $.get('examples/' + selectedExample, function (srcText) {
+                    $('#stradaSrc').val(srcText);
+                    setTimeout(srcUpdated,100);
+                }, function (err) {
+                    console.log(err);
+                });
+            }
+        }
+
+    </script>
+</head>
+<body>
+    <h1>TypeScript</h1>
+    <br />
+    <select id="examples" onchange='exampleSelectionChanged()'>
+        <option value="">Select...</option>
+        <option value="small.ts">Small</option>
+        <option value="employee.ts">Employees</option>
+        <option value="conway.ts">Conway Game of Life</option>
+        <option value="typescript.ts">TypeScript Compiler</option>
+    </select>
+
+    <div>
+        <textarea id='stradaSrc' rows='40' cols='80' onchange='srcUpdated()' onkeyup='srcUpdated()' spellcheck="false">
+//Type your TypeScript here...
+      </textarea>
+      <textarea id='compiledOutput' rows='40' cols='80' spellcheck="false">
+//Compiled code will show up here...
+      </textarea>
+      <br />
+      <button onclick='execute()'/>Run</button>
+      <div id='compilation'>Press 'run' to execute code...</div>
+      <div id='results'>...write your results into #results...</div>
+    </div>
+    <div id='bod' style='display:none'></div>
+</body>
+</html>
+
+# ===== SOURCE FILE: extensions/copilot/.vscode/extensions/test-extension/main.ts (microsoft/vscode@08d4889f9) =====
+
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+import './bootstrap';
+
+import * as fs from 'fs';
+import { join } 
 TASK: Return only JSON with keys billing_units, retry_window, shard_name in that order. Values are the results of billing_units([(2, 15), (3, 8)]), retry_window(3, 10), and shard_name('EU', 7).

@@ -4,7 +4,7 @@
   "description": "Locked everyday-assistant quality and non-degenerate performance benchmark over deterministic synthetic context.",
   "system_prompt": "You are completing a reproducible benchmark. Follow the requested output format exactly. Do not add commentary, Markdown fences, or explanations unless the task explicitly requests them.",
   "performance_system_prompt": "",
-  "performance_instruction": "Write approximately 4,000 words of coherent, non-repetitive prose grounded in the synthetic document bundle. Choose a practical technical topic from the bundle and continue naturally until the response limit is reached. Do not expose hidden reasoning.",
+  "performance_instruction": "Write approximately 4,000 words of coherent, non-repetitive narrative prose grounded in the source documents. Develop a sustained discussion of the documents' subject matter, characters, or ideas, in continuous paragraphs in the register of the source text itself. Use plain prose only: no headings, no bullet or numbered lists, no tables, no code, no key-value or field enumerations. Do not expose hidden reasoning.",
   "sampling": {
     "temperature": 0.0,
     "top_p": 1.0,
@@ -145,7 +145,7 @@
       "performance_max_tokens": 1024,
       "nominal_input_tokens": 16384,
       "prompt_file": "prompts/regular-16k.txt",
-      "prompt_sha256": "5db0db377809603709dd2ae8d2c2c8481ba8d569c3e2fd690d12c7bd4afddc53",
+      "prompt_sha256": "4ad4e096d6434dbfff3cfb1aa7a4e7eac6dfc28e649176c4bce6162c10ff27e1",
       "checker": {
         "type": "exact_json",
         "expected": {
@@ -176,7 +176,7 @@
       "performance_max_tokens": 1024,
       "nominal_input_tokens": 32768,
       "prompt_file": "prompts/regular-32k.txt",
-      "prompt_sha256": "076aded0dccf107b57046071ad1aaa7876454ad6dd21a0c598e58d253aba69c1",
+      "prompt_sha256": "eb9fb062eb92822f1eb4026e0b57e9c10e487ca4738a231356e04c14cda72889",
       "checker": {
         "type": "exact_json",
         "expected": {
@@ -207,7 +207,7 @@
       "performance_max_tokens": 1024,
       "nominal_input_tokens": 65536,
       "prompt_file": "prompts/regular-64k.txt",
-      "prompt_sha256": "e1227b4d82ad4ff03eaa43e2b0bf751eed455c0acc0ea74412eaa056b2702bcb",
+      "prompt_sha256": "13ed8a43317f76bdecf68e3b74c5fa0135fdbbb5e420917b481635479403de76",
       "checker": {
         "type": "exact_json",
         "expected": {
@@ -238,7 +238,7 @@
       "performance_max_tokens": 1024,
       "nominal_input_tokens": 131072,
       "prompt_file": "prompts/regular-128k.txt",
-      "prompt_sha256": "fcec30ae98e7c9b077aa655e43b2b02df9a0944c8b9f83ad189b5c78289a6261",
+      "prompt_sha256": "291c1f041ee57ec3000ee05f85ab8ae2d8a4f4fcb841233dc0c6f5c153ad99a8",
       "checker": {
         "type": "exact_json",
         "expected": {
