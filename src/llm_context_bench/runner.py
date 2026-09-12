@@ -16,6 +16,7 @@ import re
 import shlex
 import sqlite3
 import statistics
+import subprocess
 import sys
 import time
 import urllib.error
@@ -23,6 +24,7 @@ import urllib.request
 import zlib
 
 from . import __version__
+from . import engine as engine_api
 
 
 ROOT = Path(__file__).resolve().parent
@@ -36,6 +38,7 @@ SIZE_TOKENS = {
     "64k": 65536,
     "128k": 131072,
 }
+INPUT_SIZE_TOLERANCE_PERCENT = 2.0
 MODEL_LOAD_WARMUP_NOMINAL_INPUT_TOKENS = 1024
 MODEL_LOAD_WARMUP_INPUT_CHARS = 3500
 MODEL_LOAD_WARMUP_OUTPUT_TOKENS = 512
@@ -84,6 +87,19 @@ FORBIDDEN_NAMES = {
 
 def sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def harness_fingerprint() -> str:
+    """Fingerprint every module that can influence a measurement."""
+    digest = hashlib.sha256()
+    for name in ("engine.py", "runner.py"):
+        digest.update((ROOT / name).read_bytes())
+    return digest.hexdigest()
+
+
+# The engine module owns this predicate so request parsing and metric maths
+# agree on what counts as a usable number.
+numeric = engine_api.numeric
 
 
 def load_suite(name: str) -> tuple[dict, str]:
@@ -160,11 +176,62 @@ def request_json(
     timeout: int,
 ) -> tuple[float, dict]:
     data = None if payload is None else json.dumps(payload).encode("utf-8")
+    if os.environ.get("LLM_CONTEXT_BENCH_HTTP_CLIENT") == "curl":
+        # Useful on hosts where the bundled Python HTTP client does not
+        # interoperate with a particular OpenAI-compatible server.  curl is
+        # intentionally opt-in so the normal dependency-free client remains
+        # the default.
+        marker = b"\n__LLM_CONTEXT_BENCH_STATUS__:"
+        command = [
+            "curl",
+            "--silent",
+            "--show-error",
+            "--max-time",
+            str(timeout),
+            "--connect-timeout",
+            str(min(timeout, 15)),
+            "-H",
+            "Content-Type: application/json",
+            "-w",
+            "\n__LLM_CONTEXT_BENCH_STATUS__:%{http_code}",
+        ]
+        if api_key:
+            command.extend(["-H", f"Authorization: Bearer {api_key}"])
+        if data is not None:
+            command.extend(["--data-binary", "@-"])
+        command.append(base_url.rstrip("/") + path)
+        started = time.perf_counter()
+        try:
+            completed = subprocess.run(
+                command,
+                input=data,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=timeout + 5,
+                check=False,
+            )
+            raw, separator, status = completed.stdout.rpartition(marker)
+            if not separator:
+                body = {"error": completed.stderr.decode("utf-8", "replace") or "curl returned no status"}
+            else:
+                try:
+                    body = json.loads(raw.decode("utf-8", "replace")) if raw else {}
+                except json.JSONDecodeError:
+                    body = {"error": raw.decode("utf-8", "replace") or "invalid JSON response"}
+                body.setdefault("http_status", int(status.decode("ascii", "replace") or 0))
+                if completed.returncode and "error" not in body:
+                    body["error"] = completed.stderr.decode("utf-8", "replace") or f"curl exited {completed.returncode}"
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            body = {"error": str(exc)}
+        return time.perf_counter() - started, body
     request = urllib.request.Request(
         base_url.rstrip("/") + path,
         data=data,
         method="GET" if data is None else "POST",
-        headers={"Content-Type": "application/json"},
+        # Some OpenAI-compatible servers leave an idle keep-alive socket open
+        # after completing a response.  Bench requests are independent, so
+        # close each connection explicitly rather than waiting for that socket.
+        headers={"Content-Type": "application/json", "Connection": "close"},
     )
     if api_key:
         request.add_header("Authorization", f"Bearer {api_key}")
@@ -390,6 +457,118 @@ def score_response(text: str, checker: dict) -> tuple[bool, str]:
     raise ValueError(f"unknown checker type: {checker_type}")
 
 
+def request_sse(
+    base_url: str,
+    path: str,
+    payload: dict,
+    api_key: str,
+    timeout: int,
+    client: str = "urllib",
+) -> dict:
+    """Streaming transport seam, substitutable in tests like ``request_json``."""
+    return engine_api.request_sse(base_url, path, payload, api_key, timeout, client=client)
+
+
+def non_stream_measured(elapsed: float, body: dict) -> dict:
+    """Present a non-streaming response in the same shape as a captured stream."""
+    text = ""
+    reasoning_text = ""
+    finish_reason = None
+    try:
+        choice = body["choices"][0]
+        message = choice["message"]
+        text = message.get("content") or ""
+        reasoning_text = message.get("reasoning_content") or ""
+        finish_reason = choice.get("finish_reason")
+    except (KeyError, IndexError, TypeError, AttributeError):
+        pass
+    return {
+        "ok": bool(text or reasoning_text) and "error" not in body,
+        "error": body.get("error") if isinstance(body, dict) else "invalid response",
+        "http_status": body.get("http_status") if isinstance(body, dict) else None,
+        "elapsed_s": elapsed,
+        "response": text,
+        "reasoning_response": reasoning_text,
+        "usage": body.get("usage", {}) if isinstance(body, dict) else {},
+        "timings": body.get("timings", {}) if isinstance(body, dict) else {},
+        "finish_reason": finish_reason,
+        "first_token_at": None,
+        "last_token_at": None,
+        "stream_chunks": 0,
+        "content_chars": len(text),
+        "done_at": None,
+        "parse_errors": 0,
+        "stream_truncated": False,
+    }
+
+
+def build_trial(
+    measured: dict,
+    *,
+    engine: str,
+    stream: bool,
+    dropped_params: list[str],
+    ignore_eos: bool,
+    request_tag: str | None,
+    attempts: int,
+    retry_statuses: list,
+) -> dict:
+    """Turn one captured response into a trial with harness-calculated rates."""
+    timings = measured.get("timings") or {}
+    counts = engine_api.token_counts(measured)
+    trial = {
+        "ok": measured["ok"],
+        "elapsed_s": round(measured["elapsed_s"], 6),
+        "prompt_tokens": counts["prompt_tokens"],
+        "completion_tokens": counts["completion_tokens"],
+        "produced_tokens": counts["completion_tokens"],
+        "token_count_source": counts["token_count_source"],
+        "engine": engine,
+        "stream": stream,
+        "stream_chunks": measured["stream_chunks"],
+        "content_chars": measured["content_chars"],
+        "engine_only_params_dropped": dropped_params,
+        "ignore_eos": ignore_eos,
+        "ignore_eos_applied": bool(ignore_eos and "ignore_eos" not in dropped_params),
+        "request_tag": request_tag,
+        "attempts": attempts,
+        "retry_statuses": retry_statuses,
+        "timings": timings,
+        # Engine-reported rates are retained only to cross-check the measured
+        # ones; they are never the source of a reported throughput number.
+        "prompt_tps_engine": timings.get("prompt_per_second"),
+        "generation_tps_engine": timings.get("predicted_per_second"),
+        "draft_tokens": timings.get("draft_n"),
+        "accepted_draft_tokens": timings.get("draft_n_accepted"),
+        "prompt_cache": engine_api.detect_cached_tokens(measured),
+        "finish_reason": measured["finish_reason"],
+        "response": measured["response"],
+        "reasoning_response": measured["reasoning_response"],
+        "error": measured["error"],
+        "http_status": measured["http_status"],
+    }
+    trial.update(
+        engine_api.compute_timing_metrics(
+            elapsed_s=measured["elapsed_s"],
+            prompt_tokens=counts["prompt_tokens"],
+            completion_tokens=counts["completion_tokens"],
+            first_token_at=measured["first_token_at"],
+            last_token_at=measured["last_token_at"],
+            stream_chunks=measured["stream_chunks"],
+            streamed=stream,
+        )
+    )
+    trial["engine_cross_check"] = engine_api.cross_check_engine_timings(trial)
+    drafted = trial["draft_tokens"]
+    accepted = trial["accepted_draft_tokens"]
+    trial["draft_acceptance_rate"] = (
+        accepted / drafted
+        if numeric(drafted) and drafted > 0 and numeric(accepted)
+        else None
+    )
+    return trial
+
+
 def chat_once(
     base_url: str,
     api_key: str,
@@ -401,64 +580,69 @@ def chat_once(
     timeout: int,
     ignore_eos: bool = False,
     request_tag: str | None = None,
+    chat_template_kwargs: dict | None = None,
+    engine: str = "llama.cpp",
+    stream: bool = False,
+    max_retries: int = 0,
+    retry_backoff_s: float = 1.0,
 ) -> dict:
     tagged_system_prompt = system_prompt
     if request_tag:
         # Put a deterministic, per-request value before the shared content so
         # prefix/KV caches cannot turn a measured cold-prefill run into a hit.
         tagged_system_prompt = f"[BENCHMARK REQUEST TAG: {request_tag}]\n{system_prompt}"
-    payload = {
-        "model": model,
-        "messages": [
+    payload, dropped_params = engine_api.build_chat_payload(
+        engine=engine,
+        model=model,
+        messages=[
             {"role": "system", "content": tagged_system_prompt},
             {"role": "user", "content": prompt},
         ],
-        "max_tokens": max_tokens,
-        "temperature": sampling["temperature"],
-        "top_p": sampling["top_p"],
-        "seed": sampling["seed"],
-        "cache_prompt": False,
-        "frequency_penalty": 0.0,
-        "presence_penalty": 0.0,
-        "stream": False,
-    }
-    for optional_sampling_key in ("top_k", "min_p"):
-        if optional_sampling_key in sampling:
-            payload[optional_sampling_key] = sampling[optional_sampling_key]
-    if ignore_eos:
-        payload["ignore_eos"] = True
-    elapsed, body = request_json(base_url, "/v1/chat/completions", payload, api_key, timeout)
-    try:
-        message = body["choices"][0]["message"]
-        text = message.get("content") or ""
-        reasoning_text = message.get("reasoning_content") or ""
-    except (KeyError, IndexError, TypeError):
-        text = ""
-        reasoning_text = ""
-    usage = body.get("usage", {}) if isinstance(body, dict) else {}
-    timings = body.get("timings", {}) if isinstance(body, dict) else {}
-    completion_tokens = usage.get("completion_tokens")
-    produced_tokens = completion_tokens or timings.get("predicted_n")
-    return {
-        "ok": bool(text or reasoning_text) and "error" not in body,
-        "elapsed_s": round(elapsed, 6),
-        "prompt_tokens": usage.get("prompt_tokens"),
-        "completion_tokens": completion_tokens,
-        "output_tps_whole_request": completion_tokens / elapsed if completion_tokens else None,
-        "prompt_tps_engine": timings.get("prompt_per_second"),
-        "generation_tps_engine": timings.get("predicted_per_second"),
-        "draft_tokens": timings.get("draft_n"),
-        "accepted_draft_tokens": timings.get("draft_n_accepted"),
-        "produced_tokens": produced_tokens,
-        "ignore_eos": ignore_eos,
-        "request_tag": request_tag,
-        "timings": timings,
-        "finish_reason": (body.get("choices") or [{}])[0].get("finish_reason"),
-        "response": text,
-        "reasoning_response": reasoning_text,
-        "error": body.get("error") if isinstance(body, dict) else "invalid response",
-        "http_status": body.get("http_status") if isinstance(body, dict) else None,
-    }
+        max_tokens=max_tokens,
+        sampling=sampling,
+        stream=stream,
+        ignore_eos=ignore_eos,
+        chat_template_kwargs=chat_template_kwargs,
+    )
+    client = "curl" if os.environ.get("LLM_CONTEXT_BENCH_HTTP_CLIENT") == "curl" else "urllib"
+    attempts = 0
+    retry_statuses: list = []
+    measured = {}
+    for attempt in range(max_retries + 1):
+        attempts += 1
+        if stream:
+            measured = request_sse(
+                base_url, "/v1/chat/completions", payload, api_key, timeout, client=client
+            )
+        else:
+            elapsed, body = request_json(
+                base_url, "/v1/chat/completions", payload, api_key, timeout
+            )
+            measured = non_stream_measured(
+                elapsed, body if isinstance(body, dict) else {"error": "invalid response"}
+            )
+        status = measured["http_status"]
+        # A connection that died before producing anything is worth another
+        # attempt; a stalled or truncated stream is not retried, because the
+        # server was demonstrably working and a retry would hide that.
+        silent_failure = (
+            status is None and not measured["response"] and measured["stream_chunks"] == 0
+        )
+        retryable = status in engine_api.RETRYABLE_STATUS or silent_failure
+        if measured["ok"] or not retryable or attempt >= max_retries:
+            break
+        retry_statuses.append(status)
+        time.sleep(retry_backoff_s * (2**attempt))
+    return build_trial(
+        measured,
+        engine=engine,
+        stream=stream,
+        dropped_params=dropped_params,
+        ignore_eos=ignore_eos,
+        request_tag=request_tag,
+        attempts=attempts,
+        retry_statuses=retry_statuses,
+    )
 
 
 def analyze_output_content(text: str) -> dict:
@@ -489,108 +673,152 @@ def analyze_output_content(text: str) -> dict:
     }
 
 
-def validate_engine_timings(trial: dict) -> dict:
-    """Cross-check llama.cpp timing rates and cache/token counters."""
-    timings = trial.get("timings") or {}
-    prompt_n = timings.get("prompt_n")
-    prompt_ms = timings.get("prompt_ms")
-    prompt_reported = timings.get("prompt_per_second")
-    predicted_n = timings.get("predicted_n")
-    predicted_ms = timings.get("predicted_ms")
-    predicted_reported = timings.get("predicted_per_second")
+def evaluate_performance_trial(
+    trial: dict,
+    *,
+    required_output_tokens: int,
+    nominal_input_tokens: int,
+    tolerance_percent: float,
+) -> None:
+    """Apply the engine-agnostic validity gates and record every failure reason.
 
-    def relative_error(actual, expected):
-        if not isinstance(actual, (int, float)) or not isinstance(expected, (int, float)):
-            return None
-        if expected == 0:
-            return 0.0 if actual == 0 else None
-        return abs(actual - expected) / abs(expected)
-
-    prompt_calculated = (
-        prompt_n * 1000.0 / prompt_ms
-        if isinstance(prompt_n, (int, float))
-        and isinstance(prompt_ms, (int, float))
-        and prompt_ms > 0
+    Nothing here depends on an engine's private counters.  A trial is valid
+    when the request succeeded, the output is exactly the locked length, the
+    prompt tokenized inside the requested tier, the generated text is not
+    degenerate, and the engine did not report prompt-cache reuse.  Harness
+    rates are reported whenever the transport allows them to be calculated.
+    """
+    prompt_tokens = trial.get("prompt_tokens")
+    nominal = float(nominal_input_tokens)
+    trial["fixed_length_valid"] = (
+        bool(trial.get("ok")) and trial.get("produced_tokens") == required_output_tokens
+    )
+    trial["input_size_percent_from_nominal"] = (
+        round((prompt_tokens - nominal) / nominal * 100.0, 4)
+        if numeric(prompt_tokens)
         else None
     )
-    # llama.cpp excludes the first generated token from decode throughput
-    # because that token is sampled from the final prompt-evaluation logits.
-    generation_calculated = (
-        max(predicted_n - 1, 0) * 1000.0 / predicted_ms
-        if isinstance(predicted_n, (int, float))
-        and isinstance(predicted_ms, (int, float))
-        and predicted_ms > 0
-        else None
+    trial["input_size_valid"] = bool(
+        numeric(prompt_tokens)
+        and abs(trial["input_size_percent_from_nominal"]) <= tolerance_percent
     )
-    prompt_error = relative_error(prompt_reported, prompt_calculated)
-    generation_error = relative_error(predicted_reported, generation_calculated)
-    cache_n = timings.get("cache_n")
-    prompt_usage = trial.get("prompt_tokens")
-    completion_usage = trial.get("completion_tokens")
-    token_counts_consistent = (
-        isinstance(prompt_usage, (int, float))
-        and isinstance(completion_usage, (int, float))
-        and isinstance(prompt_n, (int, float))
-        and isinstance(cache_n, (int, float))
-        and isinstance(predicted_n, (int, float))
-        and prompt_usage == prompt_n + cache_n
-        and completion_usage == predicted_n
+    generated_text = "\n".join(
+        part
+        for part in (trial.get("reasoning_response", ""), trial.get("response", ""))
+        if part
     )
+    trial["output_content"] = analyze_output_content(generated_text)
+    cache = trial.get("prompt_cache") or {}
+    cached_tokens = cache.get("cached_tokens")
+    trial["prompt_cache_hit"] = bool(numeric(cached_tokens) and cached_tokens > 0)
+    trial["engine_timings_reported"] = bool(trial.get("timings"))
+    reasons: list[str] = []
+    if not trial.get("ok"):
+        reasons.append("request_failed")
+    if not trial["fixed_length_valid"]:
+        reasons.append("output_length_mismatch")
+    if not numeric(prompt_tokens):
+        # Without a reported prompt length, no tier claim can be verified.
+        reasons.append("prompt_tokens_not_reported")
+    elif not trial["input_size_valid"]:
+        reasons.append("input_size_outside_tolerance")
+    if not trial["output_content"]["valid"]:
+        reasons.extend(trial["output_content"]["reasons"])
+    if trial["prompt_cache_hit"]:
+        reasons.append("prompt_cache_hit")
+    if trial.get("stream") and trial.get("stream_delivery") != "incremental":
+        # A buffered stream hides the decode window, which would turn the whole
+        # request duration into reported "prefill" time.  That is not a
+        # measurement, so the trial is rejected instead of mislabelled.
+        reasons.append("stream_not_incremental")
+    trial["invalid_reasons"] = reasons
+    notes: list[str] = []
+    if not cache.get("reported"):
+        notes.append("prompt_cache_not_reported_by_engine")
+    if not trial["engine_timings_reported"]:
+        notes.append("engine_reports_no_timings")
+    notes.extend(trial.get("timing_reasons") or [])
+    trial["notes"] = notes
+    trial["performance_valid"] = not reasons
+
+
+def _median(values: list) -> float | None:
+    return round(statistics.median(values), 6) if values else None
+
+
+def _metric_medians(trials: list[dict], keys: list[str]) -> dict:
     return {
-        "valid": (
-            prompt_error is not None
-            and generation_error is not None
-            and prompt_error <= 0.01
-            and generation_error <= 0.01
-            and token_counts_consistent
-        ),
-        "prompt_tps_calculated": prompt_calculated,
-        "generation_tps_calculated": generation_calculated,
-        "prompt_tps_relative_error": prompt_error,
-        "generation_tps_relative_error": generation_error,
-        "token_counts_consistent": token_counts_consistent,
-        "cache_n": cache_n,
-        "no_prompt_cache": cache_n == 0,
+        f"median_{key}": _median(
+            [trial[key] for trial in trials if numeric(trial.get(key))]
+        )
+        for key in keys
     }
 
 
+# Throughput and latency numbers the harness calculates for itself.
+TIMING_METRICS = [
+    "ttft_s",
+    "decode_window_s",
+    "prefill_tps",
+    "generation_tps",
+    "mean_inter_token_latency_ms",
+    "output_tps_whole_request",
+    "request_tps_total",
+]
+
+
 def summarize_trials(trials: list[dict]) -> dict:
-    elapsed = [trial["elapsed_s"] for trial in trials if trial["ok"]]
-    prompt_tokens = [trial["prompt_tokens"] for trial in trials if trial["prompt_tokens"] is not None]
-    output_tps_whole_request = [
-        trial["output_tps_whole_request"]
-        for trial in trials
-        if trial["output_tps_whole_request"] is not None
-    ]
-    prompt_tps = [trial["prompt_tps_engine"] for trial in trials if trial["prompt_tps_engine"] is not None]
-    generation_tps = [
-        trial["generation_tps_engine"]
-        for trial in trials
-        if trial["generation_tps_engine"] is not None
-    ]
-    return {
+    successful = [trial for trial in trials if trial["ok"]]
+    summary = {
         "repetitions": len(trials),
-        "successful_requests": sum(bool(trial["ok"]) for trial in trials),
+        "successful_requests": len(successful),
         "passed_trials": sum(bool(trial.get("passed")) for trial in trials),
         "pass_rate": (
             sum(bool(trial.get("passed")) for trial in trials) / len(trials)
             if trials
             else None
         ),
-        "median_elapsed_s": statistics.median(elapsed) if elapsed else None,
-        "median_prompt_tokens": statistics.median(prompt_tokens) if prompt_tokens else None,
-        "median_output_tps_whole_request": (
-            statistics.median(output_tps_whole_request)
-            if output_tps_whole_request
-            else None
+        "median_elapsed_s": _median([trial["elapsed_s"] for trial in successful]),
+        "median_prompt_tokens": _median(
+            [
+                trial["prompt_tokens"]
+                for trial in trials
+                if numeric(trial.get("prompt_tokens"))
+            ]
         ),
-        "median_prompt_tps_engine": statistics.median(prompt_tps) if prompt_tps else None,
-        "median_generation_tps_engine": statistics.median(generation_tps) if generation_tps else None,
+        "median_prompt_tps_engine": _median(
+            [
+                trial["prompt_tps_engine"]
+                for trial in trials
+                if numeric(trial.get("prompt_tps_engine"))
+            ]
+        ),
+        "median_generation_tps_engine": _median(
+            [
+                trial["generation_tps_engine"]
+                for trial in trials
+                if numeric(trial.get("generation_tps_engine"))
+            ]
+        ),
     }
+    summary.update(_metric_medians(successful, TIMING_METRICS))
+    return summary
+
+
+def _agreement_median(trials: list[dict], branch: str) -> float | None:
+    values = []
+    for trial in trials:
+        agreement = (trial.get("engine_cross_check") or {}).get(branch)
+        if isinstance(agreement, dict) and numeric(agreement.get("relative_error")):
+            values.append(agreement["relative_error"])
+    return _median(values)
 
 
 def summarize_performance_trials(
-    trials: list[dict], required_output_tokens: int, nominal_input_tokens: int
+    trials: list[dict],
+    required_output_tokens: int,
+    nominal_input_tokens: int,
+    tolerance_percent: float = INPUT_SIZE_TOLERANCE_PERCENT,
 ) -> dict:
     valid_trials = [trial for trial in trials if trial.get("performance_valid", False)]
     summary = summarize_trials(valid_trials)
@@ -606,35 +834,64 @@ def summarize_performance_trials(
         trial.get("fixed_length_valid", False) for trial in trials
     )
     summary["nominal_input_tokens"] = nominal_input_tokens
-    summary["input_size_tolerance_percent"] = 2.0
+    summary["input_size_tolerance_percent"] = tolerance_percent
     summary["all_trials_input_size_valid"] = bool(trials) and all(
-        trial.get("input_size_valid", False)
-        for trial in trials
+        trial.get("input_size_valid", False) for trial in trials
+    )
+    summary["median_input_size_percent_from_nominal"] = _median(
+        [
+            trial["input_size_percent_from_nominal"]
+            for trial in valid_trials
+            if numeric(trial.get("input_size_percent_from_nominal"))
+        ]
     )
     summary["all_trials_output_content_valid"] = bool(trials) and all(
         trial.get("output_content", {}).get("valid", False) for trial in trials
     )
-    summary["all_trials_engine_timings_valid"] = bool(trials) and all(
-        trial.get("engine_timing_validation", {}).get("valid", False)
-        for trial in trials
+    summary["stream_delivery"] = sorted(
+        {
+            trial["stream_delivery"]
+            for trial in trials
+            if trial.get("stream_delivery")
+        }
+    ) or None
+    summary["all_trials_stream_incremental"] = bool(trials) and all(
+        trial.get("stream_delivery") == "incremental" for trial in trials
     )
-    summary["all_trials_no_prompt_cache"] = bool(trials) and all(
-        trial.get("engine_timing_validation", {}).get("no_prompt_cache", False)
+    summary["all_trials_no_prompt_cache"] = bool(trials) and not any(
+        trial.get("prompt_cache_hit", False) for trial in trials
+    )
+    summary["prompt_cache_reported_trials"] = sum(
+        1 for trial in trials if (trial.get("prompt_cache") or {}).get("reported")
+    )
+    summary["engine_timings_reported_trials"] = sum(
+        1 for trial in trials if trial.get("engine_timings_reported")
+    )
+    summary["engine_token_counts_consistent_trials"] = sum(
+        1
         for trial in trials
+        if (trial.get("engine_cross_check") or {}).get("engine_token_counts_consistent")
+    )
+    summary["median_engine_vs_harness_prefill_relative_error"] = _agreement_median(
+        valid_trials, "prefill_agreement"
+    )
+    summary["median_engine_vs_harness_generation_relative_error"] = _agreement_median(
+        valid_trials, "generation_agreement"
     )
     summary["valid_performance_trials"] = len(valid_trials)
     summary["performance_valid"] = bool(trials) and len(valid_trials) == len(trials)
+    reason_totals: dict[str, int] = {}
+    for trial in trials:
+        for reason in trial.get("invalid_reasons") or []:
+            reason_totals[reason] = reason_totals.get(reason, 0) + 1
+    summary["invalid_reason_totals"] = reason_totals
     acceptance_rates = [
         trial["draft_acceptance_rate"]
         for trial in valid_trials
-        if trial.get("draft_acceptance_rate") is not None
+        if numeric(trial.get("draft_acceptance_rate"))
     ]
-    summary["median_draft_acceptance_rate"] = (
-        statistics.median(acceptance_rates) if acceptance_rates else None
-    )
+    summary["median_draft_acceptance_rate"] = _median(acceptance_rates)
     return summary
-
-
 def summarize_suite_cases(cases: list[dict]) -> dict:
     quality_cases = [case["quality"] for case in cases if "quality" in case]
     performance_cases = [case["performance"] for case in cases if "performance" in case]
@@ -655,6 +912,113 @@ def summarize_suite_cases(cases: list[dict]) -> dict:
     }
 
 
+def build_performance_table(suites: dict) -> list[dict]:
+    """Flatten every performance case into one row per input tier.
+
+    Throughput columns are calculated by the harness from token counts and its
+    own clock, so they are comparable across inference engines.  Prefill uses
+    time-to-first-token; generation excludes the first generated token.
+    """
+    rows = []
+    for suite_name, suite in suites.items():
+        if not isinstance(suite, dict):
+            continue
+        for case in suite.get("cases") or []:
+            performance = case.get("performance")
+            if not performance:
+                continue
+            summary = performance["summary"]
+            rows.append(
+                {
+                    "suite": suite_name,
+                    "case": case["id"],
+                    "nominal_input_tokens": case.get("nominal_input_tokens"),
+                    "median_prompt_tokens": summary["median_prompt_tokens"],
+                    "prefill_tps": summary["median_prefill_tps"],
+                    "token_generation_tps": summary["median_generation_tps"],
+                    "ttft_s": summary["median_ttft_s"],
+                    "mean_inter_token_latency_ms": summary[
+                        "median_mean_inter_token_latency_ms"
+                    ],
+                    "whole_request_output_tps": summary["median_output_tps_whole_request"],
+                    "whole_request_s": summary["median_elapsed_s"],
+                    "engine_prefill_tps": summary["median_prompt_tps_engine"],
+                    "engine_token_generation_tps": summary["median_generation_tps_engine"],
+                    "draft_acceptance_rate": summary["median_draft_acceptance_rate"],
+                    "trials": summary["repetitions"],
+                    "valid_trials": summary["valid_performance_trials"],
+                    "performance_valid": summary["performance_valid"],
+                    "invalid_reason_totals": summary["invalid_reason_totals"],
+                }
+            )
+    rows.sort(
+        key=lambda row: (
+            row["nominal_input_tokens"] or 0,
+            row["suite"],
+            row["case"],
+        )
+    )
+    return rows
+
+
+def format_performance_table(rows: list[dict]) -> str:
+    """Render the performance table as fixed-width text for terminal output."""
+    columns = (
+        ("suite", "suite", None),
+        ("tier", "tier", None),
+        ("median_prompt_tokens", "prompt tok", ",.0f"),
+        ("prefill_tps", "prefill t/s", ",.1f"),
+        ("token_generation_tps", "gen t/s", ",.1f"),
+        ("ttft_s", "TTFT s", ",.2f"),
+        ("mean_inter_token_latency_ms", "ITL ms", ",.2f"),
+        ("whole_request_output_tps", "req t/s", ",.1f"),
+        ("performance_valid", "valid", None),
+    )
+    grid = []
+    for row in rows:
+        tier = (
+            f"{row['nominal_input_tokens'] // 1024}k"
+            if numeric(row.get("nominal_input_tokens"))
+            else "n/a"
+        )
+        cells = []
+        for key, _header, spec in columns:
+            value = tier if key == "tier" else row.get(key)
+            if key == "performance_valid":
+                cells.append("yes" if value else "no")
+            elif value is None:
+                cells.append("n/a")
+            elif spec and isinstance(value, float):
+                cells.append(format(value, spec))
+            elif spec and isinstance(value, int):
+                cells.append(format(float(value), spec))
+            else:
+                cells.append(str(value))
+        grid.append(cells)
+    headers = [header for _key, header, _spec in columns]
+    widths = [
+        max(len(header), *(len(cells[index]) for cells in grid)) if grid else len(header)
+        for index, header in enumerate(headers)
+    ]
+    # The suite name reads better left-aligned; everything else is numeric.
+    aligns = ("<", *(">" * (len(headers) - 1)))
+    lines = [
+        "  ".join(
+            format(header, f"{align}{width}")
+            for header, width, align in zip(headers, widths, aligns)
+        )
+    ]
+    lines.append("-" * len(lines[0]))
+    for cells in grid:
+        lines.append(
+            "  ".join(
+                format(value, f"{align}{width}")
+                for value, width, align in zip(cells, widths, aligns)
+            )
+        )
+    return "\n".join(lines)
+
+
 def run_suite(
     suite_name: str,
     base_url: str,
@@ -664,7 +1028,12 @@ def run_suite(
     repetitions_override: int | None,
     lane: str,
     sizes: list[str],
+    chat_template_kwargs: dict | None = None,
     checkpoint_callback=None,
+    engine: str = "llama.cpp",
+    stream: bool = True,
+    input_size_tolerance_percent: float = INPUT_SIZE_TOLERANCE_PERCENT,
+    max_retries: int = 0,
 ) -> dict:
     suite, suite_hash = load_suite(suite_name)
     repetitions = repetitions_override or int(suite["repetitions"])
@@ -678,6 +1047,12 @@ def run_suite(
         "repetitions": repetitions,
         "lane": lane,
         "sizes": sizes,
+        "engine": engine,
+        "measurement": {
+            "performance_stream": stream,
+            "input_size_tolerance_percent": input_size_tolerance_percent,
+            "metric_sources": engine_api.metric_sources(streamed=stream, engine=engine),
+        },
         "status": "running",
         "cases": cases,
         "summary": summarize_suite_cases(cases),
@@ -724,6 +1099,9 @@ def run_suite(
                     suite["sampling"],
                     timeout,
                     request_tag=f"{case['id']}-quality-{index:02d}",
+                    chat_template_kwargs=chat_template_kwargs,
+                    engine=engine,
+                    max_retries=max_retries,
                 )
                 if trial["ok"]:
                     passed, detail = score_response(trial["response"], case["checker"])
@@ -742,12 +1120,17 @@ def run_suite(
             case_result["performance"] = {
                 "max_tokens": required_tokens,
                 "ignore_eos": False,
-                "cold_cache_via_unique_request_prefix": True,
+                "stream": stream,
+                "cold_cache_guards": ["unique-request-tag"]
+                + (["cache_prompt=false"] if engine == "llama.cpp" else []),
                 "input_chars": len(performance_prompt),
                 "input_sha256": sha256_bytes(performance_prompt.encode("utf-8")),
                 "trials": [],
                 "summary": summarize_performance_trials(
-                    [], required_tokens, int(case["nominal_input_tokens"])
+                    [],
+                    required_tokens,
+                    int(case["nominal_input_tokens"]),
+                    input_size_tolerance_percent,
                 ),
             }
             performance_trials = []
@@ -763,47 +1146,23 @@ def run_suite(
                     suite["performance_sampling"],
                     timeout,
                     request_tag=f"{case['id']}-performance-{index:02d}",
+                    chat_template_kwargs=chat_template_kwargs,
+                    engine=engine,
+                    stream=stream,
+                    max_retries=max_retries,
                 )
-                minimum_input = int(case["nominal_input_tokens"]) * 0.98
-                maximum_input = int(case["nominal_input_tokens"]) * 1.02
-                trial["fixed_length_valid"] = (
-                    trial["ok"] and trial["produced_tokens"] == required_tokens
-                )
-                trial["input_size_valid"] = (
-                    trial["prompt_tokens"] is not None
-                    and minimum_input <= trial["prompt_tokens"] <= maximum_input
-                )
-                generated_text = "\n".join(
-                    part
-                    for part in (
-                        trial.get("reasoning_response", ""),
-                        trial.get("response", ""),
-                    )
-                    if part
-                )
-                trial["output_content"] = analyze_output_content(generated_text)
-                trial["engine_timing_validation"] = validate_engine_timings(trial)
-                drafted = trial.get("draft_tokens")
-                accepted = trial.get("accepted_draft_tokens")
-                trial["draft_acceptance_rate"] = (
-                    accepted / drafted
-                    if isinstance(drafted, (int, float))
-                    and drafted > 0
-                    and isinstance(accepted, (int, float))
-                    else None
-                )
-                trial["performance_valid"] = (
-                    trial["fixed_length_valid"]
-                    and trial["input_size_valid"]
-                    and trial["output_content"]["valid"]
-                    and trial["engine_timing_validation"]["valid"]
-                    and trial["engine_timing_validation"]["no_prompt_cache"]
+                evaluate_performance_trial(
+                    trial,
+                    required_output_tokens=required_tokens,
+                    nominal_input_tokens=int(case["nominal_input_tokens"]),
+                    tolerance_percent=input_size_tolerance_percent,
                 )
                 performance_trials.append(trial)
                 case_result["performance"]["summary"] = summarize_performance_trials(
                     performance_trials,
                     required_tokens,
                     int(case["nominal_input_tokens"]),
+                    input_size_tolerance_percent,
                 )
                 checkpoint(f"{case['id']}:performance:trial-{index:02d}")
         checkpoint(f"{case['id']}:complete")
@@ -829,16 +1188,50 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Run a list of long-input sizes, or 'all'",
     )
     parser.add_argument("--api-key", default=os.environ.get("LLM_BENCH_API_KEY", ""))
+    parser.add_argument(
+        "--chat-template-kwargs",
+        default="",
+        help="JSON object passed to OpenAI-compatible chat endpoints, e.g. '{\"enable_thinking\": false}'",
+    )
     parser.add_argument("--timeout", type=int, default=1800)
+    parser.add_argument(
+        "--engine",
+        choices=engine_api.ENGINE_CHOICES,
+        default=engine_api.AUTO_ENGINE,
+        help="Server family. 'auto' probes engine-specific endpoints and otherwise "
+        "falls back to the strict OpenAI-compatible payload",
+    )
+    parser.add_argument(
+        "--no-stream",
+        action="store_true",
+        help="Disable SSE in the performance lane. Without streaming, prefill and "
+        "decode cannot be separated and only the whole-request rate is reported",
+    )
+    parser.add_argument(
+        "--input-size-tolerance-percent",
+        type=float,
+        default=INPUT_SIZE_TOLERANCE_PERCENT,
+        help="Allowed deviation between server-reported prompt_tokens and the "
+        "requested tier. Widen it for engines whose tokenizer or chat template "
+        "differs from the pinned calibration tokenizer",
+    )
+    parser.add_argument(
+        "--max-retries",
+        type=int,
+        default=2,
+        help="Extra attempts for a request that failed before producing any output "
+        "(rate limits, connection resets)",
+    )
     parser.add_argument(
         "--command",
         required=True,
-        help="Full llama.cpp server command including global/environment variables; saved unchanged",
+        help="Full server launch command including environment variables, e.g. "
+        "'llama-server ...' or 'vllm serve ...'; saved unchanged",
     )
     parser.add_argument(
         "--system",
         required=True,
-        help="Free-form system description: cards, OS, ROCm/CUDA, llama.cpp version, etc.",
+        help="Free-form system description: cards, OS, ROCm/CUDA, engine and version",
     )
     parser.add_argument(
         "--repetitions",
@@ -853,8 +1246,21 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     args = parser.parse_args(argv)
     if args.repetitions is not None and args.repetitions < 1:
         parser.error("--repetitions must be at least 1")
+    if args.max_retries < 0:
+        parser.error("--max-retries cannot be negative")
+    if args.input_size_tolerance_percent < 0:
+        parser.error("--input-size-tolerance-percent cannot be negative")
     if "all" in args.sizes and len(args.sizes) > 1:
         parser.error("--sizes all cannot be combined with individual sizes")
+    if args.chat_template_kwargs:
+        try:
+            args.chat_template_kwargs = json.loads(args.chat_template_kwargs)
+        except json.JSONDecodeError as exc:
+            parser.error(f"--chat-template-kwargs must be valid JSON: {exc.msg}")
+        if not isinstance(args.chat_template_kwargs, dict):
+            parser.error("--chat-template-kwargs must be a JSON object")
+    else:
+        args.chat_template_kwargs = None
     args.sizes = list(dict.fromkeys(args.sizes))
     return args
 
@@ -863,8 +1269,9 @@ def main() -> None:
     args = parse_args()
     base_url = args.base_url.rstrip("/")
     suite_names = list(SUITES) if args.suite == "all" else [args.suite]
+    streamed = not args.no_stream
     result = {
-        "benchmark_schema_version": 6,
+        "benchmark_schema_version": 7,
         "tool": {"name": "llm-context-bench", "version": __version__},
         "status": "running",
         "profile": args.profile,
@@ -874,16 +1281,33 @@ def main() -> None:
         "lane": args.lane,
         "sizes": args.sizes,
         "canonical": args.repetitions is None,
-        "harness_sha256": sha256_bytes(Path(__file__).read_bytes()),
+        "harness_sha256": harness_fingerprint(),
+        "engine": {"requested": args.engine, "resolved": None},
+        "measurement": {
+            "performance_stream": streamed,
+            "input_size_tolerance_percent": args.input_size_tolerance_percent,
+            "max_retries": args.max_retries,
+            "definitions": {
+                "prefill_tps": "prompt_tokens / time from request send to the first "
+                "token-bearing stream chunk",
+                "token_generation_tps": "(completion_tokens - 1) / (last token arrival "
+                "- first token arrival); the first token belongs to the prefill",
+                "ttft_s": "request send to first token-bearing stream chunk",
+                "whole_request_output_tps": "completion_tokens / whole request wall-clock",
+                "mean_inter_token_latency_ms": "decode window / (completion_tokens - 1)",
+            },
+        },
         "run_parameters": build_run_parameters(args, sys.argv),
         "environment": {},
         "suites": {},
+        "performance_table": [],
         "checkpoint_count": 0,
     }
 
     def checkpoint(event: str) -> None:
         result["checkpoint_count"] += 1
         result["last_checkpoint"] = {"event": event, "at": utc_now()}
+        result["performance_table"] = build_performance_table(result["suites"])
         write_json_atomic(args.output, result)
 
     checkpoint("benchmark:initialized")
@@ -892,6 +1316,24 @@ def main() -> None:
         result["environment"]["health_elapsed_s"] = round(health_elapsed, 6)
         result["environment"]["health"] = health
         checkpoint("environment:health")
+
+        detection = engine_api.detect_engine(
+            lambda path: request_json(base_url, path, None, args.api_key, 10),
+            args.engine,
+        )
+        resolved_engine = detection["resolved"]
+        result["environment"]["engine_detection"] = detection
+        result["engine"] = {
+            "requested": detection["requested"],
+            "resolved": resolved_engine,
+            "detection_method": detection["method"],
+            "engine_only_params": detection["engine_only_params"],
+            "refined_from_response": None,
+        }
+        result["measurement"]["metric_sources"] = engine_api.metric_sources(
+            streamed=streamed, engine=resolved_engine
+        )
+        checkpoint("environment:engine")
 
         if not args.no_warmup:
             warmup_prompt = load_model_warmup_prompt()
@@ -906,16 +1348,41 @@ def main() -> None:
                 args.timeout,
                 ignore_eos=True,
                 request_tag="model-load-warmup",
+                chat_template_kwargs=args.chat_template_kwargs,
+                engine=resolved_engine,
+                max_retries=args.max_retries,
             )
             warmup["nominal_input_tokens"] = MODEL_LOAD_WARMUP_NOMINAL_INPUT_TOKENS
             warmup["input_chars"] = len(warmup_prompt)
             warmup["input_sha256"] = sha256_bytes(warmup_prompt.encode("utf-8"))
             warmup["required_output_tokens"] = MODEL_LOAD_WARMUP_OUTPUT_TOKENS
+            # Without ignore_eos a server is free to stop early, so the fixed
+            # length is a hard requirement only when the flag was accepted.
+            warmup["fixed_length_check_applies"] = warmup["ignore_eos_applied"]
             warmup["fixed_length_valid"] = (
                 warmup["ok"]
                 and warmup["produced_tokens"] == MODEL_LOAD_WARMUP_OUTPUT_TOKENS
             )
             result["environment"]["warmup"] = warmup
+            # The warm-up itself is sent with the pre-refinement profile; it is
+            # record-only, and the measured lanes then use the full llama.cpp
+            # payload.
+            refined = engine_api.refine_engine(resolved_engine, {"timings": warmup["timings"]})
+            if refined:
+                resolved_engine = refined
+                result["engine"].update(
+                    {
+                        "resolved": refined,
+                        "detection_method": "response-shape",
+                        "refined_from_response": "per-response timings object",
+                        "engine_only_params": list(
+                            engine_api.profile(refined)["engine_only_params"]
+                        ),
+                    }
+                )
+                result["measurement"]["metric_sources"] = engine_api.metric_sources(
+                    streamed=streamed, engine=resolved_engine
+                )
             checkpoint("environment:model-load-warmup")
 
         for suite_name in suite_names:
@@ -935,7 +1402,12 @@ def main() -> None:
                 args.repetitions,
                 args.lane,
                 args.sizes,
+                chat_template_kwargs=args.chat_template_kwargs,
                 checkpoint_callback=suite_checkpoint,
+                engine=resolved_engine,
+                stream=streamed,
+                input_size_tolerance_percent=args.input_size_tolerance_percent,
+                max_retries=args.max_retries,
             )
         result["status"] = "complete"
         result["finished_at"] = utc_now()
@@ -956,7 +1428,23 @@ def main() -> None:
     compact = {
         name: suite["summary"] for name, suite in result["suites"].items()
     }
-    print(json.dumps({"profile": args.profile, "canonical": result["canonical"], "suites": compact}, indent=2))
+    table = build_performance_table(result["suites"])
+    print(
+        json.dumps(
+            {
+                "profile": args.profile,
+                "canonical": result["canonical"],
+                "engine": result["engine"]["resolved"],
+                "lane": args.lane,
+                "suites": compact,
+                "performance": table,
+            },
+            indent=2,
+        )
+    )
+    if table:
+        print()
+        print(format_performance_table(table))
 
 
 if __name__ == "__main__":

@@ -26,10 +26,13 @@ class SuiteTests(unittest.TestCase):
         )
         self.assertTrue(benchmark.analyze_output_content(varied)["valid"])
 
-    def test_engine_timing_validation_rejects_cache_and_bad_rates(self):
+    def test_engine_timings_are_an_advisory_cross_check_not_a_gate(self):
         trial = {
             "prompt_tokens": 1024,
             "completion_tokens": 512,
+            "prefill_tps": 500.0,
+            "generation_tps": 40.0,
+            "prompt_cache": {"cached_tokens": 0, "reported": True},
             "timings": {
                 "cache_n": 0,
                 "prompt_n": 1024,
@@ -40,15 +43,55 @@ class SuiteTests(unittest.TestCase):
                 "predicted_per_second": 40.0,
             },
         }
-        self.assertTrue(benchmark.validate_engine_timings(trial)["valid"])
+        check = benchmark.engine_api.cross_check_engine_timings(trial)
+        self.assertTrue(check["reported"])
+        self.assertAlmostEqual(check["engine_prompt_tps_recalculated"], 500.0, places=3)
+        self.assertAlmostEqual(check["prefill_agreement"]["relative_error"], 0.0, places=6)
+        self.assertEqual(check["engine_reported_prompt_rate_error"], 0.0)
+        self.assertEqual(check["engine_reported_generation_rate_error"], 0.0)
+        self.assertTrue(check["engine_token_counts_consistent"])
+        # Cached prompts are still visible through the cross-check.
         trial["timings"]["cache_n"] = 100
         trial["timings"]["prompt_n"] = 924
         trial["timings"]["prompt_ms"] = 1848.0
-        cached = benchmark.validate_engine_timings(trial)
-        self.assertTrue(cached["valid"])
-        self.assertFalse(cached["no_prompt_cache"])
+        trial["prompt_cache"] = benchmark.engine_api.detect_cached_tokens(
+            {"timings": trial["timings"], "usage": {}}
+        )
+        self.assertFalse(trial["prompt_cache"]["no_prompt_cache"])
+        # A rate the engine advertises but its own counters contradict is
+        # surfaced, never silently trusted.
         trial["timings"]["prompt_per_second"] = 900.0
-        self.assertFalse(benchmark.validate_engine_timings(trial)["valid"])
+        skewed = benchmark.engine_api.cross_check_engine_timings(trial)
+        self.assertGreater(skewed["engine_reported_prompt_rate_error"], 0.5)
+        self.assertEqual(skewed["engine_reported_generation_rate_error"], 0.0)
+
+    def test_engine_without_timings_still_reports_measured_rates(self):
+        trial = {
+            "ok": True,
+            "prompt_tokens": 33455,
+            "completion_tokens": 1024,
+            "produced_tokens": 1024,
+            "response": " ".join(f"item{i} clause{i}" for i in range(600)),
+            "stream": True,
+            "stream_delivery": "incremental",
+            "ttft_s": 30.0,
+            "prefill_tps": 1115.17,
+            "generation_tps": 54.0,
+            "usage": {"prompt_tokens_details": {"cached_tokens": 0}},
+        }
+        trial["prompt_cache"] = benchmark.engine_api.detect_cached_tokens(trial)
+        trial["timings"] = {}
+        benchmark.evaluate_performance_trial(
+            trial,
+            required_output_tokens=1024,
+            nominal_input_tokens=32768,
+            tolerance_percent=2.5,
+        )
+        self.assertTrue(trial["performance_valid"], trial["invalid_reasons"])
+        self.assertFalse(trial["engine_timings_reported"])
+        self.assertIn("engine_reports_no_timings", trial["notes"])
+        self.assertTrue(trial["prompt_cache"]["no_prompt_cache"])
+        self.assertEqual(trial["prompt_cache"]["reported_by"], "usage_prompt_tokens_details.cached_tokens")
 
     def test_chat_payload_does_not_disable_thinking_or_force_eos(self):
         original = benchmark.request_json

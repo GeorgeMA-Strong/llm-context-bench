@@ -1,3 +1,3 @@
-"""Reproducible long-context benchmarks for llama.cpp servers."""
+"""Reproducible long-context benchmarks for OpenAI-compatible LLM servers."""
 
-__version__ = "0.1.0"
+__version__ = "0.3.0"

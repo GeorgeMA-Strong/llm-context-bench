@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llm-context-bench"
-version = "0.2.0"
-description = "Reproducible 16K-128K quality and performance benchmarks for llama.cpp servers"
+version = "0.3.0"
+description = "Reproducible 16K-128K quality and performance benchmarks for OpenAI-compatible LLM servers"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{name = "llm-context-bench contributors"}]
-keywords = ["llama.cpp", "llm", "benchmark", "long-context", "inference"]
+keywords = ["llama.cpp", "vllm", "sglang", "llm", "benchmark", "long-context", "inference"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Operating System :: POSIX",
