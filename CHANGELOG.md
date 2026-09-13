@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented here.
 
+## 0.4.0 - 2026-09-13
+
+- `--concurrency N` (1-8, default 1 without the flag) holds N identical
+  performance requests in flight at once and reports both views: whole-load
+  totals (`wall_s`, `prompt_tokens_total`, `output_tokens_total`,
+  `prefill_tps_total`, `token_generation_tps_total`, `generating_window_s`,
+  `tokens_tps_total`, `requests_per_minute`, `group_valid`) and the unchanged
+  per-request rates. Requests wait on a start barrier so a concurrent run cannot
+  drift sequential, each copy carries its own request tag so identical prompts
+  cannot share a prefix-cache entry, and `content_only_failure` separates "a
+  sampled stream went degenerate" from a measurement failure. The quality lane
+  stays sequential and a concurrent run is recorded `canonical: false`.
+- The run prints two tables plus a legend: `WHOLE LOAD` with `TOTAL PP t/s` and
+  `TOTAL TG t/s` - every prompt divided by the time until the slowest stream's
+  first token, and every generated token minus each stream's first divided by the
+  group's generating window - and `ONE STREAM` with the per-request rates. The
+  totals are the engine's real output under load, not a single stream's rate
+  multiplied by the request count, and PP/TG keep llama.cpp's definitions.
+- Added the 8K input tier to both suites (`*-09-context-8k`) and `--sizes 8k`,
+  built from the same pinned public-domain and `microsoft/vscode` sources. The
+  fixed chat-template and instruction overhead is a larger share of a shorter
+  prompt, so an 8K run needs a wider `--input-size-tolerance-percent` than 16K.
+- Request tags now carry a per-run scope (`--request-tag-scope`, recorded as
+  `measurement.request_tag_scope`). Engines with automatic prefix caching key KV
+  blocks on the leading prompt tokens, so the previous deterministic tag let a
+  re-run start from a warm prefill: the same 8K prompt measured 4,451 t/s on a
+  second run against 1,310 t/s on the first, on an engine that reports no
+  cached-token field. Pass the recorded scope back to reproduce a run's prompts.
+- `generate_fixtures.py --write` no longer fails on its own path handling
+  (`prompt_file` is package-relative), which is what made the 8K rebuild possible.
+- `benchmark_schema_version` is 8.
+
 ## 0.3.0 - 2026-09-12
 
 - Engine-agnostic runner: the performance lane no longer depends on llama.cpp's

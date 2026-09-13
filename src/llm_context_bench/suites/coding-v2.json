@@ -268,6 +268,27 @@
       }
     },
     {
+      "id": "coding-09-context-8k",
+      "max_tokens": 192,
+      "performance_max_tokens": 1024,
+      "nominal_input_tokens": 8192,
+      "prompt_file": "prompts/coding-8k.txt",
+      "prompt_sha256": "be09638b80f32282470afa40df496094eb229e63c118141256e6670cc3c58edb",
+      "checker": {
+        "type": "exact_json",
+        "expected": {
+          "billing_units": 61,
+          "retry_window": [
+            3,
+            6,
+            10,
+            10
+          ],
+          "shard_name": "eu-007"
+        }
+      }
+    },
+    {
       "id": "coding-05-context-16k",
       "max_tokens": 192,
       "performance_max_tokens": 1024,

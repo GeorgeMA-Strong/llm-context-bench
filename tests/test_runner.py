@@ -208,7 +208,7 @@ class SuiteTests(unittest.TestCase):
                 for case in suite["cases"]
                 if "nominal_input_tokens" in case
             ]
-            self.assertEqual(sizes, [16384, 32768, 65536, 131072])
+            self.assertEqual(sizes, [8192, 16384, 32768, 65536, 131072])
 
     def test_performance_outputs_are_fixed_by_profile(self):
         for name, expected in (("regular", 1024), ("coding", 1024)):
@@ -218,7 +218,7 @@ class SuiteTests(unittest.TestCase):
                 for case in suite["cases"]
                 if "nominal_input_tokens" in case
             ]
-            self.assertEqual(values, [expected] * 4)
+            self.assertEqual(values, [expected] * 5)
 
     def test_visible_long_prompt_files_are_locked_and_grow(self):
         for name in ("regular", "coding"):
@@ -227,7 +227,7 @@ class SuiteTests(unittest.TestCase):
             prompts = [benchmark.render_prompt(case) for case in cases]
             self.assertEqual(
                 [case["prompt_file"] for case in cases],
-                [f"prompts/{name}-{size}.txt" for size in ("16k", "32k", "64k", "128k")],
+                [f"prompts/{name}-{size}.txt" for size in ("8k", "16k", "32k", "64k", "128k")],
             )
             self.assertEqual([len(prompt) for prompt in prompts], sorted(len(prompt) for prompt in prompts))
             for case, prompt in zip(cases, prompts):
@@ -252,7 +252,7 @@ class SuiteTests(unittest.TestCase):
         self.assertEqual(manifest["format_version"], 1)
         self.assertEqual(manifest["license"], "MIT")
         self.assertEqual(manifest["seed"], 3407)
-        self.assertEqual(len(manifest["prompts"]), 8)
+        self.assertEqual(len(manifest["prompts"]), 10)
         for record in manifest["prompts"].values():
             path = ROOT / record["path"]
             raw = path.read_bytes()
@@ -318,8 +318,8 @@ class SuiteTests(unittest.TestCase):
             )
         finally:
             benchmark.chat_once = original
-        self.assertEqual(result["summary"]["performance_cases"], 4)
-        self.assertEqual(result["summary"]["valid_performance_cases"], 4)
+        self.assertEqual(result["summary"]["performance_cases"], 5)
+        self.assertEqual(result["summary"]["valid_performance_cases"], 5)
         first = result["cases"][0]["performance"]["summary"]
         self.assertTrue(first["all_trials_fixed_length"])
         self.assertTrue(first["all_trials_input_size_valid"])
@@ -486,8 +486,8 @@ class SuiteTests(unittest.TestCase):
             events,
             [
                 "regular-05-context-16k:started",
-                "regular-05-context-16k:performance:trial-01",
-                "regular-05-context-16k:performance:trial-02",
+                "regular-05-context-16k:performance:group-01",
+                "regular-05-context-16k:performance:group-02",
                 "regular-05-context-16k:complete",
                 "suite:complete",
             ],

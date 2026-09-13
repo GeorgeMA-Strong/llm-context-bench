@@ -80,6 +80,21 @@ llm-context-bench \
   --system '2x GPU; Ubuntu 24.04; ROCm 7.2; llama.cpp commit abc1234'
 ```
 
+Hold eight identical prose and code requests in flight at the 8K tier and read
+both per-stream and aggregate throughput:
+
+```bash
+llm-context-bench \
+  --base-url http://127.0.0.1:8080 \
+  --model qwen-model \
+  --profile qwen-load-8 \
+  --suite all --lane performance --sizes 8k \
+  --concurrency 8 \
+  --output results/qwen-load-8.json \
+  --command 'vllm serve model --max-model-len 262144' \
+  --system '4x GPU; Ubuntu 24.04; vLLM commit def5678'
+```
+
 `--command` and `--system` are plain strings saved unchanged in the result. The
 runner does not execute the command. Use them to record the exact server launch
 (`llama-server ...`, `vllm serve ...`, `python -m sglang.launch_server ...`) and
@@ -132,12 +147,13 @@ cannot be separated, so only the whole-request rate is reported.
 - `--max-retries` — extra attempts for a request that failed before producing
   any output, e.g. a hosted provider answering 429 (default 2). Retried attempts
   are counted in `attempts`/`retry_statuses` and never contribute timings.
+- `--request-tag-scope` — see [Keep the prefill cold](#keep-the-prefill-cold).
 - `--chat-template-kwargs` — JSON object passed through untouched, e.g.
   `'{"enable_thinking": false}'`.
 
 ## Size selection and token counts
 
-`--sizes` accepts `all` or a space-separated list from `16k 32k 64k 128k`.
+`--sizes` accepts `all` or a space-separated list from `8k 16k 32k 64k 128k`.
 The fixture bytes are identical for every model and run. Because tokenizers and
 chat templates differ, the server's `usage.prompt_tokens` is authoritative.
 The fixture lengths were calibrated against the pinned Qwen3 tokenizer listed
@@ -150,6 +166,15 @@ but marks the trial invalid and excludes it from valid medians. This prevents a
 nominal 16K case that actually tokenizes to, for example, 18K from being presented
 as a valid 16K result.
 
+The measured prompt also carries the chat template, the performance instruction,
+and the request tag on top of the fixture, which is a fixed ~350-400 tokens. That
+overhead is about 2% of a 16K tier and about 5% of an 8K tier, so an 8K run needs a
+wider tolerance than a 16K run on the same engine. Measured drift on a vLLM server
+using a quantised model's own tokenizer: 8K prose +2.8%, 8K code +9.2%, 16K code
++10.2% — the code fixture tokenises noticeably larger than the calibration
+tokenizer, so `--input-size-tolerance-percent 12` is what makes the whole ladder
+valid there.
+
 ## Warm-up
 
 There is one model-load warm-up before all measured work:
@@ -158,16 +183,17 @@ There is one model-load warm-up before all measured work:
 - required output: 512 tokens;
 - `ignore_eos: true` is used only for this warm-up, and only when the selected
   engine accepts it (`fixed_length_check_applies` records whether it did);
-- no full-size 16K–128K prompt is used for warming.
+- no full-size 8K–128K prompt is used for warming.
 
 Use `--no-warmup` to skip it and record that choice in the result.
 
 ## Checkpointed results
 
 The output JSON is atomically replaced after initialization, health check,
-warm-up, every case start, every trial, every case completion, and final
-completion. An interrupted or failed run therefore keeps all completed parts;
-you do not wait for the entire benchmark to finish before results appear.
+warm-up, every case start, every completed load group (one request at
+concurrency 1), every case completion, and final completion. An interrupted or
+failed run therefore keeps all completed parts; you do not wait for the entire
+benchmark to finish before results appear.
 
 Result files include:
 
@@ -217,15 +243,77 @@ one flush — a buffering proxy, typically — cannot show a decode window at al
 `stream_delivery: buffered` makes the trial invalid rather than reporting the
 whole request duration as prefill speed.
 
-At the end of a run the harness prints the same numbers as a table, one row per
-input tier:
+At the end of a run the harness prints two tables and a legend. The first totals
+the whole load, the second is one request's own experience:
 
 ```text
-suite    tier  prompt tok  prefill t/s  gen t/s  TTFT s  ITL ms  req t/s  valid
--------------------------------------------------------------------------------
-regular   16k      16,750        943.9     49.0   17.74   20.42     26.5    yes
-regular   32k      33,455        942.0     58.3   35.51   17.16     19.3    yes
+WHOLE LOAD - every request in the group added together
+suite    tier  req  wall s  prompt tok  out tok  TOTAL PP t/s  TOTAL TG t/s  all tok t/s  req/min  valid
+coding     8k    4    82.2      35,868    4,096       1,167.6          57.5        486.2     2.92    yes
+regular    8k    4    86.4      33,780    4,096       1,149.3          54.1        438.3     2.78    yes
+
+ONE STREAM - what a single request experiences (median of the group)
+suite    tier  req  prompt tok/req  PP t/s  TG t/s  TTFT med s  TTFT max s  ITL ms  out t/s/req  valid
+coding     8k    4           8,967   381.9    17.9       24.29       30.72   56.13         12.5    yes
+regular    8k    4           8,445   371.1    16.7       23.53       29.39   60.26         12.1    yes
 ```
+
+`TOTAL PP t/s` and `TOTAL TG t/s` are the summary of the whole load: every
+prompt divided by the time until the slowest stream produced its first token,
+and every generated token (minus each stream's first) divided by the time the
+group spent generating. They are what the engine did in total - not a single
+stream's rate multiplied by the request count, which would claim 4 x 17.9 = 71.6
+t/s where the engine actually produced 54.1. The printed legend repeats every
+definition, and `PP`/`TG` use llama.cpp's definitions so the numbers line up with
+`prompt_per_second` and `predicted_per_second` records.
+
+## Concurrency
+
+`--concurrency N` (1-8, default 1; a run without the flag is a single in-flight
+request) holds N identical performance requests in flight at once and reports
+both views:
+
+- **whole load** (`*_total` on each group) — `wall_s` (first request sent until
+  the last finished), `prompt_tokens_total`, `output_tokens_total`,
+  `prefill_tps_total`, `token_generation_tps_total`, `generating_window_s`,
+  `tokens_tps_total`, `requests_per_minute`, plus `requests`, `valid_requests`
+  and `group_valid`;
+- **one stream** — the same `prefill_tps`, `generation_tps`, `ttft_s` and gates
+  as a sequential run, so you can see how a single user degrades under load.
+
+All N requests wait on a start barrier, so a "concurrent" run cannot quietly
+drift into a sequential one. Group wall time runs from the first request leaving
+the harness to the last response, so a straggler thread can only lower the
+reported totals, never inflate them.
+
+Each suite and each case is measured one group at a time: `--suite all
+--concurrency 4` runs 4 prose requests together, waits, then 4 code requests
+together - it is not a mixed 2 + 2 load.
+
+Every copy carries its own request tag, so N simultaneous identical prompts
+cannot collapse into one shared prefix-cache entry. A group is valid only when
+every request in it passed every gate; `content_only_failure: true` on a group
+separates "a sampled stream went degenerate" (routine at temperature 1.0, more
+likely with more streams) from a measurement failure. Totals of invalid groups
+stay in the JSON but are excluded from the table row.
+
+The quality lane always stays sequential — its scores have to stay comparable.
+A run with `--concurrency` other than 1 is recorded `canonical: false`, like a
+run with modified repetitions.
+
+## Keep the prefill cold
+
+Each request sends a tag in its system prompt, and the tag now includes a
+**per-run scope** (the run start time, or `--request-tag-scope`). That is not
+cosmetic. Engines with automatic prefix caching key KV blocks on the leading
+prompt tokens, so a tag that repeats between runs lets the second run start from
+a warm prefill. Measured on a vLLM server that reports no cached-token field:
+the same 8K prompt came back at 4,451 t/s prefill on a re-run against 1,310 t/s
+on the first — a 3.4× lie that nothing in the response betrayed.
+
+`measurement.request_tag_scope` is recorded, so passing it back with
+`--request-tag-scope` reproduces an earlier run's exact prompts when you want
+that comparison instead.
 
 ## Metrics
 
@@ -239,8 +327,8 @@ regular   32k      33,455        942.0     58.3   35.51   17.16     19.3    yes
 - `prompt_cache` — cached prompt tokens discovered through whichever field this
   engine uses (`timings.cache_n`, `usage.prompt_tokens_details.cached_tokens`,
   `usage.cached_tokens`, …). When an engine reports nothing, the trial records
-  `prompt_cache_not_reported_by_engine`; the per-request tag prefix is what keeps
-  the prefill cold there.
+  `prompt_cache_not_reported_by_engine`; the run-scoped per-request tag is what
+  keeps the prefill cold there.
 - `engine_cross_check` — for engines that do report per-request timings
   (llama.cpp), the harness compares its own rates with the engine's, checks that
   the advertised rate matches the engine's own counters, and verifies that
@@ -265,8 +353,8 @@ Engine-reported rates and harness-measured rates are different quantities, and
 hosted endpoints add network time. Every result therefore carries `engine`,
 `metric_sources`, and per-trial `notes`; compare a column only between runs that
 report the same source. On a hosted endpoint, `output_tps_whole_request` is the
-honest user-facing number while `prefill_tps` includes the transfer of a
-16K–128K prompt.
+honest user-facing number while `prefill_tps` includes the transfer of an
+8K–128K prompt.
 
 ### What makes a performance trial valid
 
@@ -283,11 +371,18 @@ cannot be verified, or the prompt landed outside the configured tolerance;
 - `stream_not_incremental` — the response arrived in a single flush, so no decode
 window exists to measure.
 
+A load group adds two of its own reasons in `invalid_reason_totals`:
+`concurrency_barrier_broken` (the requests cannot be claimed to have started
+together) and `group_wall_unmeasured` (no group wall time was observed, so no
+total can be computed).
+
 ## Repetitions
 
 The canonical suites use one measured repetition. Use `--repetitions N` for
 diagnostic repeats; the result is then marked `canonical: false`. Medians include
-only trials that satisfy every performance validity rule.
+only trials that satisfy every performance validity rule. With
+`--concurrency N`, each repetition is one load group of N simultaneous requests,
+so a run issues repetitions × N requests per case.
 
 ## Rebuild and verify fixtures
 

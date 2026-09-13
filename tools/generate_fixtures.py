@@ -34,8 +34,9 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PROMPTS = ROOT / "src" / "llm_context_bench" / "prompts"
-SUITES = ROOT / "src" / "llm_context_bench" / "suites"
+PACKAGE = ROOT / "src" / "llm_context_bench"
+PROMPTS = PACKAGE / "prompts"
+SUITES = PACKAGE / "suites"
 MANIFEST = ROOT / "FIXTURES.json"
 CACHE = ROOT / "tools" / ".corpus_cache"
 
@@ -78,8 +79,8 @@ BOOKS = [
     ),
 ]
 
-NOMINALS = [16_384, 32_768, 65_536, 131_072]
-SIZES = ["16k", "32k", "64k", "128k"]
+NOMINALS = [8_192, 16_384, 32_768, 65_536, 131_072]
+SIZES = ["8k", "16k", "32k", "64k", "128k"]
 
 REG_HEADER = (
     "BENCHMARK PROFILE: REGULAR DOCUMENT ANALYSIS\n"
@@ -269,8 +270,9 @@ def refresh_hashes(names: list[str]) -> None:
         for case in suite["cases"]:
             prompt_file = case.get("prompt_file")
             if prompt_file:
+                # prompt_file is stored relative to the package root.
                 case["prompt_sha256"] = hashlib.sha256(
-                    (PROMPTS / prompt_file).read_bytes()
+                    (PACKAGE / prompt_file).read_bytes()
                 ).hexdigest()
         path.write_text(json.dumps(suite, indent=2) + "\n", encoding="utf-8")
 

@@ -140,6 +140,37 @@
       }
     },
     {
+      "id": "regular-09-context-8k",
+      "max_tokens": 192,
+      "performance_max_tokens": 1024,
+      "nominal_input_tokens": 8192,
+      "prompt_file": "prompts/regular-8k.txt",
+      "prompt_sha256": "31b98a4cae3cd46cc4a324b497a8d8d3bd87185f919bc6e06565cdc6522c2c37",
+      "checker": {
+        "type": "exact_json",
+        "expected": {
+          "AC-771": {
+            "owner": "Inez",
+            "tier": "gold",
+            "renewal": "2026-11-02",
+            "state": "active"
+          },
+          "AC-204": {
+            "owner": "Omar",
+            "tier": "silver",
+            "renewal": "2027-01-19",
+            "state": "paused"
+          },
+          "AC-990": {
+            "owner": "Keiko",
+            "tier": "platinum",
+            "renewal": "2026-09-30",
+            "state": "active"
+          }
+        }
+      }
+    },
+    {
       "id": "regular-05-context-16k",
       "max_tokens": 192,
       "performance_max_tokens": 1024,

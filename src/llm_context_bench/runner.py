@@ -18,6 +18,7 @@ import sqlite3
 import statistics
 import subprocess
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -33,12 +34,16 @@ SUITES = {
     "coding": ROOT / "suites" / "coding-v2.json",
 }
 SIZE_TOKENS = {
+    "8k": 8192,
     "16k": 16384,
     "32k": 32768,
     "64k": 65536,
     "128k": 131072,
 }
 INPUT_SIZE_TOLERANCE_PERCENT = 2.0
+# Above this the measured engine is usually the bottleneck being the harness,
+# not the model, and one lost request starts to dominate the group aggregate.
+MAX_CONCURRENCY = 8
 MODEL_LOAD_WARMUP_NOMINAL_INPUT_TOKENS = 1024
 MODEL_LOAD_WARMUP_INPUT_CHARS = 3500
 MODEL_LOAD_WARMUP_OUTPUT_TOKENS = 512
@@ -151,6 +156,16 @@ def redacted_benchmark_argv(argv: list[str]) -> list[str]:
     return redacted
 
 
+def is_canonical(args: argparse.Namespace) -> bool:
+    """True only when the run matches the locked suite definition.
+
+    More repetitions or several requests in flight both change what is being
+    measured, so those runs are recorded as diagnostics and never as a
+    canonical leaderboard entry.
+    """
+    return args.repetitions is None and args.concurrency == 1
+
+
 def build_run_parameters(args: argparse.Namespace, argv: list[str]) -> dict:
     """Build the repeatability metadata persisted from the first checkpoint."""
     safe_argv = redacted_benchmark_argv(argv)
@@ -159,6 +174,7 @@ def build_run_parameters(args: argparse.Namespace, argv: list[str]) -> dict:
         "benchmark_argv": safe_argv,
         "command": args.command,
         "system": args.system,
+        "concurrency": args.concurrency,
         "model_load_warmup": not args.no_warmup,
         "runtime": {
             "python_version": platform.python_version(),
@@ -645,6 +661,258 @@ def chat_once(
     )
 
 
+def failed_trial(error: str, *, engine: str, stream: bool, request_tag: str | None) -> dict:
+    """Build the trial for a request that never produced a measurable response."""
+    return build_trial(
+        engine_api.empty_stream_measurement(error=error),
+        engine=engine,
+        stream=stream,
+        dropped_params=[],
+        ignore_eos=False,
+        request_tag=request_tag,
+        attempts=0,
+        retry_statuses=[],
+    )
+
+
+def run_concurrent_group(
+    request,
+    *,
+    concurrency: int,
+    engine: str = "llama.cpp",
+    stream: bool = True,
+    barrier_timeout_s: float = 120.0,
+) -> tuple[list[dict], dict]:
+    """Release ``concurrency`` copies of one request at the same instant.
+
+    ``request(index)`` returns a single trial.  Every worker waits on a barrier
+    so no request can start before all of them are ready; without that,
+    concurrent requests drift apart and the aggregate throughput describes a
+    sequential run.  Trials come back in request-index order, together with the
+    window during which all of them were in flight.
+    """
+    if not 1 <= concurrency <= MAX_CONCURRENCY:
+        raise ValueError(f"concurrency must be between 1 and {MAX_CONCURRENCY}")
+
+    def invoke(index: int) -> dict:
+        try:
+            return request(index)
+        except Exception as exc:  # One lost request must not lose the group.
+            return failed_trial(
+                f"request worker failed: {type(exc).__name__}: {exc}",
+                engine=engine,
+                stream=stream,
+                request_tag=None,
+            )
+
+    if concurrency == 1:
+        started = time.perf_counter()
+        trial = invoke(1)
+        return [trial], {
+            "wall_s": time.perf_counter() - started,
+            "barrier_broken": False,
+        }
+
+    barrier = threading.Barrier(concurrency, timeout=barrier_timeout_s)
+    finished: dict[int, dict] = {}
+    windows: dict[int, tuple[float, float]] = {}
+    state = {"barrier_broken": False}
+    lock = threading.Lock()
+
+    def worker(index: int) -> None:
+        try:
+            barrier.wait()
+        except threading.BrokenBarrierError:
+            # A worker never arrived.  Its timings are still real, but the run
+            # can no longer claim the requests were simultaneous.
+            with lock:
+                state["barrier_broken"] = True
+        began = time.perf_counter()
+        trial = invoke(index)
+        with lock:
+            finished[index] = trial
+            windows[index] = (began, time.perf_counter())
+
+    threads = [
+        threading.Thread(target=worker, args=(index,), name=f"bench-{index:02d}")
+        for index in range(1, concurrency + 1)
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    trials = [
+        finished.get(index)
+        or failed_trial(
+            f"request {index} never reported a result",
+            engine=engine,
+            stream=stream,
+            request_tag=None,
+        )
+        for index in range(1, concurrency + 1)
+    ]
+    # Stamp when each request actually left the harness, relative to the first
+    # one.  A stream's own timestamps are relative to its own start, so without
+    # this offset the group cannot tell which stream began generating first.
+    group_start = min(start for start, _end in windows.values()) if windows else None
+    if group_start is not None:
+        for index, (start, _end) in windows.items():
+            finished[index]["group_start_offset_s"] = round(start - group_start, 6)
+    # Wall time of the group: the first request leaving the harness until the
+    # last response is complete.  A straggler thread can only lengthen it, which
+    # lowers the reported totals instead of inflating them.
+    wall_s = (
+        max(end for _start, end in windows.values())
+        - min(start for start, _end in windows.values())
+        if len(windows) == concurrency
+        else None
+    )
+    return trials, {"wall_s": wall_s, "barrier_broken": state["barrier_broken"]}
+
+
+# Gates that judge the generated text rather than the measurement.  A group
+# that fails only these still says something true about engine throughput, but
+# it is not a clean measurement, so it stays invalid and gets flagged instead.
+CONTENT_GATES = frozenset(
+    {
+        "too_few_text_tokens",
+        "low_unique_token_ratio",
+        "dominant_repeated_token",
+        "highly_compressible_repetition",
+    }
+)
+
+
+def summarize_load_group(
+    trials: list[dict],
+    *,
+    group_id: str,
+    concurrency: int,
+    wall_s: float | None,
+    barrier_broken: bool = False,
+) -> dict:
+    """Total up the requests one load group had in flight together.
+
+    ``*_total`` numbers describe the engine under load: every token the group
+    moved, divided by the group's own wall time.  The per-request medians
+    describe one user.  Both are reported because they answer different
+    questions - a engine can hold per-stream speed steady while total output
+    climbs, or do neither.
+    """
+    def values(key: str) -> list:
+        return [trial[key] for trial in trials if numeric(trial.get(key))]
+
+    def total(key: str):
+        # A partial token sum would overstate throughput for the whole window.
+        counted = values(key)
+        return sum(counted) if len(counted) == len(trials) else None
+
+    reasons: dict[str, int] = {}
+    for trial in trials:
+        for reason in trial.get("invalid_reasons") or []:
+            reasons[reason] = reasons.get(reason, 0) + 1
+    if barrier_broken:
+        reasons["concurrency_barrier_broken"] = reasons.get("concurrency_barrier_broken", 0) + 1
+    measured_wall = numeric(wall_s) and wall_s > 0
+    if not measured_wall:
+        reasons["group_wall_unmeasured"] = reasons.get("group_wall_unmeasured", 0) + 1
+    # At temperature 1.0 a single stream can collapse into repetition, and at
+    # concurrency 8 that is a routine event rather than an anomaly.  Say so, so
+    # a rejected group is not mistaken for an engine throughput result.
+    content_only_failure = bool(reasons) and set(reasons) <= CONTENT_GATES
+
+    def per_wall(tokens):
+        return round(tokens / wall_s, 6) if measured_wall and tokens is not None else None
+
+    output_tokens = total("completion_tokens")
+    prompt_tokens = total("prompt_tokens")
+    ttft = values("ttft_s")
+    # The group's prefill phase ends when the slowest stream produces its first
+    # token, because that is when the last prompt finished being digested.
+    prefill_phase_s = max(ttft) if ttft and len(ttft) == len(trials) else None
+    prefill_tps_total = (
+        round(prompt_tokens / prefill_phase_s, 6)
+        if prompt_tokens is not None and numeric(prefill_phase_s) and prefill_phase_s > 0
+        else None
+    )
+    # Combined token generation, in llama.cpp's TG terms: every generated token
+    # except each stream's first, over the window in which the engine was
+    # generating for this group.  This is the sum of what the streams produced
+    # together, not a per-stream rate multiplied by the request count - streams
+    # share the engine, so the honest total is the only useful one.
+    generating = [
+        trial
+        for trial in trials
+        if numeric(trial.get("ttft_s"))
+        and numeric(trial.get("decode_window_s"))
+        and numeric(trial.get("completion_tokens"))
+    ]
+    generating_window_s = None
+    token_generation_tps_total = None
+    generating_tokens = None
+    if len(generating) == len(trials):
+        arrivals = [
+            trial.get("group_start_offset_s", 0.0) + trial["ttft_s"]
+            for trial in generating
+        ]
+        departures = [
+            trial.get("group_start_offset_s", 0.0) + trial["ttft_s"] + trial["decode_window_s"]
+            for trial in generating
+        ]
+        generating_window_s = max(departures) - min(arrivals)
+        generating_tokens = sum(trial["completion_tokens"] - 1 for trial in generating)
+        if generating_window_s > 0 and generating_tokens > 0:
+            token_generation_tps_total = round(generating_tokens / generating_window_s, 6)
+    completed = sum(1 for trial in trials if trial.get("ok"))
+    valid = [trial for trial in trials if trial.get("performance_valid")]
+    return {
+        "group_id": group_id,
+        "concurrency": concurrency,
+        "requests": concurrency,
+        "recorded_requests": len(trials),
+        "missing_requests": max(concurrency - len(trials), 0),
+        "completed_requests": completed,
+        "valid_requests": len(valid),
+        "group_valid": (
+            len(valid) == concurrency
+            and len(trials) == concurrency
+            and measured_wall
+            and not barrier_broken
+        ),
+        "content_only_failure": content_only_failure,
+        "wall_s": round(wall_s, 6) if measured_wall else None,
+        "prompt_tokens_total": prompt_tokens,
+        "output_tokens_total": output_tokens,
+        "tokens_total": (
+            output_tokens + prompt_tokens
+            if output_tokens is not None and prompt_tokens is not None
+            else None
+        ),
+        "prefill_phase_s": round(prefill_phase_s, 6) if numeric(prefill_phase_s) else None,
+        "prefill_tps_total": prefill_tps_total,
+        "generating_window_s": (
+            round(generating_window_s, 6) if numeric(generating_window_s) else None
+        ),
+        "generating_tokens_total": generating_tokens,
+        "token_generation_tps_total": token_generation_tps_total,
+        "decode_tps_total": per_wall(output_tokens),
+        "tokens_tps_total": per_wall(
+            output_tokens + prompt_tokens
+            if output_tokens is not None and prompt_tokens is not None
+            else None
+        ),
+        "requests_per_minute": (
+            round(completed * 60.0 / wall_s, 6) if measured_wall else None
+        ),
+        "ttft_median_s": _median(ttft),
+        "ttft_max_s": round(max(ttft), 6) if ttft else None,
+        "prefill_tps_median": _median(values("prefill_tps")),
+        "generation_tps_median": _median(values("generation_tps")),
+        "invalid_reason_totals": dict(sorted(reasons.items())),
+    }
+
+
 def analyze_output_content(text: str) -> dict:
     """Reject low-entropy forced output such as hundreds of identical dots."""
     raw = text.encode("utf-8")
@@ -912,6 +1180,13 @@ def summarize_suite_cases(cases: list[dict]) -> dict:
     }
 
 
+def _group_median(groups: list[dict], key: str) -> float | None:
+    """Median of one load-group total across a case's counted groups."""
+    return _median(
+        [group[key] for group in groups if numeric(group.get(key))]
+    )
+
+
 def build_performance_table(suites: dict) -> list[dict]:
     """Flatten every performance case into one row per input tier.
 
@@ -928,11 +1203,16 @@ def build_performance_table(suites: dict) -> list[dict]:
             if not performance:
                 continue
             summary = performance["summary"]
+            groups = performance.get("groups") or []
+            # Same rule as the medians: only groups where every request passed
+            # every gate contribute, so a row never advertises a bad aggregate.
+            counted_groups = [group for group in groups if group.get("group_valid")]
             rows.append(
                 {
                     "suite": suite_name,
                     "case": case["id"],
                     "nominal_input_tokens": case.get("nominal_input_tokens"),
+                    "concurrency": performance.get("concurrency") or 1,
                     "median_prompt_tokens": summary["median_prompt_tokens"],
                     "prefill_tps": summary["median_prefill_tps"],
                     "token_generation_tps": summary["median_generation_tps"],
@@ -942,6 +1222,38 @@ def build_performance_table(suites: dict) -> list[dict]:
                     ],
                     "whole_request_output_tps": summary["median_output_tps_whole_request"],
                     "whole_request_s": summary["median_elapsed_s"],
+                    # Totals for the requests a load group held in flight at
+                    # once, taken over its valid groups.  At concurrency 1 a
+                    # group is one request, so these equal its own totals.
+                    "requests": (performance.get("concurrency") or 1),
+                    "wall_s": _group_median(counted_groups, "wall_s"),
+                    "prompt_tokens_total": _group_median(
+                        counted_groups, "prompt_tokens_total"
+                    ),
+                    "output_tokens_total": _group_median(
+                        counted_groups, "output_tokens_total"
+                    ),
+                    "tokens_total": _group_median(counted_groups, "tokens_total"),
+                    "prefill_tps_total": _group_median(counted_groups, "prefill_tps_total"),
+                    "token_generation_tps_total": _group_median(
+                        counted_groups, "token_generation_tps_total"
+                    ),
+                    "generating_window_s": _group_median(
+                        counted_groups, "generating_window_s"
+                    ),
+                    "decode_tps_total": _group_median(counted_groups, "decode_tps_total"),
+                    "tokens_tps_total": _group_median(counted_groups, "tokens_tps_total"),
+                    "requests_per_minute": _group_median(
+                        counted_groups, "requests_per_minute"
+                    ),
+                    "ttft_max_s": _group_median(counted_groups, "ttft_max_s"),
+                    "groups": len(groups),
+                    "valid_groups": sum(1 for group in groups if group.get("group_valid")),
+                    # Groups rejected only because a sampled stream went
+                    # degenerate, so a rejected run is not read as a slow engine.
+                    "content_only_failure_groups": sum(
+                        1 for group in groups if group.get("content_only_failure")
+                    ),
                     "engine_prefill_tps": summary["median_prompt_tps_engine"],
                     "engine_token_generation_tps": summary["median_generation_tps_engine"],
                     "draft_acceptance_rate": summary["median_draft_acceptance_rate"],
@@ -954,6 +1266,7 @@ def build_performance_table(suites: dict) -> list[dict]:
     rows.sort(
         key=lambda row: (
             row["nominal_input_tokens"] or 0,
+            row["concurrency"] or 1,
             row["suite"],
             row["case"],
         )
@@ -962,18 +1275,73 @@ def build_performance_table(suites: dict) -> list[dict]:
 
 
 def format_performance_table(rows: list[dict]) -> str:
-    """Render the performance table as fixed-width text for terminal output."""
-    columns = (
+    """Render the performance results as two fixed-width tables plus a legend.
+
+    The first table is the whole load: PP and TG summed over every request the
+    group held in flight, so a concurrent run is read without multiplying or
+    averaging anything.  The second keeps the per-request rates, which describe
+    what a single user of that engine experiences.
+    """
+    totals = (
         ("suite", "suite", None),
         ("tier", "tier", None),
-        ("median_prompt_tokens", "prompt tok", ",.0f"),
-        ("prefill_tps", "prefill t/s", ",.1f"),
-        ("token_generation_tps", "gen t/s", ",.1f"),
-        ("ttft_s", "TTFT s", ",.2f"),
-        ("mean_inter_token_latency_ms", "ITL ms", ",.2f"),
-        ("whole_request_output_tps", "req t/s", ",.1f"),
+        ("requests", "req", None),
+        ("wall_s", "wall s", ",.1f"),
+        ("prompt_tokens_total", "prompt tok", ",.0f"),
+        ("output_tokens_total", "out tok", ",.0f"),
+        ("prefill_tps_total", "TOTAL PP t/s", ",.1f"),
+        ("token_generation_tps_total", "TOTAL TG t/s", ",.1f"),
+        ("tokens_tps_total", "all tok t/s", ",.1f"),
+        ("requests_per_minute", "req/min", ",.2f"),
         ("performance_valid", "valid", None),
     )
+    per_stream = (
+        ("suite", "suite", None),
+        ("tier", "tier", None),
+        ("requests", "req", None),
+        ("median_prompt_tokens", "prompt tok/req", ",.0f"),
+        ("prefill_tps", "PP t/s", ",.1f"),
+        ("token_generation_tps", "TG t/s", ",.1f"),
+        ("ttft_s", "TTFT med s", ",.2f"),
+        ("ttft_max_s", "TTFT max s", ",.2f"),
+        ("mean_inter_token_latency_ms", "ITL ms", ",.2f"),
+        ("whole_request_output_tps", "out t/s/req", ",.1f"),
+        ("performance_valid", "valid", None),
+    )
+    return "\n\n".join(
+        (
+            _render_console_table(
+                rows, totals, "WHOLE LOAD - every request in the group added together"
+            ),
+            _render_console_table(
+                rows,
+                per_stream,
+                "ONE STREAM - what a single request experiences (median of the group)",
+            ),
+            "\n".join(METRIC_LEGEND),
+        )
+    )
+
+
+# Spelled out under every run, because a rate is meaningless without the
+# denominator it was divided by.
+METRIC_LEGEND = (
+    "What the columns mean",
+    "  wall s        first request sent until the last response finished",
+    "  prompt tok    prompt tokens of all requests added together (req x prompt tokens each)",
+    "  out tok       generated tokens of all requests added together",
+    "  TOTAL PP t/s  all prompt tokens / time until the SLOWEST stream got its first token",
+    "                = how fast the engine digested the whole batch of prompts",
+    "  TOTAL TG t/s  all generated tokens (minus each stream's first) / time the group spent generating",
+    "                = what the engine generated in total, NOT one stream's rate times req",
+    "  all tok t/s   prompt + generated tokens / wall s = overall token throughput of the window",
+    "  PP, TG        same definitions as llama.cpp prompt_per_second and predicted_per_second",
+    "  req/min       completed requests per minute at this concurrency",
+)
+
+
+def _render_console_table(rows: list[dict], columns: tuple, title: str) -> str:
+    """Render rows as a titled, fixed-width table; missing values print as n/a."""
     grid = []
     for row in rows:
         tier = (
@@ -1003,12 +1371,13 @@ def format_performance_table(rows: list[dict]) -> str:
     # The suite name reads better left-aligned; everything else is numeric.
     aligns = ("<", *(">" * (len(headers) - 1)))
     lines = [
+        title,
         "  ".join(
             format(header, f"{align}{width}")
             for header, width, align in zip(headers, widths, aligns)
-        )
+        ),
     ]
-    lines.append("-" * len(lines[0]))
+    lines.append("-" * len(lines[1]))
     for cells in grid:
         lines.append(
             "  ".join(
@@ -1034,6 +1403,8 @@ def run_suite(
     stream: bool = True,
     input_size_tolerance_percent: float = INPUT_SIZE_TOLERANCE_PERCENT,
     max_retries: int = 0,
+    concurrency: int = 1,
+    request_tag_scope: str = "",
 ) -> dict:
     suite, suite_hash = load_suite(suite_name)
     repetitions = repetitions_override or int(suite["repetitions"])
@@ -1051,6 +1422,7 @@ def run_suite(
         "measurement": {
             "performance_stream": stream,
             "input_size_tolerance_percent": input_size_tolerance_percent,
+            "concurrency": concurrency,
             "metric_sources": engine_api.metric_sources(streamed=stream, engine=engine),
         },
         "status": "running",
@@ -1063,6 +1435,16 @@ def run_suite(
         suite_result["summary"] = summarize_suite_cases(cases)
         if checkpoint_callback is not None:
             checkpoint_callback(suite_result, event)
+
+    def request_tag(*parts: str) -> str:
+        """Tag a request so no other request shares its prompt prefix.
+
+        The scope changes once per run, which matters more than it looks: an
+        engine with automatic prefix caching keys its KV blocks on the leading
+        tokens, so a tag that repeats between runs lets a re-run start from a
+        warm prefill and report several times the real prefill speed.
+        """
+        return "-".join([part for part in (request_tag_scope, *parts) if part])
 
     selected_tokens = {SIZE_TOKENS[value] for value in sizes if value != "all"}
     for case in suite["cases"]:
@@ -1098,7 +1480,7 @@ def run_suite(
                     int(case["max_tokens"]),
                     suite["sampling"],
                     timeout,
-                    request_tag=f"{case['id']}-quality-{index:02d}",
+                    request_tag=request_tag(case["id"], "quality", f"{index:02d}"),
                     chat_template_kwargs=chat_template_kwargs,
                     engine=engine,
                     max_retries=max_retries,
@@ -1121,11 +1503,14 @@ def run_suite(
                 "max_tokens": required_tokens,
                 "ignore_eos": False,
                 "stream": stream,
+                "concurrency": concurrency,
                 "cold_cache_guards": ["unique-request-tag"]
+                + (["run-scoped-request-tag"] if request_tag_scope else [])
                 + (["cache_prompt=false"] if engine == "llama.cpp" else []),
                 "input_chars": len(performance_prompt),
                 "input_sha256": sha256_bytes(performance_prompt.encode("utf-8")),
                 "trials": [],
+                "groups": [],
                 "summary": summarize_performance_trials(
                     [],
                     required_tokens,
@@ -1133,38 +1518,70 @@ def run_suite(
                     input_size_tolerance_percent,
                 ),
             }
-            performance_trials = []
-            case_result["performance"]["trials"] = performance_trials
+            performance_trials = case_result["performance"]["trials"]
+            performance_groups = case_result["performance"]["groups"]
             for index in range(1, repetitions + 1):
-                trial = chat_once(
-                    base_url,
-                    api_key,
-                    model,
-                    suite["performance_system_prompt"],
-                    performance_prompt,
-                    required_tokens,
-                    suite["performance_sampling"],
-                    timeout,
-                    request_tag=f"{case['id']}-performance-{index:02d}",
-                    chat_template_kwargs=chat_template_kwargs,
+                group_id = f"{case['id']}-performance-{index:02d}"
+
+                def request(request_index: int, repetition: int = index) -> dict:
+                    # Each copy carries its own request tag, so N simultaneous
+                    # identical prompts cannot merge into one shared prefix cache.
+                    tag = request_tag(
+                        case["id"],
+                        "performance",
+                        f"{repetition:02d}"
+                        if concurrency == 1
+                        else f"{repetition:02d}-{request_index:02d}",
+                    )
+                    trial = chat_once(
+                        base_url,
+                        api_key,
+                        model,
+                        suite["performance_system_prompt"],
+                        performance_prompt,
+                        required_tokens,
+                        suite["performance_sampling"],
+                        timeout,
+                        request_tag=tag,
+                        chat_template_kwargs=chat_template_kwargs,
+                        engine=engine,
+                        stream=stream,
+                        max_retries=max_retries,
+                    )
+                    evaluate_performance_trial(
+                        trial,
+                        required_output_tokens=required_tokens,
+                        nominal_input_tokens=int(case["nominal_input_tokens"]),
+                        tolerance_percent=input_size_tolerance_percent,
+                    )
+                    return trial
+
+                group_trials, group_span = run_concurrent_group(
+                    request,
+                    concurrency=concurrency,
                     engine=engine,
                     stream=stream,
-                    max_retries=max_retries,
                 )
-                evaluate_performance_trial(
-                    trial,
-                    required_output_tokens=required_tokens,
-                    nominal_input_tokens=int(case["nominal_input_tokens"]),
-                    tolerance_percent=input_size_tolerance_percent,
+                for request_index, trial in enumerate(group_trials, start=1):
+                    trial["request_index"] = request_index
+                    trial["group_id"] = group_id
+                performance_groups.append(
+                    summarize_load_group(
+                        group_trials,
+                        group_id=group_id,
+                        concurrency=concurrency,
+                        wall_s=group_span["wall_s"],
+                        barrier_broken=group_span["barrier_broken"],
+                    )
                 )
-                performance_trials.append(trial)
+                performance_trials.extend(group_trials)
                 case_result["performance"]["summary"] = summarize_performance_trials(
                     performance_trials,
                     required_tokens,
                     int(case["nominal_input_tokens"]),
                     input_size_tolerance_percent,
                 )
-                checkpoint(f"{case['id']}:performance:trial-{index:02d}")
+                checkpoint(f"{case['id']}:performance:group-{index:02d}")
         checkpoint(f"{case['id']}:complete")
     suite_result["status"] = "complete"
     checkpoint("suite:complete")
@@ -1183,7 +1600,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--sizes",
         nargs="+",
-        choices=("16k", "32k", "64k", "128k", "all"),
+        choices=("8k", "16k", "32k", "64k", "128k", "all"),
         default=["all"],
         help="Run a list of long-input sizes, or 'all'",
     )
@@ -1200,6 +1617,24 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=engine_api.AUTO_ENGINE,
         help="Server family. 'auto' probes engine-specific endpoints and otherwise "
         "falls back to the strict OpenAI-compatible payload",
+    )
+    parser.add_argument(
+        "--concurrency",
+        type=int,
+        choices=range(1, MAX_CONCURRENCY + 1),
+        default=1,
+        metavar=f"1-{MAX_CONCURRENCY}",
+        help=f"Hold this many identical performance requests in flight at once. "
+        f"Reports per-request rates plus aggregate throughput over the window they "
+        f"shared; the quality lane always stays sequential and a concurrent run is "
+        f"marked non-canonical",
+    )
+    parser.add_argument(
+        "--request-tag-scope",
+        default="",
+        help="Prefix added to every request tag so re-runs cannot be served from a "
+        "warm prefix cache. Defaults to the run start time and is recorded in the "
+        "result; set it to a fixed value to repeat a previous run's exact prompts",
     )
     parser.add_argument(
         "--no-stream",
@@ -1270,23 +1705,37 @@ def main() -> None:
     base_url = args.base_url.rstrip("/")
     suite_names = list(SUITES) if args.suite == "all" else [args.suite]
     streamed = not args.no_stream
+    started_at = utc_now()
+    # A per-run tag scope matters more than it looks: an engine with automatic
+    # prefix caching keys its KV blocks on the leading prompt tokens, so a tag
+    # that repeats between runs lets a re-run start from a warm prefill and
+    # report several times the real prefill speed.  The value is recorded, so
+    # the exact prompts of a past run stay reconstructible.
+    digits_only = re.compile(r"\D")
+    tag_scope = args.request_tag_scope or (
+        f"{digits_only.sub('', started_at)}-{int(time.time() * 1000) % 1000:03d}"
+    )
     result = {
-        "benchmark_schema_version": 7,
+        "benchmark_schema_version": 8,
         "tool": {"name": "llm-context-bench", "version": __version__},
         "status": "running",
         "profile": args.profile,
         "model": args.model,
         "base_url": base_url,
-        "started_at": utc_now(),
+        "started_at": started_at,
         "lane": args.lane,
         "sizes": args.sizes,
-        "canonical": args.repetitions is None,
+        "canonical": is_canonical(args),
         "harness_sha256": harness_fingerprint(),
         "engine": {"requested": args.engine, "resolved": None},
         "measurement": {
             "performance_stream": streamed,
             "input_size_tolerance_percent": args.input_size_tolerance_percent,
             "max_retries": args.max_retries,
+            "concurrency": args.concurrency,
+            "request_tag_scope": tag_scope,
+            "concurrency_definition": "identical performance requests released together; "
+            "*_total rates divide the group's token counts by the group's wall time",
             "definitions": {
                 "prefill_tps": "prompt_tokens / time from request send to the first "
                 "token-bearing stream chunk",
@@ -1408,6 +1857,8 @@ def main() -> None:
                 stream=streamed,
                 input_size_tolerance_percent=args.input_size_tolerance_percent,
                 max_retries=args.max_retries,
+                concurrency=args.concurrency,
+                request_tag_scope=tag_scope,
             )
         result["status"] = "complete"
         result["finished_at"] = utc_now()

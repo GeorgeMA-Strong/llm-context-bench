@@ -11,6 +11,13 @@
     "scope": "Raw fixture calibration only; the server-reported chat prompt count is authoritative."
   },
   "prompts": {
+    "regular-8k": {
+      "path": "src/llm_context_bench/prompts/regular-8k.txt",
+      "chars": 33446,
+      "bytes": 33954,
+      "nominal_tokens": 8192,
+      "sha256": "31b98a4cae3cd46cc4a324b497a8d8d3bd87185f919bc6e06565cdc6522c2c37"
+    },
     "regular-16k": {
       "path": "src/llm_context_bench/prompts/regular-16k.txt",
       "chars": 67186,
@@ -38,6 +45,13 @@
       "bytes": 543378,
       "nominal_tokens": 131072,
       "sha256": "291c1f041ee57ec3000ee05f85ab8ae2d8a4f4fcb841233dc0c6f5c153ad99a8"
+    },
+    "coding-8k": {
+      "path": "src/llm_context_bench/prompts/coding-8k.txt",
+      "chars": 32880,
+      "bytes": 32886,
+      "nominal_tokens": 8192,
+      "sha256": "be09638b80f32282470afa40df496094eb229e63c118141256e6670cc3c58edb"
     },
     "coding-16k": {
       "path": "src/llm_context_bench/prompts/coding-16k.txt",

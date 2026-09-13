@@ -12,6 +12,7 @@ import json
 from pathlib import Path
 import shutil
 import socket
+import threading
 import subprocess
 import sys
 import tempfile
@@ -586,9 +587,234 @@ class SummaryTests(unittest.TestCase):
         self.assertEqual(row["prefill_tps"], round(16384 / 30.0, 6))
         self.assertEqual(row["token_generation_tps"], round(1023 / 9.0, 6))
         text = benchmark.format_performance_table(table)
-        self.assertIn("prefill t/s", text)
+        self.assertIn("TOTAL PP t/s", text)
         self.assertIn("regular", text)
         self.assertIn("16k", text)
+
+
+class LoadGroupTests(unittest.TestCase):
+    """Simultaneous-request maths; no server involved."""
+
+    def trial(self, index, *, ok=True, valid=True, ttft=2.0, generation=40.0, offset=0.0):
+        return {
+            "ok": ok,
+            "performance_valid": valid,
+            "request_index": index,
+            "prompt_tokens": 8192,
+            "completion_tokens": 1024,
+            "ttft_s": ttft,
+            "decode_window_s": 20.0,
+            "group_start_offset_s": offset,
+            "prefill_tps": 8192 / ttft if ttft else None,
+            "generation_tps": generation,
+            "elapsed_s": 25.0,
+            "invalid_reasons": [] if valid else ["output_length_mismatch"],
+        }
+
+    def group(self, trials, **kwargs):
+        arguments = {"wall_s": 10.0}
+        arguments.update(kwargs)
+        return benchmark.summarize_load_group(
+            trials,
+            group_id="regular-09-context-8k#01",
+            concurrency=kwargs.get("concurrency", len(trials)),
+            wall_s=arguments["wall_s"],
+            barrier_broken=arguments.get("barrier_broken", False),
+        )
+
+    def test_group_totals_add_up_every_token_the_group_processed(self):
+        group = self.group([self.trial(index) for index in range(1, 5)])
+        self.assertEqual(group["requests"], 4)
+        self.assertEqual(group["valid_requests"], 4)
+        self.assertTrue(group["group_valid"])
+        self.assertEqual(group["wall_s"], 10.0)
+        # 4 requests x 8,192 prompt tokens and 4 x 1,024 generated tokens.
+        self.assertEqual(group["prompt_tokens_total"], 32768)
+        self.assertEqual(group["output_tokens_total"], 4096)
+        self.assertEqual(group["tokens_total"], 36864)
+
+    def test_totals_report_the_speed_of_the_whole_load_not_of_one_stream(self):
+        group = self.group([self.trial(index) for index in range(1, 5)])
+        # All four streams together produced 4,096 tokens in the 10 s wall time.
+        self.assertEqual(group["decode_tps_total"], 409.6)
+        # Prompt and generated tokens together are the engine's total throughput.
+        self.assertEqual(group["tokens_tps_total"], 3686.4)
+        # All 32,768 prompt tokens were digested by the time the slowest stream
+        # produced its first token, 2 s after the release.
+        self.assertEqual(group["prefill_tps_total"], 16384.0)
+        self.assertEqual(group["requests_per_minute"], 24.0)
+        self.assertEqual(group["ttft_max_s"], 2.0)
+        self.assertEqual(group["invalid_reason_totals"], {})
+
+    def test_prefill_total_waits_for_the_slowest_stream_to_start_generating(self):
+        # One stream queued for 6 s while the others started in 2 s, so the
+        # group's prefill phase ended at 6 s, not at the fastest request's 2 s.
+        group = self.group([self.trial(1), self.trial(2, ttft=6.0)])
+        self.assertEqual(group["prefill_tps_total"], round(2 * 8192 / 6.0, 6))
+        self.assertEqual(group["ttft_max_s"], 6.0)
+
+    def test_total_tg_sums_every_stream_rather_than_scaling_one_of_them(self):
+        # Four streams generating together over the same 20 s window: the total
+        # is all their tokens over that window, which happens to be 4 x one
+        # stream here because the synthetic streams overlap perfectly.
+        group = self.group([self.trial(index) for index in range(1, 5)])
+        self.assertEqual(group["generating_window_s"], 20.0)
+        self.assertEqual(group["generating_tokens_total"], 4 * 1023)
+        self.assertEqual(group["token_generation_tps_total"], round(4 * 1023 / 20.0, 6))
+        self.assertEqual(group["prefill_tps_total"], round(4 * 8192 / 2.0, 6))
+
+        # Stagger the streams and the shared window lengthens, so the total
+        # drops even though each stream is unchanged - which is exactly what a
+        # per-stream rate times the request count would get wrong.
+        staggered = self.group([self.trial(1), self.trial(2, offset=5.0)])
+        self.assertEqual(staggered["generating_window_s"], 25.0)
+        self.assertEqual(
+            staggered["token_generation_tps_total"], round(2 * 1023 / 25.0, 6)
+        )
+        self.assertLess(
+            staggered["token_generation_tps_total"], group["token_generation_tps_total"]
+        )
+
+    def test_one_broken_request_makes_the_whole_load_group_unusable(self):
+        group = self.group([self.trial(1), self.trial(2, valid=False)])
+        self.assertFalse(group["group_valid"])
+        self.assertEqual(group["valid_requests"], 1)
+        self.assertEqual(group["invalid_reason_totals"], {"output_length_mismatch": 1})
+        # Totals stay recorded; they are simply not counted as valid.
+        self.assertGreater(group["decode_tps_total"], 0)
+
+    def test_a_group_without_a_measured_wall_time_reports_no_totals(self):
+        group = self.group([self.trial(1), self.trial(2)], wall_s=None)
+        self.assertIsNone(group["decode_tps_total"])
+        self.assertIsNone(group["tokens_tps_total"])
+        self.assertFalse(group["group_valid"])
+        self.assertIn("group_wall_unmeasured", group["invalid_reason_totals"])
+
+    def test_a_broken_start_barrier_invalidates_simultaneity_not_single_requests(self):
+        group = self.group([self.trial(1), self.trial(2)], barrier_broken=True)
+        self.assertFalse(group["group_valid"])
+        self.assertIn("concurrency_barrier_broken", group["invalid_reason_totals"])
+
+    def test_partial_group_reports_what_never_arrived(self):
+        group = self.group([self.trial(1)], concurrency=4)
+        self.assertEqual(group["recorded_requests"], 1)
+        self.assertEqual(group["missing_requests"], 3)
+        self.assertFalse(group["group_valid"])
+
+    def test_totals_need_token_counts_from_every_request(self):
+        trials = [self.trial(1), self.trial(2)]
+        trials[1]["prompt_tokens"] = None
+        group = self.group(trials)
+        self.assertIsNone(group["tokens_tps_total"])
+        self.assertIsNone(group["prefill_tps_total"])
+        self.assertEqual(group["output_tokens_total"], 2 * 1024)
+        self.assertEqual(group["decode_tps_total"], 2 * 1024 / 10.0)
+
+    def test_a_degenerate_stream_is_flagged_apart_from_a_measurement_failure(self):
+        degenerate = [self.trial(1), self.trial(2, valid=True)]
+        degenerate[1]["performance_valid"] = False
+        degenerate[1]["invalid_reasons"] = ["dominant_repeated_token"]
+        group = self.group(degenerate)
+        self.assertFalse(group["group_valid"])
+        self.assertTrue(group["content_only_failure"])
+
+        measured = self.group([self.trial(1), self.trial(2, valid=False)])
+        self.assertFalse(measured["content_only_failure"])
+
+    def test_invalid_load_groups_are_excluded_from_the_reported_totals(self):
+        summary = benchmark.summarize_performance_trials([], 1024, 8192)
+        group = {
+            "group_valid": False,
+            "decode_tps_total": 900.0,
+            "tokens_tps_total": 9000.0,
+            "token_generation_tps_total": 850.0,
+            "prefill_tps_total": 90000.0,
+            "requests_per_minute": 60.0,
+            "ttft_max_s": 1.0,
+            "wall_s": 10.0,
+            "prompt_tokens_total": 32768,
+            "output_tokens_total": 4096,
+            "tokens_total": 36864,
+        }
+        row = benchmark.build_performance_table(
+            {
+                "regular": {
+                    "cases": [
+                        {
+                            "id": "regular-09-context-8k",
+                            "nominal_input_tokens": 8192,
+                            "performance": {
+                                "summary": summary,
+                                "concurrency": 4,
+                                "groups": [group],
+                            },
+                        }
+                    ]
+                }
+            }
+        )[0]
+        self.assertIsNone(row["decode_tps_total"])
+        self.assertEqual(row["groups"], 1)
+        self.assertEqual(row["valid_groups"], 0)
+
+    def test_single_flight_group_needs_no_threads(self):
+        seen = []
+
+        def request(index):
+            seen.append(index)
+            return self.trial(index)
+
+        trials, span = benchmark.run_concurrent_group(request, concurrency=1)
+        self.assertEqual(len(trials), 1)
+        self.assertEqual(seen, [1])
+        self.assertFalse(span["barrier_broken"])
+        self.assertGreater(span["wall_s"], 0)
+
+    def test_concurrent_requests_all_start_before_any_of_them_finish(self):
+        delay = 0.05
+
+        def request(index):
+            time.sleep(delay)
+            return self.trial(index)
+
+        trials, span = benchmark.run_concurrent_group(request, concurrency=4)
+        self.assertEqual([trial["request_index"] for trial in trials], [1, 2, 3, 4])
+        # Serialised requests would need 4 x delay; parallel ones share the window.
+        self.assertLess(span["wall_s"], delay * 3)
+
+    def test_start_barrier_holds_requests_until_every_worker_is_ready(self):
+        """No request may begin until all workers have reached the barrier."""
+        rendezvous = threading.Barrier(3, timeout=5)
+        order = []
+        lock = threading.Lock()
+
+        def request(index):
+            with lock:
+                order.append(index)
+            try:
+                # If the runner serialised requests, the first one would wait
+                # here alone and the barrier would break.
+                rendezvous.wait()
+            except threading.BrokenBarrierError:
+                self.fail(f"request {index} did not run alongside the others")
+            return self.trial(index)
+
+        trials, span = benchmark.run_concurrent_group(request, concurrency=3)
+        self.assertEqual(len(trials), 3)
+        self.assertFalse(span["barrier_broken"])
+        self.assertEqual(sorted(order), [1, 2, 3])
+
+    def test_a_worker_that_raises_costs_only_its_own_slot(self):
+        def request(index):
+            if index == 2:
+                raise RuntimeError("worker exploded")
+            return self.trial(index)
+
+        trials, _span = benchmark.run_concurrent_group(request, concurrency=3)
+        self.assertEqual(len(trials), 3)
+        self.assertTrue(trials[0]["ok"])
+        self.assertFalse(trials[1]["ok"])
+        self.assertIn("worker exploded", trials[1]["error"])
 
 
 class MockEngineIntegrationTests(unittest.TestCase):
@@ -650,7 +876,6 @@ class MockEngineIntegrationTests(unittest.TestCase):
             "--suite", "regular",
             "--lane", "performance",
             "--sizes", "16k",
-            "--repetitions", "1",
             "--command", "python tools/mock_openai_engine.py",
             "--system", "mock engine; CI container",
             *extra,
@@ -662,14 +887,14 @@ class MockEngineIntegrationTests(unittest.TestCase):
                 benchmark.main()
         finally:
             benchmark.parse_args = original_parse_args
-        self.assertIn("prefill t/s", console.getvalue())
+        self.assertIn("TOTAL PP t/s", console.getvalue())
         return json.loads(Path(output).read_text())
 
     def test_streaming_server_yields_measured_prefill_and_decode_speeds(self):
         with tempfile.TemporaryDirectory() as directory:
             result = self.run_bench(Path(directory) / "result.json")
             self.assertEqual(result["status"], "complete")
-            self.assertEqual(result["benchmark_schema_version"], 7)
+            self.assertEqual(result["benchmark_schema_version"], 8)
             self.assertEqual(result["engine"]["resolved"], "llama.cpp")
             self.assertEqual(result["engine"]["detection_method"], "endpoint-signature")
             row = result["performance_table"][0]
@@ -727,6 +952,159 @@ class MockEngineIntegrationTests(unittest.TestCase):
         self.assertIsNotNone(measured["first_token_at"])
         self.assertIsNotNone(measured["done_at"])
         self.assertFalse(measured["stream_truncated"])
+
+    def test_concurrent_identical_requests_are_aggregated_per_load_group(self):
+        with tempfile.TemporaryDirectory() as directory:
+            result = self.run_bench(
+                Path(directory) / "concurrency.json",
+                "--sizes", "8k",
+                "--concurrency", "4",
+                # The mock's token estimate differs from the pinned tokenizer.
+                "--input-size-tolerance-percent", "6",
+            )
+            self.assertEqual(result["run_parameters"]["concurrency"], 4)
+            self.assertFalse(result["canonical"], "a concurrent run is not the canonical suite")
+            case = result["suites"]["regular"]["cases"][0]
+            self.assertEqual(case["id"], "regular-09-context-8k")
+            performance = case["performance"]
+            self.assertEqual(performance["concurrency"], 4)
+            self.assertEqual(len(performance["groups"]), 1)
+
+            group = performance["groups"][0]
+            self.assertEqual(group["requests"], 4)
+            self.assertEqual(group["recorded_requests"], 4)
+            self.assertTrue(group["group_valid"], group["invalid_reason_totals"])
+            self.assertGreater(group["wall_s"], 0)
+            self.assertGreater(group["decode_tps_total"], 0)
+            self.assertGreater(group["token_generation_tps_total"], 0)
+            self.assertGreater(group["prefill_tps_total"], 0)
+            self.assertGreater(group["tokens_tps_total"], group["decode_tps_total"])
+
+            # The totals are the plain sum of what every request in the group
+            # moved, divided by the group's own wall time.
+            trials = performance["trials"]
+            output = sum(trial["completion_tokens"] for trial in trials)
+            prompt = sum(trial["prompt_tokens"] for trial in trials)
+            self.assertEqual(group["output_tokens_total"], output)
+            self.assertEqual(group["prompt_tokens_total"], prompt)
+            self.assertEqual(group["tokens_total"], output + prompt)
+            expected = output / group["wall_s"]
+            self.assertAlmostEqual(
+                expected, group["decode_tps_total"], delta=expected * 1e-5
+            )
+            # Four streams together beat one stream, which is the point of the
+            # column; if they never add up, the aggregate is a sum of nothing.
+            self.assertGreater(
+                group["decode_tps_total"], group["generation_tps_median"]
+            )
+
+            self.assertEqual([trial["request_index"] for trial in trials], [1, 2, 3, 4])
+            self.assertEqual(len({trial["request_tag"] for trial in trials}), 4)
+            self.assertTrue(all(trial["performance_valid"] for trial in trials))
+
+            row = next(
+                entry for entry in result["performance_table"] if entry["case"] == case["id"]
+            )
+            self.assertEqual(row["concurrency"], 4)
+            self.assertEqual(row["valid_groups"], 1)
+            self.assertGreater(row["decode_tps_total"], 0)
+            console = benchmark.format_performance_table([row])
+            self.assertIn("WHOLE LOAD", console)
+            self.assertIn("ONE STREAM", console)
+            self.assertIn("TOTAL TG t/s", console)
+            self.assertIn("TOTAL PP t/s", console)
+            self.assertIn("not one stream's rate times req", console.lower())
+
+    def test_single_flight_runs_still_record_a_load_group(self):
+        with tempfile.TemporaryDirectory() as directory:
+            result = self.run_bench(Path(directory) / "single.json")
+            self.assertEqual(result["run_parameters"]["concurrency"], 1)
+            self.assertTrue(result["canonical"])
+            performance = result["suites"]["regular"]["cases"][0]["performance"]
+            self.assertEqual(len(performance["groups"]), 1)
+            self.assertEqual(performance["groups"][0]["requests"], 1)
+
+    def test_only_a_single_flight_full_suite_run_is_canonical(self):
+        base = [
+            "--base-url", "http://127.0.0.1:1", "--model", "m", "--profile", "p",
+            "--output", "/tmp/x.json", "--command", "c", "--system", "s",
+        ]
+        self.assertTrue(benchmark.is_canonical(benchmark.parse_args(base)))
+        concurrent = benchmark.parse_args([*base, "--concurrency", "4"])
+        self.assertFalse(benchmark.is_canonical(concurrent))
+        self.assertFalse(
+            benchmark.is_canonical(benchmark.parse_args([*base, "--repetitions", "3"]))
+        )
+
+    def test_each_run_scopes_its_request_tags_so_a_rerun_cannot_warm_the_prefill(self):
+        """Engines with automatic prefix caching key KV blocks on leading tokens.
+
+        A tag that repeats between runs lets the second run start from a warm
+        prefill, which on the real vLLM host measured 4,451 t/s against 1,310 t/s
+        for the same prompt - and that endpoint reports no cached-token count.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            first = self.run_bench(Path(directory) / "first.json")
+            second = self.run_bench(Path(directory) / "second.json")
+
+        def tag_of(result):
+            return result["suites"]["regular"]["cases"][0]["performance"]["trials"][0][
+                "request_tag"
+            ]
+
+        self.assertNotEqual(tag_of(first), tag_of(second))
+        for result in (first, second):
+            scope = result["measurement"]["request_tag_scope"]
+            self.assertTrue(tag_of(result).startswith(f"{scope}-"))
+            self.assertIn(
+                "run-scoped-request-tag",
+                result["suites"]["regular"]["cases"][0]["performance"]["cold_cache_guards"],
+            )
+
+    def test_a_fixed_request_tag_scope_reproduces_an_earlier_runs_prompts(self):
+        with tempfile.TemporaryDirectory() as directory:
+            first = self.run_bench(
+                Path(directory) / "a.json", "--request-tag-scope", "fixed-scope"
+            )
+            second = self.run_bench(
+                Path(directory) / "b.json", "--request-tag-scope", "fixed-scope"
+            )
+        first_tags = [
+            trial["request_tag"]
+            for case in first["suites"]["regular"]["cases"]
+            for trial in case["performance"]["trials"]
+        ]
+        second_tags = [
+            trial["request_tag"]
+            for case in second["suites"]["regular"]["cases"]
+            for trial in case["performance"]["trials"]
+        ]
+        self.assertEqual(first_tags, second_tags)
+        self.assertTrue(all(tag.startswith("fixed-scope-") for tag in first_tags))
+
+    def test_concurrency_above_the_supported_maximum_is_refused(self):
+        argv = [
+            "--base-url", "http://127.0.0.1:1", "--model", "m", "--profile", "p",
+            "--output", "/tmp/x.json", "--command", "c", "--system", "s",
+            "--concurrency", "9",
+        ]
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+            benchmark.parse_args(argv)
+
+    def test_eight_k_tier_is_available_for_both_lanes(self):
+        self.assertEqual(benchmark.SIZE_TOKENS["8k"], 8192)
+        for name in ("regular", "coding"):
+            suite, _digest = benchmark.load_suite(name)
+            case = next(
+                entry
+                for entry in suite["cases"]
+                if entry.get("nominal_input_tokens") == 8192
+            )
+            self.assertEqual(case["id"], f"{name}-09-context-8k")
+            self.assertEqual(case["performance_max_tokens"], 1024)
+            self.assertTrue(case["prompt_sha256"], "fixture hash must be locked in the suite")
+            rendered = benchmark.render_prompt(case)
+            self.assertIn("AUTHORITATIVE SYNTHETIC", rendered)
 
     def test_non_streaming_lane_keeps_the_whole_request_rate(self):
         with tempfile.TemporaryDirectory() as directory:
